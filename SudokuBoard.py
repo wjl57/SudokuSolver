@@ -25,68 +25,69 @@ class SudokuBoard:
 
     def calculate_possibilities(self):
         self.num_unknowns = 0
-        for i in range(0, 9):
-            for j in range(0, 9):
-                val = self.board[i][j]
+        for y in range(0, 9):
+            for x in range(0, 9):
+                val = self.board[y][x]
                 if val is not None:
-                    self.rows[i].add(val)
-                    self.cols[j].add(val)
-                    index = self.loc_to_block(i, j)
+                    self.rows[y].add(val)
+                    self.cols[x].add(val)
+                    index = self.loc_to_block(y, x)
                     self.blocks[index].add(val)
                 else:
                     self.num_unknowns += 1
 
-        for i in range(0, 9):
-            for j in range(0, 9):
-                if self.board[i][j] is not None:
-                    self.possibilities[i][j] = set()
+        for y in range(0, 9):
+            for x in range(0, 9):
+                if self.board[y][x] is not None:
+                    self.possibilities[y][x] = set()
                 else:
-                    self.possibilities[i][j] = self.all_nums - self.rows[i] - self.cols[j] \
-                                               - self.blocks[self.loc_to_block(i, j)]
+                    self.possibilities[y][x] = self.all_nums - self.rows[y] - self.cols[x] \
+                                               - self.blocks[self.loc_to_block(y, x)]
         for n in range(0, 9):
             self.remaining_rows[n] = self.all_nums.copy() - self.rows[n]
             self.remaining_cols[n] = self.all_nums.copy() - self.cols[n]
             self.remaining_blocks[n] = self.all_nums.copy() - self.blocks[n]
 
     def print_possibilities(self):
-        for i in range(0, 9):
-            for j in range(0, 9):
-                print(i, j, self.board[i][j], self.possibilities[i][j])
+        for y in range(0, 9):
+            for x in range(0, 9):
+                print(y, x, self.board[y][x], self.possibilities[y][x])
 
     def fill_sole_candidates(self):
-        for i in range(0, 9):
-            for j in range(0, 9):
-                if len(self.possibilities[i][j]) == 1:
-                    self.board[i][j] = self.possibilities[i][j].pop()
+        for y in range(0, 9):
+            for x in range(0, 9):
+                if len(self.possibilities[y][x]) == 1:
+                    self.board[y][x] = self.possibilities[y][x].pop()
 
     def fill_unique_candidates(self):
-        for i in range(0, 9):
+        for y in range(0, 9):
             d = defaultdict(int)
-            for j in range(0, 9):
-                for val in self.possibilities[i][j]:
+            for x in range(0, 9):
+                for val in self.possibilities[y][x]:
                     d[val] += 1
             for val in d:
                 if d[val] == 1:
-                    self.board[i][j] = val
-        for j in range(0, 9):
+                    self.board[y][x] = val
+        for x in range(0, 9):
             d = defaultdict(int)
-            for i in range(0, 9):
-                for val in self.possibilities[i][j]:
+            for y in range(0, 9):
+                for val in self.possibilities[y][x]:
                     d[val] += 1
             for val in d:
                 if d[val] == 1:
-                    self.board[i][j] = val
+                    self.board[y][x] = val
+                    # TODO: Add in 1 in a block
 
-    def row_to_numbered_cells(self, row_num):
+    def row_to_numbered_cells(self, y):
         numbered_cells = {}
-        for i in range(0, 9):
-            numbered_cells[i] = self.possibilities[row_num][i]
+        for x in range(0, 9):
+            numbered_cells[x] = self.possibilities[y][x]
         return numbered_cells
 
-    def col_to_numbered_cells(self, col_num):
+    def col_to_numbered_cells(self, x):
         numbered_cells = {}
-        for j in range(0, 9):
-            numbered_cells[j] = self.possibilities[j][col_num]
+        for y in range(0, 9):
+            numbered_cells[y] = self.possibilities[y][x]
         return numbered_cells
 
     def block_to_numbered_cells(self, block_num):
@@ -95,7 +96,7 @@ class SudokuBoard:
         num = 0
         for x_offset in range(0, 3):
             for y_offset in range(0, 3):
-                numbered_cells[num] = self.possibilities[x_block + x_offset][y_block + y_offset]
+                numbered_cells[num] = self.possibilities[y_block + y_offset][x_block + x_offset]
                 num += 1
         return numbered_cells
 
@@ -121,6 +122,16 @@ class SudokuBoard:
         self.fill_sole_candidates()
         self.calculate_possibilities()
 
+    def set_board_with_block_values(self, block_num, d):
+        (x_block_before, y_block_before) = self.num_to_offsets(block_num)
+        x_block = x_block_before * 3
+        y_block = y_block_before * 3
+
+        for val in d.keys():
+            for block_offset in d[val]:
+                (x_offset, y_offset) = self.num_to_offsets(block_offset)
+                self.board[y_block+y_offset][x_block+x_offset] = val
+
     # def verify_solution(self):
     #     for row in self.rows:
     #         if len(row) != 9:
@@ -134,15 +145,15 @@ class SudokuBoard:
     #     return True
 
     @staticmethod
-    def num_to_offsets(self):
-        return self % 3, int(self / 3)
+    def num_to_offsets(num):
+        return num % 3, int(num / 3)
 
     def verify_board_full(self):
         return self.num_unknowns == 0
 
     @staticmethod
-    def loc_to_block(r, c):
-        return int(r/3)+int(c/3)*3
+    def loc_to_block(y, x):
+        return int(x/3)+int(y/3)*3
 
     def print_board(self):
         row_count = 0
