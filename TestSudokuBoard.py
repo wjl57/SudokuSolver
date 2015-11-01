@@ -1,4 +1,5 @@
 import unittest
+import copy
 from SudokuBoard import SudokuBoard
 
 __author__ = 'william'
@@ -19,8 +20,14 @@ class TestSudokuBoard(unittest.TestCase):
         [None, 4, 9, 7, 5, None, 3, None, 6]
     ]
 
+    def get_test_board(self):
+        return copy.deepcopy(self.test_board)
+
+    def get_empty_board(self):
+        return copy.deepcopy(self.empty_board)
+
     def test_calculate_possibilities_init(self):
-        sb = SudokuBoard(self.test_board)
+        sb = SudokuBoard(self.get_test_board())
         expected_possibilities = [
             [set(), {8, 5}, set(), {9, 5}, set(), set(), set(), set(), {8, 9}],
             [{9, 5}, set(), {1, 3}, {9, 2, 5}, set(), set(), {9, 2, 5}, {9, 2, 3, 4}, {9, 2, 4}],
@@ -42,7 +49,7 @@ class TestSudokuBoard(unittest.TestCase):
         self.assertListEqual(sb.blocks, expected_blocks)
 
     def test_fill_sole_candidates(self):
-        sb = SudokuBoard(self.empty_board)
+        sb = SudokuBoard(self.get_test_board())
         possibilities = [[set() for _ in range(0, 9)] for _ in range(0, 9)]
         possibilities[2][3] = {9}
         possibilities[3][4] = {1, 2}
@@ -54,10 +61,10 @@ class TestSudokuBoard(unittest.TestCase):
         self.assertEqual(sb.board[2][3], 9)
         self.assertEqual(sb.board[4][5], 4)
 
-    def test_loc_to_block(self):
-        self.assertEquals(SudokuBoard.loc_to_block(2, 1), 0)
-        self.assertEquals(SudokuBoard.loc_to_block(3, 1), 3)
-        self.assertEquals(SudokuBoard.loc_to_block(8, 6), 8)
+    def test_loc_to_block_num(self):
+        self.assertEquals(SudokuBoard.loc_to_block_num(2, 1), 0)
+        self.assertEquals(SudokuBoard.loc_to_block_num(3, 1), 3)
+        self.assertEquals(SudokuBoard.loc_to_block_num(8, 6), 8)
 
     def test_cell_num_to_block_offsets(self):
         self.assertEquals(SudokuBoard.cell_num_to_block_offsets(1), (0, 1))
@@ -70,7 +77,7 @@ class TestSudokuBoard(unittest.TestCase):
         self.assertEquals(SudokuBoard.block_num_to_board_offsets(8), (6, 6))
 
     def test_row_to_numbered_cells(self):
-        sb = SudokuBoard(self.test_board)
+        sb = SudokuBoard(self.get_test_board())
         cell_nums = [i for i in range(0, 9)]
         possibilities_row_1 = [{9, 5}, set(), {1, 3}, {9, 2, 5}, set(), set(), {9, 2, 5}, {9, 2, 3, 4}, {9, 2, 4}]
         self.assertDictEqual(sb.row_to_numbered_cells(1), dict(zip(cell_nums, possibilities_row_1)))
@@ -78,7 +85,7 @@ class TestSudokuBoard(unittest.TestCase):
         self.assertDictEqual(sb.row_to_numbered_cells(6), dict(zip(cell_nums, possibilities_row_6)))
 
     def test_col_to_numbered_cells(self):
-        sb = SudokuBoard(self.test_board)
+        sb = SudokuBoard(self.get_test_board())
         cell_nums = [i for i in range(0, 9)]
         possibilities_col_1 = [{8, 5}, set(), {8, 3, 5, 7}, set(), {2, 7}, {2, 7}, {1, 2, 3, 5, 7}, {1, 3, 7}, set()]
         self.assertDictEqual(sb.col_to_numbered_cells(1), dict(zip(cell_nums, possibilities_col_1)))
@@ -86,17 +93,71 @@ class TestSudokuBoard(unittest.TestCase):
         self.assertDictEqual(sb.col_to_numbered_cells(6), dict(zip(cell_nums, possibilities_col_6)))
 
     def test_block_to_numbered_cells(self):
-        sb = SudokuBoard(self.test_board)
+        sb = SudokuBoard(self.get_test_board())
         cell_nums = [i for i in range(0, 9)]
         possibilities_block_3 = [set(), set(), {4, 7}, set(), {2, 7}, set(), set(), {2, 7}, set()]
         self.assertDictEqual(sb.block_to_numbered_cells(3), dict(zip(cell_nums, possibilities_block_3)))
 
-    def test_print(self):
-        sb = SudokuBoard(self.test_board)
-        sb.print_possibilities()
-                # print(sb.possibilities[3][0:3])
-        # print(sb.possibilities[4][0:3])
-        # print(sb.possibilities[5][0:3])
+    def test_find_val_with_count_in_numbered_cells(self):
+        values = {1, 2, 3}
+        numbered_sets = dict(zip([i for i in range(0, 5)], [{1, 3}, {4}, set(), {1, 2}, set()]))
+        d1 = SudokuBoard.find_val_with_count_in_numbered_cells(values, numbered_sets, 1)
+        d2 = SudokuBoard.find_val_with_count_in_numbered_cells(values, numbered_sets, 2)
+        d1_expected = {
+            3: [0],
+            2: [3]
+        }
+        d2_expected = {
+            1: [0, 3]
+        }
+        self.assertDictEqual(d1, d1_expected)
+        self.assertDictEqual(d2, d2_expected)
+
+    # def test_print(self):
+    #     sb = SudokuBoard(self.get_test_board())
+    #     sb.print_possibilities()
+
+    def test_set_board_with_row_dict(self):
+        sb = SudokuBoard(self.get_empty_board())
+        sb.set_board_with_row_dict(2, {1: [1, 7], 7: [2], 8: [3]})
+        self.assertEqual(sb.board[2][1], 1)
+        self.assertEqual(sb.board[2][7], 1)
+        self.assertEqual(sb.board[2][2], 7)
+        self.assertEqual(sb.board[2][3], 8)
+
+    def test_set_board_with_col_dict(self):
+        sb = SudokuBoard(self.get_empty_board())
+        sb.set_board_with_col_dict(2, {1: [1, 7], 7: [2], 8: [3]})
+        self.assertEqual(sb.board[1][2], 1)
+        self.assertEqual(sb.board[7][2], 1)
+        self.assertEqual(sb.board[2][2], 7)
+        self.assertEqual(sb.board[3][2], 8)
+
+    def test_set_board_with_block_dict(self):
+        sb = SudokuBoard(self.get_empty_board())
+        sb.set_board_with_block_dict(2, {1: [1, 7], 7: [2], 8: [3]})
+        self.assertEqual(sb.board[0][7], 1)
+        self.assertEqual(sb.board[2][7], 1)
+        self.assertEqual(sb.board[0][8], 7)
+        self.assertEqual(sb.board[1][6], 8)
+
+    def test_fill_unique_candidates(self):
+        # pass
+        sb = SudokuBoard(self.get_empty_board())
+        print(sb.possibilities)
+        print(sb.board)
+        sb.print_board()
+
+        sb.board[0][2] = 4
+        sb.board[4][1] = 4
+        sb.board[8][5] = 4
+        sb.board[6][0] = 5
+        sb.calculate_possibilities()
+        sb.fill_unique_candidates()
+        sb.print_board()
+        self.assertEqual(sb.board[7][0], 4)
+
+
 
 if __name__ == '__main__':
     unittest.main()

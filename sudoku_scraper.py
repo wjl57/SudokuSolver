@@ -16,6 +16,9 @@ def main():
     print(sb.cols)
     print(sb.blocks)
     print("Num unknowns: ", sb.num_unknowns)
+
+    sb.fill_unique_candidates()
+    sb.print_board()
     # while not sb.verify_board_full():
     #     sb.solve_next_step()
     #     sb.print_board()
