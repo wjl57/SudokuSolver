@@ -6,6 +6,7 @@ __author__ = 'william'
 
 class TestSudokuBoard(unittest.TestCase):
 
+    empty_board = [[None for _ in range(0, 9)] for _ in range(0, 9)]
     test_board = [
         [4, None, 2, None, 3, 1, 7, 6, None],
         [None, 6, None, None, 8, 7, None, None, None],
@@ -40,12 +41,21 @@ class TestSudokuBoard(unittest.TestCase):
         self.assertListEqual(sb.cols, expected_cols)
         self.assertListEqual(sb.blocks, expected_blocks)
 
+        # print(sb.possibilities)
 
+    def test_fill_sole_candidates(self):
+        sb = SudokuBoard(self.empty_board)
+        possibilities = [[set() for _ in range(0, 9)] for _ in range(0, 9)]
+        possibilities[2][3] = {9}
+        possibilities[3][4] = {1, 2}
+        possibilities[4][5] = {4}
 
-
-
+        sb.possibilities = possibilities
+        sb.fill_sole_candidates()
         sb.print_board()
-        print(sb.possibilities)
+
+        self.assertEqual(sb.board[2][3], 9)
+        self.assertEqual(sb.board[4][5], 4)
 
         # self.assertEqual('foo'.upper(), 'FOO')
 
