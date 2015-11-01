@@ -45,11 +45,6 @@ class SudokuBoard:
             self.remaining_cols[n] = self.all_nums.copy() - self.cols[n]
             self.remaining_blocks[n] = self.all_nums.copy() - self.blocks[n]
 
-    def print_possibilities(self):
-        for y in range(0, 9):
-            for x in range(0, 9):
-                print(y, x, self.board[y][x], self.possibilities[y][x])
-
     def fill_sole_candidates(self):
         for y in range(0, 9):
             for x in range(0, 9):
@@ -161,4 +156,21 @@ class SudokuBoard:
                     print(' ' + str(val) + ' ', end='')
             print('|\n')
         print('+-----------------------------+')
+
+    def print_possibilities(self):
+        row_count = 0
+        col_count = 0
+        for row in self.possibilities:
+            if row_count % 3 == 0:
+                row_count = 0
+                print('+-------------------------------------------------------------------+')
+            row_count += 1
+            for val in row:
+                if col_count % 3 == 0:
+                    col_count = 0
+                    print('|', end='')
+                col_count += 1
+                print(' ' + str(val) + ' ', end='')
+            print('|\n')
+        print('+-------------------------------------------------------------------+')
 

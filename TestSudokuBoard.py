@@ -41,8 +41,6 @@ class TestSudokuBoard(unittest.TestCase):
         self.assertListEqual(sb.cols, expected_cols)
         self.assertListEqual(sb.blocks, expected_blocks)
 
-        # print(sb.possibilities)
-
     def test_fill_sole_candidates(self):
         sb = SudokuBoard(self.empty_board)
         possibilities = [[set() for _ in range(0, 9)] for _ in range(0, 9)]
@@ -52,7 +50,6 @@ class TestSudokuBoard(unittest.TestCase):
 
         sb.possibilities = possibilities
         sb.fill_sole_candidates()
-        sb.print_board()
 
         self.assertEqual(sb.board[2][3], 9)
         self.assertEqual(sb.board[4][5], 4)
@@ -91,11 +88,13 @@ class TestSudokuBoard(unittest.TestCase):
     def test_block_to_numbered_cells(self):
         sb = SudokuBoard(self.test_board)
         cell_nums = [i for i in range(0, 9)]
-        sb.print_possibilities()
         possibilities_block_3 = [set(), set(), {4, 7}, set(), {2, 7}, set(), set(), {2, 7}, set()]
         self.assertDictEqual(sb.block_to_numbered_cells(3), dict(zip(cell_nums, possibilities_block_3)))
 
-        # print(sb.possibilities[3][0:3])
+    def test_print(self):
+        sb = SudokuBoard(self.test_board)
+        sb.print_possibilities()
+                # print(sb.possibilities[3][0:3])
         # print(sb.possibilities[4][0:3])
         # print(sb.possibilities[5][0:3])
 
