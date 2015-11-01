@@ -57,7 +57,47 @@ class TestSudokuBoard(unittest.TestCase):
         self.assertEqual(sb.board[2][3], 9)
         self.assertEqual(sb.board[4][5], 4)
 
-        # self.assertEqual('foo'.upper(), 'FOO')
+    def test_loc_to_block(self):
+        self.assertEquals(SudokuBoard.loc_to_block(2, 1), 0)
+        self.assertEquals(SudokuBoard.loc_to_block(3, 1), 3)
+        self.assertEquals(SudokuBoard.loc_to_block(8, 6), 8)
+
+    def test_cell_num_to_block_offsets(self):
+        self.assertEquals(SudokuBoard.cell_num_to_block_offsets(1), (0, 1))
+        self.assertEquals(SudokuBoard.cell_num_to_block_offsets(5), (1, 2))
+        self.assertEquals(SudokuBoard.cell_num_to_block_offsets(8), (2, 2))
+
+    def test_block_num_to_board_offsets(self):
+        self.assertEquals(SudokuBoard.block_num_to_board_offsets(1), (0, 3))
+        self.assertEquals(SudokuBoard.block_num_to_board_offsets(5), (3, 6))
+        self.assertEquals(SudokuBoard.block_num_to_board_offsets(8), (6, 6))
+
+    def test_row_to_numbered_cells(self):
+        sb = SudokuBoard(self.test_board)
+        cell_nums = [i for i in range(0, 9)]
+        possibilities_row_1 = [{9, 5}, set(), {1, 3}, {9, 2, 5}, set(), set(), {9, 2, 5}, {9, 2, 3, 4}, {9, 2, 4}]
+        self.assertDictEqual(sb.row_to_numbered_cells(1), dict(zip(cell_nums, possibilities_row_1)))
+        possibilities_row_6 = [{2, 5, 6, 7}, {1, 2, 3, 5, 7}, set(), {1, 6}, set(), {3, 6}, {2}, {1, 2, 4, 7}, {2, 4, 7}]
+        self.assertDictEqual(sb.row_to_numbered_cells(6), dict(zip(cell_nums, possibilities_row_6)))
+
+    def test_col_to_numbered_cells(self):
+        sb = SudokuBoard(self.test_board)
+        cell_nums = [i for i in range(0, 9)]
+        possibilities_col_1 = [{8, 5}, set(), {8, 3, 5, 7}, set(), {2, 7}, {2, 7}, {1, 2, 3, 5, 7}, {1, 3, 7}, set()]
+        self.assertDictEqual(sb.col_to_numbered_cells(1), dict(zip(cell_nums, possibilities_col_1)))
+        possibilities_col_6 = [set(), {9, 2, 5}, set(), set(), set(), {9, 2}, {2}, {8, 9}, set()]
+        self.assertDictEqual(sb.col_to_numbered_cells(6), dict(zip(cell_nums, possibilities_col_6)))
+
+    def test_block_to_numbered_cells(self):
+        sb = SudokuBoard(self.test_board)
+        cell_nums = [i for i in range(0, 9)]
+        sb.print_possibilities()
+        possibilities_block_3 = [set(), set(), {4, 7}, set(), {2, 7}, set(), set(), {2, 7}, set()]
+        self.assertDictEqual(sb.block_to_numbered_cells(3), dict(zip(cell_nums, possibilities_block_3)))
+
+        # print(sb.possibilities[3][0:3])
+        # print(sb.possibilities[4][0:3])
+        # print(sb.possibilities[5][0:3])
 
 if __name__ == '__main__':
     unittest.main()

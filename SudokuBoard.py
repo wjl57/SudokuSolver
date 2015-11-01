@@ -10,11 +10,8 @@ class SudokuBoard:
     cols = [set() for _ in range(0, 9)]
     blocks = [set() for _ in range(0, 9)]
     remaining_rows = [set() for _ in range(0, 9)]
-    # [all_nums.copy() for _ in range(0, 9)]
     remaining_cols = [set() for _ in range(0, 9)]
-    # [all_nums.copy() for _ in range(0, 9)]
     remaining_blocks = [set() for _ in range(0, 9)]
-    # [all_nums.copy() for _ in range(0, 9)]
     possibilities = [[set() for _ in range(0, 9)] for _ in range(0, 9)]
     board = None
     num_unknowns = 0
@@ -92,10 +89,10 @@ class SudokuBoard:
 
     def block_to_numbered_cells(self, block_num):
         numbered_cells = {}
-        (x_block, y_block) = self.num_to_offsets(block_num)
+        (y_block, x_block) = self.block_num_to_board_offsets(block_num)
         num = 0
-        for x_offset in range(0, 3):
-            for y_offset in range(0, 3):
+        for y_offset in range(0, 3):
+            for x_offset in range(0, 3):
                 numbered_cells[num] = self.possibilities[y_block + y_offset][x_block + x_offset]
                 num += 1
         return numbered_cells
@@ -122,38 +119,28 @@ class SudokuBoard:
         self.fill_sole_candidates()
         self.calculate_possibilities()
 
-    def set_board_with_block_values(self, block_num, d):
-        (x_block_before, y_block_before) = self.num_to_offsets(block_num)
-        x_block = x_block_before * 3
-        y_block = y_block_before * 3
+    def set_board_with_block_dict(self, block_num, d):
+        (y_block, x_block) = self.block_num_to_board_offsets(block_num)
 
         for val in d.keys():
-            for block_offset in d[val]:
-                (x_offset, y_offset) = self.num_to_offsets(block_offset)
+            for cell_num in d[val]:
+                (y_offset, x_offset) = self.cell_num_to_block_offsets(cell_num)
                 self.board[y_block+y_offset][x_block+x_offset] = val
 
-    # def verify_solution(self):
-    #     for row in self.rows:
-    #         if len(row) != 9:
-    #             return False
-    #     for col in self.cols:
-    #         if len(col) != 9:
-    #             return False
-    #     for block in self.blocks:
-    #         if len(block) != 9:
-    #             return False
-    #     return True
+    @staticmethod
+    def cell_num_to_block_offsets(num):
+        return int(num / 3), num % 3
 
     @staticmethod
-    def num_to_offsets(num):
-        return num % 3, int(num / 3)
-
-    def verify_board_full(self):
-        return self.num_unknowns == 0
+    def block_num_to_board_offsets(num):
+        return int(num / 3) * 3, num % 3 * 3
 
     @staticmethod
     def loc_to_block(y, x):
         return int(x/3)+int(y/3)*3
+
+    def verify_board_full(self):
+        return self.num_unknowns == 0
 
     def print_board(self):
         row_count = 0
