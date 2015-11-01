@@ -142,7 +142,6 @@ class TestSudokuBoard(unittest.TestCase):
         self.assertEqual(sb.board[1][6], 8)
 
     def test_fill_unique_candidates(self):
-        # pass
         sb = SudokuBoard(self.get_empty_board())
         print(sb.possibilities)
         print(sb.board)
@@ -157,7 +156,29 @@ class TestSudokuBoard(unittest.TestCase):
         sb.print_board()
         self.assertEqual(sb.board[7][0], 4)
 
+    def test_block_rc_interaction(self):
+        sb = SudokuBoard(self.get_empty_board())
+        print(sb.possibilities)
+        print(sb.board)
+        sb.print_board()
 
+        sb.board[0][4] = 7
+        sb.board[3][3] = 2
+        sb.board[3][5] = 1
+        sb.board[5][3] = 9
+        sb.board[5][5] = 6
+        sb.calculate_possibilities()
+        sb.block_rc_interaction()
+        sb.print_possibilities()
+        self.assertTrue(7 not in sb.possibilities[4][0])
+        self.assertTrue(7 not in sb.possibilities[4][1])
+        self.assertTrue(7 not in sb.possibilities[4][2])
+        self.assertTrue(7 in sb.possibilities[4][3])
+        self.assertTrue(7 not in sb.possibilities[4][4])
+        self.assertTrue(7 in sb.possibilities[4][5])
+        self.assertTrue(7 not in sb.possibilities[4][6])
+        self.assertTrue(7 not in sb.possibilities[4][7])
+        self.assertTrue(7 not in sb.possibilities[4][8])
 
 if __name__ == '__main__':
     unittest.main()

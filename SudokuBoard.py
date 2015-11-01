@@ -9,9 +9,9 @@ class SudokuBoard:
     rows = [set() for _ in range(0, 9)]
     cols = [set() for _ in range(0, 9)]
     blocks = [set() for _ in range(0, 9)]
-    remaining_rows = [set() for _ in range(0, 9)]
-    remaining_cols = [set() for _ in range(0, 9)]
-    remaining_blocks = [set() for _ in range(0, 9)]
+    remaining_in_rows = [set() for _ in range(0, 9)]
+    remaining_in_cols = [set() for _ in range(0, 9)]
+    remaining_in_blocks = [set() for _ in range(0, 9)]
     possibilities = [[set() for _ in range(0, 9)] for _ in range(0, 9)]
     board = None
     num_unknowns = 0
@@ -21,9 +21,9 @@ class SudokuBoard:
         self.rows = [set() for _ in range(0, 9)]
         self.cols = [set() for _ in range(0, 9)]
         self.blocks = [set() for _ in range(0, 9)]
-        self.remaining_rows = [set() for _ in range(0, 9)]
-        self.remaining_cols = [set() for _ in range(0, 9)]
-        self.remaining_blocks = [set() for _ in range(0, 9)]
+        self.remaining_in_rows = [set() for _ in range(0, 9)]
+        self.remaining_in_cols = [set() for _ in range(0, 9)]
+        self.remaining_in_blocks = [set() for _ in range(0, 9)]
         self.possibilities = [[set() for _ in range(0, 9)] for _ in range(0, 9)]
         self.calculate_possibilities()
 
@@ -48,9 +48,9 @@ class SudokuBoard:
                     self.possibilities[y][x] = self.all_nums - self.rows[y] - self.cols[x] \
                                                - self.blocks[self.loc_to_block_num(y, x)]
         for n in range(0, 9):
-            self.remaining_rows[n] = self.all_nums.copy() - self.rows[n]
-            self.remaining_cols[n] = self.all_nums.copy() - self.cols[n]
-            self.remaining_blocks[n] = self.all_nums.copy() - self.blocks[n]
+            self.remaining_in_rows[n] = self.all_nums.copy() - self.rows[n]
+            self.remaining_in_cols[n] = self.all_nums.copy() - self.cols[n]
+            self.remaining_in_blocks[n] = self.all_nums.copy() - self.blocks[n]
 
     def fill_sole_candidates(self):
         for y in range(0, 9):
@@ -63,15 +63,15 @@ class SudokuBoard:
         count = 1
         for y in range(0, 9):
             numbered_cells = self.row_to_numbered_cells(y)
-            d = SudokuBoard.find_val_with_count_in_numbered_cells(self.remaining_rows[y], numbered_cells, count)
+            d = SudokuBoard.find_val_with_count_in_numbered_cells(self.remaining_in_rows[y], numbered_cells, count)
             self.set_board_with_row_dict(y, d)
         for x in range(0, 9):
             numbered_cells = self.col_to_numbered_cells(x)
-            d = SudokuBoard.find_val_with_count_in_numbered_cells(self.remaining_cols[x], numbered_cells, count)
+            d = SudokuBoard.find_val_with_count_in_numbered_cells(self.remaining_in_cols[x], numbered_cells, count)
             self.set_board_with_col_dict(x, d)
         for block_num in range(0, 9):
             numbered_cells = self.block_to_numbered_cells(block_num)
-            d = SudokuBoard.find_val_with_count_in_numbered_cells(self.remaining_blocks[block_num], numbered_cells, count)
+            d = SudokuBoard.find_val_with_count_in_numbered_cells(self.remaining_in_blocks[block_num], numbered_cells, count)
             self.set_board_with_block_dict(block_num, d)
 
     def set_board_with_row_dict(self, y, d):
@@ -132,6 +132,41 @@ class SudokuBoard:
                 d[value] = found_cell_nums
         return d
 
+    def block_rc_interaction(self):
+        # (y_block, x_block) = self.block_num_to_board_offsets(block_num)
+        for block_num in range(0, 9):
+            numbered_cells = self.block_to_numbered_cells(block_num)
+            numbered_cells_in_rows = {y: set() for y in range(0, 3)}
+            numbered_cells_in_cols = {x: set() for x in range(0, 3)}
+            for cell_num in range(0, 9):
+                (y_offset, x_offset) = self.cell_num_to_block_offsets(cell_num)
+                block_offset = self.loc_to_block_offset(y_offset, x_offset)
+                possibilities = numbered_cells[block_offset]
+                numbered_cells_in_rows[y_offset].update(possibilities)
+                numbered_cells_in_cols[x_offset].update(possibilities)
+            d = self.find_val_with_count_in_numbered_cells(self.remaining_in_blocks[block_num], numbered_cells_in_rows, 1)
+            self.eliminate_row_possibilities_by_block_dict(block_num, d)
+            d = self.find_val_with_count_in_numbered_cells(self.remaining_in_blocks[block_num], numbered_cells_in_cols, 1)
+            self.eliminate_col_possibilities_by_block_dict(block_num, d)
+
+    def eliminate_row_possibilities_by_block_dict(self, block_num, d):
+        (y_block, x_block) = self.block_num_to_board_offsets(block_num)
+        for val in d.keys():
+            for y_offset in d[val]:
+                y = y_block + y_offset
+                for x in range(0, 9):
+                    if SudokuBoard.loc_to_block_num(y, x) != block_num:
+                        self.possibilities[y][x].remove(val)
+
+    def eliminate_col_possibilities_by_block_dict(self, block_num, d):
+        (y_block, x_block) = self.block_num_to_board_offsets(block_num)
+        for val in d.keys():
+            for x_offset in d[val]:
+                x = x_block + x_offset
+                for y in range(0, 9):
+                    if SudokuBoard.loc_to_block_num(y, x) != block_num:
+                        self.possibilities[y][x].remove(val)
+
     def solve_next_step(self):
         self.fill_sole_candidates()
         self.calculate_possibilities()
@@ -147,6 +182,10 @@ class SudokuBoard:
     @staticmethod
     def loc_to_block_num(y, x):
         return int(x/3)+int(y/3)*3
+
+    @staticmethod
+    def loc_to_block_offset(y, x):
+        return 3*y+x
 
     def verify_board_full(self):
         return self.num_unknowns == 0
