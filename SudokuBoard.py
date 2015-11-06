@@ -62,15 +62,15 @@ class SudokuBoard:
         # count = 1 since unique candidates
         count = 1
         for y in range(0, 9):
-            numbered_cells = self.row_to_numbered_cells(y)
+            numbered_cells = self.row_possibilities_to_numbered_cells(y)
             d = SudokuBoard.find_val_with_count_in_numbered_cells(self.remaining_in_rows[y], numbered_cells, count)
             self.set_board_with_row_dict(y, d)
         for x in range(0, 9):
-            numbered_cells = self.col_to_numbered_cells(x)
+            numbered_cells = self.col_possibilities_to_numbered_cells(x)
             d = SudokuBoard.find_val_with_count_in_numbered_cells(self.remaining_in_cols[x], numbered_cells, count)
             self.set_board_with_col_dict(x, d)
         for block_num in range(0, 9):
-            numbered_cells = self.block_to_numbered_cells(block_num)
+            numbered_cells = self.block_possibilities_to_numbered_cells(block_num)
             d = SudokuBoard.find_val_with_count_in_numbered_cells(self.remaining_in_blocks[block_num], numbered_cells, count)
             self.set_board_with_block_dict(block_num, d)
 
@@ -92,19 +92,19 @@ class SudokuBoard:
                 (y_offset, x_offset) = self.cell_num_to_block_offsets(cell_num)
                 self.board[y_block+y_offset][x_block+x_offset] = val
 
-    def row_to_numbered_cells(self, y):
+    def row_possibilities_to_numbered_cells(self, y):
         numbered_cells = {}
         for x in range(0, 9):
             numbered_cells[x] = self.possibilities[y][x]
         return numbered_cells
 
-    def col_to_numbered_cells(self, x):
+    def col_possibilities_to_numbered_cells(self, x):
         numbered_cells = {}
         for y in range(0, 9):
             numbered_cells[y] = self.possibilities[y][x]
         return numbered_cells
 
-    def block_to_numbered_cells(self, block_num):
+    def block_possibilities_to_numbered_cells(self, block_num):
         numbered_cells = {}
         (y_block, x_block) = self.block_num_to_board_offsets(block_num)
         num = 0
@@ -132,22 +132,26 @@ class SudokuBoard:
                 d[value] = found_cell_nums
         return d
 
-    def block_rc_interaction(self):
-        # (y_block, x_block) = self.block_num_to_board_offsets(block_num)
+    def all_block_rc_interactions(self):
         for block_num in range(0, 9):
-            numbered_cells = self.block_to_numbered_cells(block_num)
-            numbered_cells_in_rows = {y: set() for y in range(0, 3)}
-            numbered_cells_in_cols = {x: set() for x in range(0, 3)}
-            for cell_num in range(0, 9):
-                (y_offset, x_offset) = self.cell_num_to_block_offsets(cell_num)
-                block_offset = self.loc_to_block_offset(y_offset, x_offset)
-                possibilities = numbered_cells[block_offset]
-                numbered_cells_in_rows[y_offset].update(possibilities)
-                numbered_cells_in_cols[x_offset].update(possibilities)
-            d = self.find_val_with_count_in_numbered_cells(self.remaining_in_blocks[block_num], numbered_cells_in_rows, 1)
-            self.eliminate_row_possibilities_by_block_dict(block_num, d)
-            d = self.find_val_with_count_in_numbered_cells(self.remaining_in_blocks[block_num], numbered_cells_in_cols, 1)
-            self.eliminate_col_possibilities_by_block_dict(block_num, d)
+            self.block_rc_interaction(block_num)
+
+    def block_rc_interaction(self, block_num):
+        numbered_cells = self.block_possibilities_to_numbered_cells(block_num)
+        numbered_cells_in_rows = {y: set() for y in range(0, 3)}
+        numbered_cells_in_cols = {x: set() for x in range(0, 3)}
+        for cell_num in range(0, 9):
+            (y_offset, x_offset) = self.cell_num_to_block_offsets(cell_num)
+            block_offset = self.loc_to_block_offset(y_offset, x_offset)
+            possibilities = numbered_cells[block_offset]
+            numbered_cells_in_rows[y_offset].update(possibilities)
+            numbered_cells_in_cols[x_offset].update(possibilities)
+        # d is a dictionary from val to the row offset in a block
+        d = self.find_val_with_count_in_numbered_cells(self.remaining_in_blocks[block_num], numbered_cells_in_rows, 1)
+        self.eliminate_row_possibilities_by_block_dict(block_num, d)
+        # d is a dictionary from val to the col offset in a block
+        d = self.find_val_with_count_in_numbered_cells(self.remaining_in_blocks[block_num], numbered_cells_in_cols, 1)
+        self.eliminate_col_possibilities_by_block_dict(block_num, d)
 
     def eliminate_row_possibilities_by_block_dict(self, block_num, d):
         (y_block, x_block) = self.block_num_to_board_offsets(block_num)
@@ -167,9 +171,97 @@ class SudokuBoard:
                     if SudokuBoard.loc_to_block_num(y, x) != block_num:
                         self.possibilities[y][x].remove(val)
 
+    def all_block_block_interactions(self):
+        for i in range(0, 3):
+            for j in range(0, 3):
+                self.block_block_by_block_row_interaction(i, j)
+        for i in range(0, 3):
+            for j in range(0, 3):
+                self.block_block_by_block_col_interaction(i, j)
+
+    def block_block_by_block_row_interaction(self, square_row, excluded_sq_offset):
+        sq_row_offset_1, sq_row_offset_2 = self.get_remaining_2(excluded_sq_offset)
+        block_num_1 = self.square_row_and_offset_to_block_num(square_row, sq_row_offset_1)
+        block_num_2 = self.square_row_and_offset_to_block_num(square_row, sq_row_offset_2)
+        excluded_block_num = self.square_row_and_offset_to_block_num(square_row, excluded_sq_offset)
+        block_1_possibilities = self.remaining_in_blocks[block_num_1]
+        block_2_possibilities = self.remaining_in_blocks[block_num_2]
+        possibilities_in_both_blocks = block_1_possibilities.intersection(block_2_possibilities)
+        _, x_block_1 = self.block_num_to_board_offsets(block_num_1)
+        _, x_block_2 = self.block_num_to_board_offsets(block_num_2)
+        for y_offset in range(0, 3):
+            possibilities_by_row = set()
+            y = self.square_offset_and_offset_to_num(square_row, y_offset)
+            for x_offset in range(0, 3):
+                possibilities_by_row.update(self.possibilities[y][x_block_1 + x_offset])
+                possibilities_by_row.update(self.possibilities[y][x_block_2 + x_offset])
+            for val in possibilities_in_both_blocks:
+                if val not in possibilities_by_row:
+                    self.eliminate_possibilities_by_block_row(excluded_block_num, y, val)
+
+    def eliminate_possibilities_by_block_row(self, block_num, excluded_y, val):
+        _, x_block = self.block_num_to_board_offsets(block_num)
+        x_offsets = [i + x_block for i in range(0, 3)]
+        y_1, y_2 = self.get_remaining_2(excluded_y)
+        for x in x_offsets:
+            self.possibilities[y_1][x].discard(val)
+            self.possibilities[y_2][x].discard(val)
+
+    def block_block_by_block_col_interaction(self, square_col, excluded_sq_offset):
+        sq_col_offset_1, sq_col_offset_2 = self.get_remaining_2(excluded_sq_offset)
+        block_num_1 = self.square_col_and_offset_to_block_num(square_col, sq_col_offset_1)
+        block_num_2 = self.square_col_and_offset_to_block_num(square_col, sq_col_offset_2)
+        excluded_block_num = self.square_col_and_offset_to_block_num(square_col, excluded_sq_offset)
+        block_1_possibilities = self.remaining_in_blocks[block_num_1]
+        block_2_possibilities = self.remaining_in_blocks[block_num_2]
+        possibilities_in_both_blocks = block_1_possibilities.intersection(block_2_possibilities)
+        y_block_1, _ = self.block_num_to_board_offsets(block_num_1)
+        y_block_2, _ = self.block_num_to_board_offsets(block_num_2)
+        for x_offset in range(0, 3):
+            possibilities_by_col = set()
+            x = self.square_offset_and_offset_to_num(square_col, x_offset)
+            for y_offset in range(0, 3):
+                p = self.possibilities[y_block_1 + y_offset][x]
+                possibilities_by_col.update(self.possibilities[y_block_1 + y_offset][x])
+                p = self.possibilities[y_block_2 + y_offset][x]
+                possibilities_by_col.update(self.possibilities[y_block_2 + y_offset][x])
+            for val in possibilities_in_both_blocks:
+                if val not in possibilities_by_col:
+                    self.eliminate_possibilities_by_block_col(excluded_block_num, x, val)
+
+    def eliminate_possibilities_by_block_col(self, block_num, excluded_x, val):
+        y_block, _ = self.block_num_to_board_offsets(block_num)
+        y_offsets = [i + y_block for i in range(0, 3)]
+        x_1, x_2 = self.get_remaining_2(excluded_x)
+        for y in y_offsets:
+            self.possibilities[y][x_1].discard(val)
+            self.possibilities[y][x_2].discard(val)
+
     def solve_next_step(self):
         self.fill_sole_candidates()
         self.calculate_possibilities()
+
+    @staticmethod
+    def get_remaining_2(num):
+        start = int(num / 3) * 3
+        rem = num % 3
+        if rem == 0:
+            return start + 1, start + 2
+        elif rem == 1:
+            return start, start + 2
+        else:
+            return start, start + 1
+
+    # @staticmethod
+    # def get_remaining_of_3(excluded_offset):
+    #     offsets = {0, 1, 2} - {excluded_offset}
+    #     offset_1 = offsets.pop()
+    #     offset_2 = offsets.pop()
+    #     return offset_1, offset_2
+
+    @staticmethod
+    def square_offset_and_offset_to_num(sq_offset, offset):
+        return sq_offset * 3 + offset
 
     @staticmethod
     def cell_num_to_block_offsets(num):
@@ -186,6 +278,14 @@ class SudokuBoard:
     @staticmethod
     def loc_to_block_offset(y, x):
         return 3*y+x
+
+    @staticmethod
+    def square_row_and_offset_to_block_num(square_row, sq_row_offset):
+        return square_row * 3 + sq_row_offset
+
+    @staticmethod
+    def square_col_and_offset_to_block_num(square_col, sq_col_offset):
+        return square_col + sq_col_offset * 3
 
     def verify_board_full(self):
         return self.num_unknowns == 0
@@ -226,4 +326,30 @@ class SudokuBoard:
                 print(' ' + str(val) + ' ', end='')
             print('|\n')
         print('+-------------------------------------------------------------------+')
+
+    @staticmethod
+    def rotate_board_cw(board, n=1):
+        def rotate_cw(board):
+            rotated_board = [[None for _ in range(0, 9)] for _ in range(0, 9)]
+            for y in range(0, 9):
+                for x in range(0, 9):
+                    rotated_board[y][x] = board[8-x][y]
+            return rotated_board
+
+        for _ in range(0, n % 4):
+            board = rotate_cw(board)
+        return board
+
+    @staticmethod
+    def rotate_board_ccw(board, n=1):
+        def rotate_ccw(board):
+            rotated_board = [[None for _ in range(0, 9)] for _ in range(0, 9)]
+            for y in range(0, 9):
+                for x in range(0, 9):
+                    rotated_board[y][x] = board[x][8-y]
+            return rotated_board
+
+        for _ in range(0, n % 4):
+            board = rotate_ccw(board)
+        return board
 
