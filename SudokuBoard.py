@@ -237,6 +237,93 @@ class SudokuBoard:
             self.possibilities[y][x_1].discard(val)
             self.possibilities[y][x_2].discard(val)
 
+    def naked_pair_in_row(self, row_num):
+        x_to_check = []
+        for x in range(0, 9):
+            if len(self.possibilities[row_num][x]) == 2:
+                x_to_check.append(x)
+        l = len(x_to_check)
+        if l < 2:
+            return
+        for m in range(0, l):
+            x1 = x_to_check[m]
+            vals = self.possibilities[row_num][x1]
+            for n in range(m+1, l):
+                x2 = x_to_check[n]
+                if vals == self.possibilities[row_num][x2]:
+                    self.eliminate_possibilities_from_row(row_num, vals, {x1, x2})
+
+    def naked_pair_in_col(self, col_num):
+        y_to_check = []
+        for y in range(0, 9):
+            if len(self.possibilities[y][col_num]) == 2:
+                y_to_check.append(y)
+        l = len(y_to_check)
+        if l < 2:
+            return
+        for m in range(0, l):
+            y1 = y_to_check[m]
+            vals = self.possibilities[y1][col_num]
+            for n in range(m+1, l):
+                y2 = y_to_check[n]
+                if vals == self.possibilities[y2][col_num]:
+                    self.eliminate_possibilities_from_col(col_num, vals, {y1, y2})
+
+    def naked_pair_in_block(self, block_num):
+        y_block, x_block = SudokuBoard.block_num_to_board_offsets(block_num)
+        cell_nums_to_check = []
+        for cell_num in range(0, 9):
+            y_offset, x_offset = SudokuBoard.cell_num_to_block_offsets(cell_num)
+            if len(self.possibilities[y_block + y_offset][x_block + x_offset]) == 2:
+                cell_nums_to_check.append(cell_num)
+        l = len(cell_nums_to_check)
+        if l < 2:
+            return
+        for m in range(0, l):
+            c1 = cell_nums_to_check[m]
+            y_offset1, x_offset1 = SudokuBoard.cell_num_to_block_offsets(c1)
+            vals = self.possibilities[y_block + y_offset1][x_block + x_offset1]
+            for n in range(m+1, l):
+                c2 = cell_nums_to_check[n]
+                y_offset2, x_offset2 = SudokuBoard.cell_num_to_block_offsets(c2)
+                if vals == self.possibilities[y_block + y_offset2][x_block + x_offset2]:
+                    self.eliminate_possibilities_from_block(block_num, vals, {c1, c2})
+
+    # def naked_triple_in_row(self, row_num):
+    #     x_to_check = []
+    #     for x in range(0, 9):
+    #         if len(self.possibilities[row_num][x]) == 3:
+    #             x_to_check.append(x)
+    #     l = len(x_to_check)
+    #     for m1 in range(0, l):
+    #         x1 = x_to_check[m1]
+    #         vals = self.possibilities[row_num][x1]
+    #         for m2 in range(m1+1, l):
+    #             x2 = x_to_check[m2]
+    #             if vals != self.possibilities[row_num][x2]:
+    #                 break
+    #             for m3 in range(m2+1, l):
+    #                 x3 = x_to_check[m3]
+    #                 if vals == self.possibilities[row_num][x3]:
+    #                     self.eliminate_possibilities_from_row(row_num, vals, {x1, x2, x3})
+
+    def eliminate_possibilities_from_row(self, row_num, vals, x_to_exclude):
+        for x in range(0, 9):
+            if x not in x_to_exclude:
+                self.possibilities[row_num][x].difference_update(vals)
+
+    def eliminate_possibilities_from_col(self, col_num, vals, y_to_exclude):
+        for y in range(0, 9):
+            if y not in y_to_exclude:
+                self.possibilities[y][col_num].difference_update(vals)
+
+    def eliminate_possibilities_from_block(self, block_num, vals, cells_to_exclude):
+        y_block, x_block = SudokuBoard.block_num_to_board_offsets(block_num)
+        for c in range(0, 9):
+            if c not in cells_to_exclude:
+                y_offset, x_offset = SudokuBoard.cell_num_to_block_offsets(c)
+                self.possibilities[y_block + y_offset][x_block + x_offset].difference_update(vals)
+
     def solve_next_step(self):
         self.fill_sole_candidates()
         self.calculate_possibilities()

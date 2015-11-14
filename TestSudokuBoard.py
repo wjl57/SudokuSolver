@@ -19,6 +19,7 @@ class TestSudokuBoard(unittest.TestCase):
         [None, None, None, 4, 2, None, None, 5, None],
         [None, 4, 9, 7, 5, None, 3, None, 6]
     ]
+
     block_block_board = [
         [None, None, None, None, None, None, None, None, None],
         [None, None, 8, None, None, None, None, None, None],
@@ -28,6 +29,30 @@ class TestSudokuBoard(unittest.TestCase):
         [None, None, None, None, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None],
         [None, None, None, 8, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None]
+    ]
+
+    naked_subset = [
+        [None, 2, None, 1, None, None, None, None, None],
+        [None, None, 6, None, None, None, None, None, None],
+        [5, None, 3, None, None, None, None, None, None],
+        [None, 3, None, None, None, None, None, None, None],
+        [None, 1, None, None, 2, None, 6, None, None],
+        [None, None, None, 6, None, None, None, None, None],
+        [8, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [9, None, None, None, None, None, None, None, None]
+    ]
+
+    naked_subset_in_block = [
+        [None, None, None, None, None, 4, None, None, None],
+        [None, None, None, None, None, 2, None, None, None],
+        [None, None, None, 3, 5, 6, None, None, None],
+        [3, 1, None, None, None, 7, 2, 4, 6],
+        [7, 6, None, None, None, None, 3, None, 5],
+        [None, 2, None, None, None, None, 7, None, 1],
+        [None, None, None, None, None, 1, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None]
     ]
 
@@ -285,6 +310,56 @@ class TestSudokuBoard(unittest.TestCase):
         for i in [2, 3, 6, 7, 8]:
             self.assertTrue(val not in sb.possibilities[3][i])
             self.assertTrue(val not in sb.possibilities[5][i])
+
+    def test_naked_pair_in_row(self):
+        sb = SudokuBoard(SudokuBoard.rotate_board_cw(self.naked_subset))
+        for i in [1, 3, 4, 5, 7, 8]:
+            self.assertTrue(4 in sb.possibilities[0][i] and 7 in sb.possibilities[0][i])
+        for i in [0, 2, 6]:
+            self.assertTrue(7 not in sb.possibilities[0][i] and 4 not in sb.possibilities[0][i])
+        sb.naked_pair_in_row(0)
+        sb.print_possibilities()
+        for i in [4, 8]:
+            self.assertTrue(4 in sb.possibilities[0][i] and 7 in sb.possibilities[0][i])
+        for i in [0, 1, 2, 3, 5, 6, 7]:
+            self.assertTrue(4 not in sb.possibilities[0][i] and 7 not in sb.possibilities[0][i])
+
+    def test_naked_pair_in_col(self):
+        sb = SudokuBoard(self.naked_subset)
+        for i in [0, 1, 3, 4, 5, 7]:
+            self.assertTrue(4 in sb.possibilities[i][0] and 7 in sb.possibilities[i][0])
+        for i in [2, 6, 8]:
+            self.assertTrue(7 not in sb.possibilities[i][0] and 4 not in sb.possibilities[i][0])
+        sb.naked_pair_in_col(0)
+        for i in [0, 4]:
+            self.assertTrue(4 in sb.possibilities[i][0] and 7 in sb.possibilities[i][0])
+        for i in [1, 2, 3, 5, 6, 7, 8]:
+            self.assertTrue(4 not in sb.possibilities[i][0] and 7 not in sb.possibilities[i][0])
+
+    def test_naked_pair_in_block(self):
+        sb = SudokuBoard(self.naked_subset_in_block)
+        sb.print_possibilities()
+        self.assertTrue(sb.possibilities[3][3] == {5, 8, 9})
+        self.assertTrue(sb.possibilities[3][4] == {8, 9})
+        self.assertTrue(sb.possibilities[3][5] == set())
+        self.assertTrue(sb.possibilities[4][3] == {1, 2, 4, 8, 9})
+        self.assertTrue(sb.possibilities[4][4] == {1, 2, 4, 8, 9})
+        self.assertTrue(sb.possibilities[4][5] == {8, 9})
+        self.assertTrue(sb.possibilities[5][3] == {4, 5, 6, 8, 9})
+        self.assertTrue(sb.possibilities[5][4] == {3, 4, 6, 8, 9})
+        self.assertTrue(sb.possibilities[5][5] == {3, 5, 8, 9})
+        sb.naked_pair_in_block(4)
+        self.assertTrue(sb.possibilities[3][3] == {5})
+        self.assertTrue(sb.possibilities[3][4] == {8, 9})
+        self.assertTrue(sb.possibilities[3][5] == set())
+        self.assertTrue(sb.possibilities[4][3] == {1, 2, 4})
+        self.assertTrue(sb.possibilities[4][4] == {1, 2, 4})
+        self.assertTrue(sb.possibilities[4][5] == {8, 9})
+        self.assertTrue(sb.possibilities[5][3] == {4, 5, 6})
+        self.assertTrue(sb.possibilities[5][4] == {3, 4, 6})
+        self.assertTrue(sb.possibilities[5][5] == {3, 5})
+
+
 
     def test_rotate_board_cw(self):
         expected_rotated_board = [
