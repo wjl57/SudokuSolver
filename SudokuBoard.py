@@ -270,6 +270,7 @@ class SudokuBoard:
                     self.eliminate_possibilities_from_col(col_num, vals, {y1, y2})
 
     def naked_pair_in_block(self, block_num):
+        # TODO: Use block_possibilities_to_numbered_cells
         y_block, x_block = SudokuBoard.block_num_to_board_offsets(block_num)
         cell_nums_to_check = []
         for cell_num in range(0, 9):
@@ -289,23 +290,26 @@ class SudokuBoard:
                 if vals == self.possibilities[y_block + y_offset2][x_block + x_offset2]:
                     self.eliminate_possibilities_from_block(block_num, vals, {c1, c2})
 
-    # def naked_triple_in_row(self, row_num):
-    #     x_to_check = []
-    #     for x in range(0, 9):
-    #         if len(self.possibilities[row_num][x]) == 3:
-    #             x_to_check.append(x)
-    #     l = len(x_to_check)
-    #     for m1 in range(0, l):
-    #         x1 = x_to_check[m1]
-    #         vals = self.possibilities[row_num][x1]
-    #         for m2 in range(m1+1, l):
-    #             x2 = x_to_check[m2]
-    #             if vals != self.possibilities[row_num][x2]:
-    #                 break
-    #             for m3 in range(m2+1, l):
-    #                 x3 = x_to_check[m3]
-    #                 if vals == self.possibilities[row_num][x3]:
-    #                     self.eliminate_possibilities_from_row(row_num, vals, {x1, x2, x3})
+    def naked_triple_in_row(self, row_num):
+        x_to_check = []
+        for x in range(0, 9):
+            if len(self.possibilities[row_num][x]) <= 3:
+                x_to_check.append(x)
+        l = len(x_to_check)
+        for m1 in range(0, l):
+            x1 = x_to_check[m1]
+            vals1 = self.possibilities[row_num][x1]
+            for m2 in range(m1+1, l):
+                x2 = x_to_check[m2]
+                vals2 = self.possibilities[row_num][x2].update(vals1)
+                if len(vals2) > 3:
+                    break
+                for m3 in range(m2+1, l):
+                    x3 = x_to_check[m3]
+                    vals3 = self.possibilities[row_num][x3].update(vals2)
+
+                    if vals == self.possibilities[row_num][x3]:
+                        self.eliminate_possibilities_from_row(row_num, vals, {x1, x2, x3})
 
     def eliminate_possibilities_from_row(self, row_num, vals, x_to_exclude):
         for x in range(0, 9):
