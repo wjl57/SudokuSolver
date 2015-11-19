@@ -10,6 +10,7 @@ __author__ = 'william'
 
 
 class SudokuPuzzle:
+
     def __init__(self, board):
         # A dictionary from cell name to the SudokuCell object
         self.cells_dict = {}
@@ -133,7 +134,7 @@ class SudokuPuzzle:
         """
         Fills in unique candidates by row
         i.e. when a number can only go in one spot in row y
-        :param y: The row number
+        :param y: The row number. Precondition: 0 <= y < 9
         """
         y_locs_left = self.locs_left_by_y[y]
         y_possibilities = self.remaining_in_y[y]
@@ -145,7 +146,7 @@ class SudokuPuzzle:
         """
         Fills in unique candidates by col
         i.e. when a number can only go in one spot in col x
-        :param x: The col number
+        :param x: The col number. Precondition: 0 <= y < 9
         """
         x_locs_left = self.locs_left_by_x[x]
         x_possibilities = self.remaining_in_x[x]
@@ -157,7 +158,7 @@ class SudokuPuzzle:
         """
         Fills in unique candidates by block
         i.e. when a number can only go in one spot in block block_number
-        :param block_num: The block number
+        :param block_num: The block number. Precondition: 0 <= y < 9
         """
         block_locs_left = self.locs_left_by_block[block_num]
         block_possibilities = self.remaining_in_blocks[block_num]
@@ -178,6 +179,18 @@ class SudokuPuzzle:
             self.fill_unique_candidates_x(x)
         for block_num in all_locs:
             self.fill_unique_candidates_block(block_num)
+
+    def find_unique_offsets_for_cell_nums(self, block_cell_nums):
+        """
+        :param block_cell_nums: The cell numbers in a block. Precondition: for n in block_cell_nums, 0 <= n < 9
+        :return: (y_offsets, x_offsets) where:
+        y_offsets is a set containing the row offsets. Will contain a subset of {0, 1, 2}
+        x_offsets is a set containing the col offsets. Will contain a subset of {0, 1, 2}
+        """
+
+
+    def block_rc_interaction(self):
+        pass
 
     def enumerate_row_possibilities(self, y):
         row_possibilities = []
