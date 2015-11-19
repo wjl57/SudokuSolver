@@ -48,3 +48,30 @@ class TestSudokuHelper(unittest.TestCase):
         self.assertEqual(SudokuHelper.loc_to_block_cell_num(7, 7), 4)
         self.assertEqual(SudokuHelper.loc_to_block_cell_num(7, 8), 5)
         self.assertEqual(SudokuHelper.loc_to_block_cell_num(8, 8), 8)
+
+    def test_cell_num_to_block_offsets(self):
+        self.assertEqual(SudokuHelper.cell_num_to_block_offsets(0), (0, 0))
+        self.assertEqual(SudokuHelper.cell_num_to_block_offsets(1), (0, 1))
+        self.assertEqual(SudokuHelper.cell_num_to_block_offsets(2), (0, 2))
+        self.assertEqual(SudokuHelper.cell_num_to_block_offsets(3), (1, 0))
+        self.assertEqual(SudokuHelper.cell_num_to_block_offsets(4), (1, 1))
+        self.assertEqual(SudokuHelper.cell_num_to_block_offsets(5), (1, 2))
+        self.assertEqual(SudokuHelper.cell_num_to_block_offsets(6), (2, 0))
+        self.assertEqual(SudokuHelper.cell_num_to_block_offsets(7), (2, 1))
+        self.assertEqual(SudokuHelper.cell_num_to_block_offsets(8), (2, 2))
+
+    def test_block_num_and_cell_num_to_offsets(self):
+        self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(0, 0), (0, 0))
+        self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(0, 2), (0, 2))
+        self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(0, 3), (1, 0))
+        self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(0, 7), (2, 1))
+        self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(1, 0), (0, 3))
+        self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(1, 2), (0, 5))
+        self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(1, 3), (1, 3))
+        self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(1, 7), (2, 4))
+        self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(6, 0), (6, 0))
+        self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(6, 2), (6, 2))
+        self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(6, 3), (7, 0))
+        self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(6, 7), (8, 1))
+        self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(8, 8), (8, 8))
+

@@ -16,7 +16,7 @@ def loc_to_block_num(y, x):
 
 def block_num_to_block_offsets(block_num):
     """
-    :param block_num: the block number. Precondition: 0 <= block_num < 9
+    :param block_num: The block number. Precondition: 0 <= block_num < 9
     :return: The (y, x) position of the top-left cell in the block
     """
     return int(block_num / 3) * 3, block_num % 3 * 3
@@ -33,8 +33,28 @@ def offsets_to_cell_num(y_offset, x_offset):
 
 def loc_to_block_cell_num(y, x):
     """
-    :param y: The y location of the cell. Precondition: 0 <= y < 9
-    :param x: The x location of the cell. Precondition: 0 <= x < 9
+    :param y: The y location of the cell on the board. Precondition: 0 <= y < 9
+    :param x: The x location of the cell on the board. Precondition: 0 <= x < 9
     :return: The cell number inside a block
     """
     return (y % 3) * 3 + (x % 3)
+
+
+def cell_num_to_block_offsets(cell_num):
+    """
+    :param cell_num: The cell number within the block. Precondition: 0 <= y < 9
+    :return: (y_offset, x_offset) where y_offset is the number of cells from the top
+    and x_offset is the number of cells from the bottom
+    """
+    return int(cell_num / 3), cell_num % 3
+
+
+def block_num_and_cell_num_to_offsets(block_num, cell_num):
+    """
+    :param block_num: The block number. Precondition: 0 <= block_num < 9
+    :param cell_num: The cell number in a block. Precondition: 0 <= block_num < 9
+    :return: The (y,x) coordinates of the cell
+    """
+    (y_block, x_block) = block_num_to_block_offsets(block_num)
+    (y_offset, x_offset) = cell_num_to_block_offsets(cell_num)
+    return y_block + y_offset, x_block + x_offset
