@@ -70,23 +70,23 @@ class TestSudokuBoard(unittest.TestCase):
     def test_init_remaining_in(self):
         sp = SudokuPuzzle(self.get_board_copy(self.test_board))
         expected_remaining_in_y = [
-            {5, 8, 9}, {1, 2, 3, 4, 5, 9}, {2, 3, 5, 7, 8, 9},
-            {1, 5, 7}, {2, 6, 7, 9}, {4},
-            {1, 2, 3, 4, 5, 6, 7}, {1, 6, 7, 8, 9}, {1, 2, 8}
+            {5, 8, 9}, {1, 2, 3, 4, 5, 9}, {2, 3, 5, 6, 7, 8, 9},
+            {1, 4, 5, 7}, {2, 6, 7, 8, 9}, {2, 4, 7, 9},
+            {1, 2, 3, 4, 5, 6, 7}, {1, 3, 6, 7, 8, 9}, {1, 2, 8}
         ]
         self.assertListEqual(sp.remaining_in_y, expected_remaining_in_y)
 
         expected_remaining_in_x = [
-            {5, 6, 7, 9}, {1, 2, 3, 5, 7, 8}, {1, 3, 4, 7},
-            {1, 2, 5, 6, 8, 9}, {1, 6, 7}, {4, 8, 9},
-            {2, 5, 8, 9}, {1, 2, 3, 4, 7, 9}, {2, 4, 8, 9}
+            {2, 5, 6, 7, 9}, {1, 2, 3, 5, 7, 8}, {1, 3, 4, 7},
+            {1, 2, 5, 6, 8, 9}, {1, 6, 7}, {3, 4, 5, 6, 8, 9},
+            {2, 5, 8, 9}, {1, 2, 3, 4, 7, 9}, {2, 4, 7, 8, 9}
         ]
         self.assertListEqual(sp.remaining_in_x, expected_remaining_in_x)
 
         expected_remaining_in_blocks = [
-            {1, 3, 5, 7, 8, 9}, {2, 5, 9}, {2, 3, 4, 5, 8, 9},
-            {4, 7}, {1, 6, 7, 9}, {2, 9},
-            {1, 2, 3, 5, 6, 7}, {1, 6, 8}, {1, 2, 4, 7, 8, 9}
+            {1, 3, 5, 7, 8, 9}, {2, 5, 6, 9}, {2, 3, 4, 5, 8, 9},
+            {2, 4, 7}, {1, 4, 5, 6, 7, 8, 9}, {2, 7, 9},
+            {1, 2, 3, 5, 6, 7}, {1, 3, 6, 8}, {1, 2, 4, 7, 8, 9}
         ]
         self.assertListEqual(sp.remaining_in_blocks, expected_remaining_in_blocks)
 
@@ -107,10 +107,28 @@ class TestSudokuBoard(unittest.TestCase):
 
         self.assertListEqual(p, expected_possibilities)
 
-        expected_locs_left_by_y = [
-            
-        ]
+        expected_locs_left_by_y_0 = {1: set(), 2: set(), 3: set(), 4: set(), 5: {1, 3},
+                                     6: set(), 7: set(), 8: {1, 8}, 9: {3, 8}}
+        expected_locs_left_by_y_1 = {1: {2}, 2: {3, 6, 7, 8}, 3: {2, 7}, 4: {7, 8}, 5: {0, 3, 6},
+                                     6: set(), 7: set(), 8: set(), 9: {0, 3, 6, 7, 8}}
+        self.assertDictEqual(sp.locs_left_by_y[0], expected_locs_left_by_y_0)
+        self.assertDictEqual(sp.locs_left_by_y[1], expected_locs_left_by_y_1)
 
+        sp.print_possibilities()
+        expected_locs_left_by_x_0 = {1: set(), 2: {6, 8}, 3: set(), 4: set(), 5: {1, 2, 6},
+                                     6: {6, 7}, 7: {2, 6, 7}, 8: set(), 9: {1, 2}}
+        expected_locs_left_by_x_1 = {1: {6, 7}, 2: {4, 5, 6}, 3: {2, 6, 7}, 4: set(), 5: {0, 2, 6},
+                                     6: set(), 7: {2, 4, 5, 6, 7}, 8: {0, 2}, 9: set()}
+        self.assertDictEqual(sp.locs_left_by_x[0], expected_locs_left_by_x_0)
+        self.assertDictEqual(sp.locs_left_by_x[1], expected_locs_left_by_x_1)
+
+        expected_locs_left_by_block_0 = {1: {5}, 2: set(), 3: {5, 7, 8}, 4: set(), 5: {1, 3, 6, 7},
+                                         6: set(), 7: {6, 7, 8}, 8: {1, 7}, 9: {3, 6}}
+        expected_locs_left_by_block_7 = {1: {0}, 2: set(), 3: {2, 5}, 4: set(), 5: set(),
+                                         6: {0, 2, 5}, 7: set(), 8: {5, 8}, 9: set()}
+
+        self.assertDictEqual(sp.locs_left_by_block[0], expected_locs_left_by_block_0)
+        self.assertDictEqual(sp.locs_left_by_block[7], expected_locs_left_by_block_7)
 
     def test_enumerate_possibilities_by_row(self):
         sp = SudokuPuzzle(self.get_board_copy(self.test_board))

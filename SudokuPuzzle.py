@@ -31,9 +31,9 @@ class SudokuPuzzle:
         # locs_left_by_y[y][val] contains a set with all the locations of val in row y
         self.locs_left_by_y = [defaultdict(set) for y in all_locs]
         # locs_left_by_x[x][val] contains a set with all the locations of val in col x
-        # self.locs_left_by_x = [defaultdict(set) for x in all_locs]
+        self.locs_left_by_x = [defaultdict(set) for x in all_locs]
         # locs_left_by_block[b][val] contains a set with all the locations of val in block b
-        # self.locs_left_by_block = [defaultdict(set) for block_num in all_locs]
+        self.locs_left_by_block = [defaultdict(set) for block_num in all_locs]
 
         for y in all_locs:
             for x in all_locs:
@@ -57,8 +57,8 @@ class SudokuPuzzle:
                 possibilities = cell.possibilities
                 for p in possibilities:
                     self.locs_left_by_y[cell.y][p].add(cell.x)
-                    # self.locs_left_by_x[cell.x][p].add(cell.y)
-                    # self.locs_left_by_block[cell.block][p].add(cell.block_cell_num)
+                    self.locs_left_by_x[cell.x][p].add(cell.y)
+                    self.locs_left_by_block[cell.block][p].add(cell.block_cell_num)
 
     def set_val_in_puzzle(self, y, x, val):
         cell_name = self.board[y][x]
@@ -83,8 +83,8 @@ class SudokuPuzzle:
         cell = self.cells_dict[cell_name]
         cell.remove_possibilities({val})
         self.locs_left_by_y[cell.y][val].discard(cell.x)
-        # self.locs_left_by_x[cell.x][val].discard(cell.y)
-        # self.locs_left_by_block[cell.block][val].discard(cell.block_cell_num)
+        self.locs_left_by_x[cell.x][val].discard(cell.y)
+        self.locs_left_by_block[cell.block][val].discard(cell.block_cell_num)
 
     def get_possibilities(self):
         return [[self.cells_dict[self.board[y][x]].possibilities for x in all_locs] for y in all_locs]
