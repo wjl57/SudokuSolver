@@ -58,3 +58,23 @@ def block_num_and_cell_num_to_offsets(block_num, cell_num):
     (y_block, x_block) = block_num_to_block_offsets(block_num)
     (y_offset, x_offset) = cell_num_to_block_offsets(cell_num)
     return y_block + y_offset, x_block + x_offset
+
+
+def get_other_block_nums_horizontal(excluded_block_num):
+    """
+    :param excluded_block_num: The excluded block number
+    :return: The other two block numbers in the block row
+    i.e. if excluded_block_num = 1, return [0, 2]
+    """
+    start = int(excluded_block_num / 3) * 3
+    return [start+n for n in cell_locs if start+n != excluded_block_num]
+
+
+def get_other_block_nums_vertical(excluded_block_num):
+    """
+    :param excluded_block_num: The excluded block number
+    :return: The other two block numbers in the block col
+    i.e. if excluded_block_num = 1, return [4, 7]
+    """
+    start = excluded_block_num % 3
+    return [start+3*n for n in cell_locs if start+3*n != excluded_block_num]

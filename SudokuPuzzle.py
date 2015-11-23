@@ -32,7 +32,7 @@ class SudokuPuzzle:
         self.locs_left_by_y = [defaultdict(set) for y in all_locs]
         # locs_left_by_x[x][val] contains a set with all the locations of val in col x
         self.locs_left_by_x = [defaultdict(set) for x in all_locs]
-        # locs_left_by_block[b][val] contains a set with all the locations of val in block b
+        # locs_left_by_block[b][val] contains a set with all the block cell nums of val in block b
         self.locs_left_by_block = [defaultdict(set) for block_num in all_locs]
 
         # For every location create a SudokuCell object and add it to the appropriate cell lists
@@ -180,17 +180,100 @@ class SudokuPuzzle:
         for block_num in all_locs:
             self.fill_unique_candidates_block(block_num)
 
-    def find_unique_offsets_for_cell_nums(self, block_cell_nums):
+    @staticmethod
+    def find_unique_offsets_for_cell_nums(block_cell_nums):
         """
-        :param block_cell_nums: The cell numbers in a block. Precondition: for n in block_cell_nums, 0 <= n < 9
+        :param block_cell_nums: The block cell numbers. Precondition: 0 <= n < 9 for n in block_cell_nums
+        :param val: The val to find. Precondition: 1 <= val <= 9
         :return: (y_offsets, x_offsets) where:
         y_offsets is a set containing the row offsets. Will contain a subset of {0, 1, 2}
         x_offsets is a set containing the col offsets. Will contain a subset of {0, 1, 2}
         """
+        y_offsets = set()
+        x_offsets = set()
+        for cell_num in block_cell_nums:
+            y_offset, x_offset = SudokuHelper.cell_num_to_block_offsets(cell_num)
+            y_offsets.add(y_offset)
+            x_offsets.add(x_offset)
+        return y_offsets, x_offsets
+
+    def remove_possibilities_not_in_block_with_y_offset(self, block_num, y_offset, val):
+        """
+        Removes the val from the possibilities not in the block with a y_offset
+        For instance, if block_num = 3, y_offset = 2, val = 4
+        then 4 would be removed from row 5 since row = y_block + y_offset = 3 + 2
+        :param block_num: The block number. Precondition: 0 <= block_num < 9
+        :param y_offset: The y-offset in the block. Precondition: 0 <= y_offset < 3
+        :param val: The val to find. Precondition: 1 <= val <= 9
+        """
+        y_block, x_block = SudokuHelper.block_num_to_block_offsets(block_num)
+        y = y_block + y_offset
+        for cell_name in self.y_cell_list[y]:
+            if self.cells_dict[cell_name].block != block_num:
+                self.remove_possibilities_from_puzzle_by_cell_name(cell_name, val)
+
+    def remove_possibilities_not_in_block_with_x_offset(self, block_num, x_offset, val):
+        """
+        Removes the val from the possibilities not in the block with a x_offset
+        For instance, if block_num = 3, x_offset = 2, val = 4
+        then 4 would be removed from col 2 since row = y_block + y_offset = 0 + 2
+        :param block_num: The block number. Precondition: 0 <= block_num < 9
+        :param x_offset: The x-offset in the block. Precondition: 0 <= x_offset < 3
+        :param val: The val to find. Precondition: 1 <= val <= 9
+        """
+        y_block, x_block = SudokuHelper.block_num_to_block_offsets(block_num)
+        x = x_block + x_offset
+        for cell_name in self.x_cell_list[x]:
+            if self.cells_dict[cell_name].block != block_num:
+                self.remove_possibilities_from_puzzle_by_cell_name(cell_name, val)
+
+    def block_rc_interaction(self, block_num):
+        """
+        Perform all block and row/column interactions involving the block
+        :param block_num: The block number. Precondition: 0 <= block_num < 9
+        """
+        for val in copy.deepcopy(self.remaining_in_blocks[block_num]):
+            cell_nums = self.locs_left_by_block[block_num][val]
+            y_offsets, x_offsets = SudokuPuzzle.find_unique_offsets_for_cell_nums(cell_nums)
+            if len(y_offsets) == 1:
+                y_offset = next(iter(y_offsets))
+                self.remove_possibilities_not_in_block_with_y_offset(block_num, y_offset, val)
+            if len(x_offsets) == 1:
+                x_offset = next(iter(x_offsets))
+                self.remove_possibilities_not_in_block_with_x_offset(block_num, x_offset, val)
+
+    def all_block_rc_interactions(self):
+        for block_num in all_locs:
+            self.block_rc_interaction(block_num)
+
+    def remove_possibilities_in_block_not_in_row(self, block_num, y, val):
+        """
+        Removes val from the possibilities in the cells of a block where row != y
+        :param block_num: The block number of the block to remove possibilities from. Precondition: 0 <= block_num < 9
+        :param y: The row number of cells to ignore. Precondition: 0 <= y < 9
+        :param val: The val to remove. Precondition: 1 <= val <= 9
+        """
+        for cell_name in self.block_cell_list[block_num]:
+            cell = self.cells_dict[cell_name]
+            if cell.y != y:
+                cell.remove_possibilities({val})
+
+    def block_block_interaction_horizontal(self, excluded_block_num):
+        excluded_block_possibilities = copy.deepcopy(self.remaining_in_blocks[excluded_block_num])
+        y_block, x_block = SudokuHelper.block_num_to_block_offsets(excluded_block_num)
+        for y_offset in cell_locs:
+            y = y_offset + y_block
+            row_possibilities = self.remaining_in_y[y]
+            possibilities = excluded_block_possibilities.intersection(row_possibilities)
+            for cell_name in self.y_cell_list[y]:
+                cell = self.cells_dict[cell_name]
+                if cell.block != excluded_block_num:
+                    possibilities.difference_update(cell.possibilities)
+            for val in possibilities:
+                self.remove_possibilities_in_block_not_in_row(excluded_block_num, y, val)
 
 
-    def block_rc_interaction(self):
-        pass
+
 
     def enumerate_row_possibilities(self, y):
         row_possibilities = []

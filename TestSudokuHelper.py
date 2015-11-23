@@ -75,3 +75,25 @@ class TestSudokuHelper(unittest.TestCase):
         self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(6, 7), (8, 1))
         self.assertEqual(SudokuHelper.block_num_and_cell_num_to_offsets(8, 8), (8, 8))
 
+    def test_get_other_block_nums_horizontal(self):
+        self.assertListEqual(SudokuHelper.get_other_block_nums_horizontal(0), [1, 2])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_horizontal(1), [0, 2])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_horizontal(2), [0, 1])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_horizontal(3), [4, 5])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_horizontal(4), [3, 5])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_horizontal(5), [3, 4])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_horizontal(6), [7, 8])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_horizontal(7), [6, 8])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_horizontal(8), [6, 7])
+
+    def test_get_other_block_nums_vertical(self):
+        self.assertListEqual(SudokuHelper.get_other_block_nums_vertical(0), [3, 6])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_vertical(1), [4, 7])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_vertical(2), [5, 8])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_vertical(3), [0, 6])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_vertical(4), [1, 7])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_vertical(5), [2, 8])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_vertical(6), [0, 3])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_vertical(7), [1, 4])
+        self.assertListEqual(SudokuHelper.get_other_block_nums_vertical(8), [2, 5])
+

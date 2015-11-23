@@ -69,6 +69,18 @@ class TestSudokuBoard(unittest.TestCase):
         [None, None, None, None, 4, None, None, None, None]
     ]
 
+    block_rc_board = [
+        [None, None, None, None, 7, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, 2, None, 1, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, 9, None, 6, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None]
+    ]
+
     block_block_board = [
         [None, None, None, None, None, None, None, None, None],
         [None, None, 8, None, None, None, None, None, None],
@@ -237,6 +249,69 @@ class TestSudokuBoard(unittest.TestCase):
         self.assertEqual(cell.val, None)
         sp.fill_unique_candidates()
         self.assertEqual(cell.val, 4)
+
+    def test_find_unique_offsets_for_block_num_and_val(self):
+        self.assertEqual(SudokuPuzzle.find_unique_offsets_for_cell_nums({0}), ({0}, {0}))
+        self.assertEqual(SudokuPuzzle.find_unique_offsets_for_cell_nums({5}), ({1}, {2}))
+        self.assertEqual(SudokuPuzzle.find_unique_offsets_for_cell_nums({0, 1, 2}), ({0}, {0, 1, 2}))
+        self.assertEqual(SudokuPuzzle.find_unique_offsets_for_cell_nums({0, 2, 3}), ({0, 1}, {0, 2}))
+        self.assertEqual(SudokuPuzzle.find_unique_offsets_for_cell_nums({1, 4, 7}), ({0, 1, 2}, {1}))
+        self.assertEqual(SudokuPuzzle.find_unique_offsets_for_cell_nums({1, 2, 4, 7}), ({0, 1, 2}, {1, 2}))
+        self.assertEqual(SudokuPuzzle.find_unique_offsets_for_cell_nums({1, 2, 3, 4, 5, 6, 7}), ({0, 1, 2}, {0, 1, 2}))
+        self.assertEqual(SudokuPuzzle.find_unique_offsets_for_cell_nums({0, 1, 2, 6, 7, 8}), ({0, 2}, {0, 1, 2}))
+
+    def test_remove_possibilities_by_block_and_y_offset(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.empty_board))
+        sp.remove_possibilities_not_in_block_with_y_offset(3, 2, 4)
+        y = 5
+        val = 4
+        for x in [0, 1, 2]:
+            self.assertTrue(val in sp.cells_dict[sp.board[y][x]].possibilities)
+        for x in [3, 4, 5, 6, 7, 8]:
+            self.assertTrue(val not in sp.cells_dict[sp.board[y][x]].possibilities)
+
+    def test_remove_possibilities_by_block_and_x_offset(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.empty_board))
+        sp.remove_possibilities_not_in_block_with_x_offset(3, 2, 4)
+        x = 2
+        val = 4
+        for y in [3, 4, 5]:
+            self.assertTrue(val in sp.cells_dict[sp.board[y][x]].possibilities)
+        for y in [0, 1, 2, 6, 7, 8]:
+            self.assertTrue(val not in sp.cells_dict[sp.board[y][x]].possibilities)
+
+    def test_block_rc_interaction(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.block_rc_board))
+        y = 4
+        val = 7
+        # Shoudn't do anything
+        sp.block_rc_interaction(1)
+        sp.print_possibilities()
+        for x in [0, 1, 2, 3, 5, 6, 7, 8]:
+            self.assertTrue(val in sp.cells_dict[sp.board[y][x]].possibilities)
+        for x in [4]:
+            self.assertTrue(val not in sp.cells_dict[sp.board[y][x]].possibilities)
+        # Should eliminate 6 possibilities
+        sp.block_rc_interaction(4)
+        for x in [3, 5]:
+            self.assertTrue(val in sp.cells_dict[sp.board[y][x]].possibilities)
+        for x in [0, 1, 2, 4, 6, 7, 8]:
+            self.assertTrue(val not in sp.cells_dict[sp.board[y][x]].possibilities)
+
+    def test_block_block_interaction(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.block_block_board))
+        excluded_block_num = 5
+        val = 8
+        should_contain_before = [True, True, True, True, True, True, True, True, True]
+        block_possibilities = sp.enumerate_block_possibilities(excluded_block_num)
+        for n in all_locs:
+            contains = val in block_possibilities[n]
+            self.assertTrue(contains == should_contain_before[n])
+        sp.block_block_interaction_horizontal(excluded_block_num)
+        should_contain_after = [False, False, False, True, True, True, False, False, False]
+        for n in all_locs:
+            contains = val in block_possibilities[n]
+            self.assertTrue(contains == should_contain_after[n])
 
     def test_rotate_board_cw(self):
         expected_rotated_board = [
