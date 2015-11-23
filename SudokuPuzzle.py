@@ -78,13 +78,13 @@ class SudokuPuzzle:
 
         # Remove possibilities from row, col, block
         for other_name in self.y_cell_list[c.y]:
-            self.remove_possibilities_from_puzzle_by_cell_name(other_name, val)
+            self.remove_possibility_from_puzzle_by_cell_name(other_name, val)
         for other_name in self.x_cell_list[c.x]:
-            self.remove_possibilities_from_puzzle_by_cell_name(other_name, val)
+            self.remove_possibility_from_puzzle_by_cell_name(other_name, val)
         for other_name in self.block_cell_list[c.block]:
-            self.remove_possibilities_from_puzzle_by_cell_name(other_name, val)
+            self.remove_possibility_from_puzzle_by_cell_name(other_name, val)
 
-    def remove_possibilities_from_puzzle_by_loc(self, y, x, val):
+    def remove_possibility_from_puzzle_by_loc(self, y, x, val):
         """
         Removes the val from the cell at position (y,x)'s possibilities.
         Also removes the val from the locs_left_by dicts
@@ -93,9 +93,9 @@ class SudokuPuzzle:
         :param val: The value to remove. Precondition: 1 <= val <= 9
         """
         cell_name = self.board[y][x]
-        self.remove_possibilities_from_puzzle_by_cell_name(cell_name, val)
+        self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
 
-    def remove_possibilities_from_puzzle_by_cell_name(self, cell_name, val):
+    def remove_possibility_from_puzzle_by_cell_name(self, cell_name, val):
         """
         Removes the val from the cell's possibilities.
         Also removes the val from the locs_left_by dicts
@@ -103,7 +103,7 @@ class SudokuPuzzle:
         :param val: The value to remove. Precondition: 1 <= val <= 9
         """
         cell = self.cells_dict[cell_name]
-        cell.remove_possibilities({val})
+        cell.remove_possibility(val)
         self.locs_left_by_y[cell.y][val].discard(cell.x)
         self.locs_left_by_x[cell.x][val].discard(cell.y)
         self.locs_left_by_block[cell.block][val].discard(cell.block_cell_num)
@@ -197,7 +197,7 @@ class SudokuPuzzle:
             x_offsets.add(x_offset)
         return y_offsets, x_offsets
 
-    def remove_possibilities_not_in_block_with_y_offset(self, block_num, y_offset, val):
+    def remove_possibility_not_in_block_with_y_offset(self, block_num, y_offset, val):
         """
         Removes the val from the possibilities not in the block with a y_offset
         For instance, if block_num = 3, y_offset = 2, val = 4
@@ -210,9 +210,9 @@ class SudokuPuzzle:
         y = y_block + y_offset
         for cell_name in self.y_cell_list[y]:
             if self.cells_dict[cell_name].block != block_num:
-                self.remove_possibilities_from_puzzle_by_cell_name(cell_name, val)
+                self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
 
-    def remove_possibilities_not_in_block_with_x_offset(self, block_num, x_offset, val):
+    def remove_possibility_not_in_block_with_x_offset(self, block_num, x_offset, val):
         """
         Removes the val from the possibilities not in the block with a x_offset
         For instance, if block_num = 3, x_offset = 2, val = 4
@@ -225,7 +225,7 @@ class SudokuPuzzle:
         x = x_block + x_offset
         for cell_name in self.x_cell_list[x]:
             if self.cells_dict[cell_name].block != block_num:
-                self.remove_possibilities_from_puzzle_by_cell_name(cell_name, val)
+                self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
 
     def block_rc_interaction(self, block_num):
         """
@@ -237,26 +237,27 @@ class SudokuPuzzle:
             y_offsets, x_offsets = SudokuPuzzle.find_unique_offsets_for_cell_nums(cell_nums)
             if len(y_offsets) == 1:
                 y_offset = next(iter(y_offsets))
-                self.remove_possibilities_not_in_block_with_y_offset(block_num, y_offset, val)
+                self.remove_possibility_not_in_block_with_y_offset(block_num, y_offset, val)
             if len(x_offsets) == 1:
                 x_offset = next(iter(x_offsets))
-                self.remove_possibilities_not_in_block_with_x_offset(block_num, x_offset, val)
+                self.remove_possibility_not_in_block_with_x_offset(block_num, x_offset, val)
 
     def all_block_rc_interactions(self):
         for block_num in all_locs:
             self.block_rc_interaction(block_num)
 
-    def remove_possibilities_in_block_not_in_row(self, block_num, y, val):
+    def remove_possibilities_in_block_not_in_row(self, block_num, y, possibilities):
         """
-        Removes val from the possibilities in the cells of a block where row != y
+        Removes possibilities from the cells of a block where row != y
         :param block_num: The block number of the block to remove possibilities from. Precondition: 0 <= block_num < 9
         :param y: The row number of cells to ignore. Precondition: 0 <= y < 9
-        :param val: The val to remove. Precondition: 1 <= val <= 9
+        :param possibilities: The possibilities to remove. Precondition: 1 <= val <= 9 for val in possibilities
         """
         for cell_name in self.block_cell_list[block_num]:
             cell = self.cells_dict[cell_name]
             if cell.y != y:
-                cell.remove_possibilities({val})
+                for val in possibilities:
+                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
 
     def block_block_interaction_horizontal(self, excluded_block_num):
         excluded_block_possibilities = copy.deepcopy(self.remaining_in_blocks[excluded_block_num])
@@ -265,12 +266,14 @@ class SudokuPuzzle:
             y = y_offset + y_block
             row_possibilities = self.remaining_in_y[y]
             possibilities = excluded_block_possibilities.intersection(row_possibilities)
+            # Only keep the possibilities that are in the row and only found in the excluded block
             for cell_name in self.y_cell_list[y]:
                 cell = self.cells_dict[cell_name]
                 if cell.block != excluded_block_num:
                     possibilities.difference_update(cell.possibilities)
-            for val in possibilities:
-                self.remove_possibilities_in_block_not_in_row(excluded_block_num, y, val)
+            # Remove the possibilities from the cells in the block which are not in the row
+            self.remove_possibilities_in_block_not_in_row(excluded_block_num, y, possibilities)
+
 
 
 

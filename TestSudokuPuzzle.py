@@ -262,7 +262,7 @@ class TestSudokuBoard(unittest.TestCase):
 
     def test_remove_possibilities_by_block_and_y_offset(self):
         sp = SudokuPuzzle(self.get_board_copy(self.empty_board))
-        sp.remove_possibilities_not_in_block_with_y_offset(3, 2, 4)
+        sp.remove_possibility_not_in_block_with_y_offset(3, 2, 4)
         y = 5
         val = 4
         for x in [0, 1, 2]:
@@ -272,7 +272,7 @@ class TestSudokuBoard(unittest.TestCase):
 
     def test_remove_possibilities_by_block_and_x_offset(self):
         sp = SudokuPuzzle(self.get_board_copy(self.empty_board))
-        sp.remove_possibilities_not_in_block_with_x_offset(3, 2, 4)
+        sp.remove_possibility_not_in_block_with_x_offset(3, 2, 4)
         x = 2
         val = 4
         for y in [3, 4, 5]:
