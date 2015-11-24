@@ -7,7 +7,7 @@ from SudokuHelper import all_possibilities
 __author__ = 'william'
 
 
-class TestSudokuBoard(unittest.TestCase):
+class TestSudokuPuzzle(unittest.TestCase):
 
     test_board = [
         [4, None, 2, None, 3, 1, 7, 6, None],
@@ -91,6 +91,18 @@ class TestSudokuBoard(unittest.TestCase):
         [None, None, None, None, None, None, None, None, None],
         [None, None, None, 8, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None]
+    ]
+
+    naked_pair_board = [
+        [None, 2, None, 1, None, None, None, None, None],
+        [None, None, 6, None, None, None, None, None, None],
+        [5, None, 3, None, None, None, None, None, None],
+        [None, 3, None, None, None, None, None, None, None],
+        [None, 1, None, None, 2, None, 6, None, None],
+        [None, None, None, 6, None, None, None, None, None],
+        [8, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [9, None, None, None, None, None, None, None, None]
     ]
 
     rotation_board = [
@@ -260,58 +272,93 @@ class TestSudokuBoard(unittest.TestCase):
         self.assertEqual(SudokuPuzzle.find_unique_offsets_for_cell_nums({1, 2, 3, 4, 5, 6, 7}), ({0, 1, 2}, {0, 1, 2}))
         self.assertEqual(SudokuPuzzle.find_unique_offsets_for_cell_nums({0, 1, 2, 6, 7, 8}), ({0, 2}, {0, 1, 2}))
 
-    def test_remove_possibilities_by_block_and_y_offset(self):
+    def test_remove_possibilities_not_in_block_with_y_offset(self):
         sp = SudokuPuzzle(self.get_board_copy(self.empty_board))
         sp.remove_possibility_not_in_block_with_y_offset(3, 2, 4)
         y = 5
         val = 4
-        for x in [0, 1, 2]:
-            self.assertTrue(val in sp.cells_dict[sp.board[y][x]].possibilities)
-        for x in [3, 4, 5, 6, 7, 8]:
-            self.assertTrue(val not in sp.cells_dict[sp.board[y][x]].possibilities)
+        should_contain = [True, True, True, False, False, False, False, False, False]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain(should_contain, row_possibilities, {val})
 
-    def test_remove_possibilities_by_block_and_x_offset(self):
+    def test_remove_possibilities_not_in_block_with_x_offset(self):
         sp = SudokuPuzzle(self.get_board_copy(self.empty_board))
         sp.remove_possibility_not_in_block_with_x_offset(3, 2, 4)
         x = 2
         val = 4
-        for y in [3, 4, 5]:
-            self.assertTrue(val in sp.cells_dict[sp.board[y][x]].possibilities)
-        for y in [0, 1, 2, 6, 7, 8]:
-            self.assertTrue(val not in sp.cells_dict[sp.board[y][x]].possibilities)
+        should_contain = [False, False, False, True, True, True, False, False, False]
+        col_possibilities = sp.enumerate_col_possibilities(x)
+        self.assert_should_contain(should_contain, col_possibilities, {val})
 
     def test_block_rc_interaction(self):
         sp = SudokuPuzzle(self.get_board_copy(self.block_rc_board))
         y = 4
         val = 7
-        # Shoudn't do anything
+        # Shouldn't do anything
         sp.block_rc_interaction(1)
-        sp.print_possibilities()
-        for x in [0, 1, 2, 3, 5, 6, 7, 8]:
-            self.assertTrue(val in sp.cells_dict[sp.board[y][x]].possibilities)
-        for x in [4]:
-            self.assertTrue(val not in sp.cells_dict[sp.board[y][x]].possibilities)
+        should_contain = [True, True, True, True, False, True, True, True, True]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain(should_contain, row_possibilities, {val})
         # Should eliminate 6 possibilities
         sp.block_rc_interaction(4)
-        for x in [3, 5]:
-            self.assertTrue(val in sp.cells_dict[sp.board[y][x]].possibilities)
-        for x in [0, 1, 2, 4, 6, 7, 8]:
-            self.assertTrue(val not in sp.cells_dict[sp.board[y][x]].possibilities)
+        should_contain = [False, False, False, True, False, True, False, False, False]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain(should_contain, row_possibilities, {val})
 
-    def test_block_block_interaction(self):
+    def test_block_block_horizontal_interaction(self):
         sp = SudokuPuzzle(self.get_board_copy(self.block_block_board))
         excluded_block_num = 5
         val = 8
         should_contain_before = [True, True, True, True, True, True, True, True, True]
         block_possibilities = sp.enumerate_block_possibilities(excluded_block_num)
-        for n in all_locs:
-            contains = val in block_possibilities[n]
-            self.assertTrue(contains == should_contain_before[n])
+        self.assert_should_contain(should_contain_before, block_possibilities, {val})
         sp.block_block_interaction_horizontal(excluded_block_num)
         should_contain_after = [False, False, False, True, True, True, False, False, False]
-        for n in all_locs:
-            contains = val in block_possibilities[n]
-            self.assertTrue(contains == should_contain_after[n])
+        block_possibilities = sp.enumerate_block_possibilities(excluded_block_num)
+        self.assert_should_contain(should_contain_after, block_possibilities, {val})
+
+    def test_block_block_vertical_interaction(self):
+        sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.block_block_board)))
+        excluded_block_num = 7
+        val = 8
+        should_contain_before = [True, True, True, True, True, True, True, True, True]
+        block_possibilities = sp.enumerate_block_possibilities(excluded_block_num)
+        self.assert_should_contain(should_contain_before, block_possibilities, {val})
+        sp.block_block_interaction_vertical(excluded_block_num)
+        should_contain_after = [False, True, False, False, True, False, False, True, False]
+        block_possibilities = sp.enumerate_block_possibilities(excluded_block_num)
+        self.assert_should_contain(should_contain_after, block_possibilities, {val})
+
+    def test_get_naked_pairs_in_possibilities_dict(self):
+        possibility_dict = {0: [4, 7], 1: [2, 3], 3: [2, 3], 6: [4, 7], 8: [0, 7], 9: [2, 3]}
+        naked_pairs = SudokuPuzzle.get_naked_pairs_in_possibilities_dict(possibility_dict)
+        self.assertListEqual(naked_pairs, [(0, 6), (1, 3), (1, 9), (3, 9)])
+
+    def test_naked_pair_y(self):
+        sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.naked_pair_board)))
+        vals = {4, 7}
+        y = 0
+        should_contain_before = [True, True, False, True, True, True, False, True, False]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain(should_contain_before, row_possibilities, vals)
+        sp.naked_pair_y(y)
+        should_contain_after = [True, False, False, False, True, False, False, False, False]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain(should_contain_after, row_possibilities, vals)
+
+    def assert_should_contain(self, should_contain, possibilities, vals):
+        """
+        :param should_contain: Length n list containing True/False
+        :param possibilities: Length n list containing sets of possibilities
+        :param vals: The values to check that are in possibilities
+        Asserts that vals is a subset of possibilities[k] iff should_contain[k] == true
+        """
+        if len(possibilities) != len(should_contain):
+            self.fail("should_contain and possibilities do not have the same length")
+        for k in range(0, len(possibilities)):
+            contains = vals.issubset(possibilities[k])
+            self.assertTrue(contains == should_contain[k])
+
 
     def test_rotate_board_cw(self):
         expected_rotated_board = [
@@ -389,3 +436,9 @@ class TestSudokuBoard(unittest.TestCase):
             for x in all_locs:
                 self.assertEqual(sp1.cells_dict[sp1.board[y][x]].val, sp2.cells_dict[sp2.board[y][x]].val)
 
+if __name__ == '__main__':
+    suite = unittest.TestSuite()
+    suite.addTest(TestSudokuPuzzle("test_naked_pair_y"))
+    runner = unittest.TextTestRunner()
+    runner.run(suite)
+    # unittest.main()

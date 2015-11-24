@@ -259,7 +259,25 @@ class SudokuPuzzle:
                 for val in possibilities:
                     self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
 
+    def remove_possibilities_in_block_not_in_col(self, block_num, x, possibilities):
+        """
+        Removes possibilities from the cells of a block where col != x
+        :param block_num: The block number of the block to remove possibilities from. Precondition: 0 <= block_num < 9
+        :param x: The col number of cells to ignore. Precondition: 0 <= x < 9
+        :param possibilities: The possibilities to remove. Precondition: 1 <= val <= 9 for val in possibilities
+        """
+        for cell_name in self.block_cell_list[block_num]:
+            cell = self.cells_dict[cell_name]
+            if cell.x != x:
+                for val in possibilities:
+                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+
     def block_block_interaction_horizontal(self, excluded_block_num):
+        """
+        Performs all block block interactions by row.
+        i.e. eliminates possibilities from the excluded block based on the other two blocks in the row
+        :param excluded_block_num: The block number to exclude. Precondition: 0 <= excluded_block_num < 9
+        """
         excluded_block_possibilities = copy.deepcopy(self.remaining_in_blocks[excluded_block_num])
         y_block, x_block = SudokuHelper.block_num_to_block_offsets(excluded_block_num)
         for y_offset in cell_locs:
@@ -274,9 +292,72 @@ class SudokuPuzzle:
             # Remove the possibilities from the cells in the block which are not in the row
             self.remove_possibilities_in_block_not_in_row(excluded_block_num, y, possibilities)
 
+    def block_block_interaction_vertical(self, excluded_block_num):
+        """
+        Performs all block block interactions by col.
+        i.e. eliminates possibilities from the excluded block based on the other two blocks in the col
+        :param excluded_block_num: The block number to exclude. Precondition: 0 <= excluded_block_num < 9
+        """
+        excluded_block_possibilities = copy.deepcopy(self.remaining_in_blocks[excluded_block_num])
+        y_block, x_block = SudokuHelper.block_num_to_block_offsets(excluded_block_num)
+        for x_offset in cell_locs:
+            x = x_offset + x_block
+            col_possibilities = self.remaining_in_x[x]
+            possibilities = excluded_block_possibilities.intersection(col_possibilities)
+            # Only keep the possibilities that are in the col and only found in the excluded block
+            for cell_name in self.x_cell_list[x]:
+                cell = self.cells_dict[cell_name]
+                if cell.block != excluded_block_num:
+                    possibilities.difference_update(cell.possibilities)
+            # Remove the possibilities from the cells in the block which are not in the row
+            self.remove_possibilities_in_block_not_in_col(excluded_block_num, x, possibilities)
+
+    def all_block_block_interactions(self):
+        for block_num in all_locs:
+            self.block_block_interaction_horizontal(block_num)
+        for block_num in all_locs:
+            self.block_block_interaction_vertical(block_num)
+
+    @staticmethod
+    def get_naked_pairs_in_possibilities_dict(possibilities_dict):
+        """
+        :param possibilities_dict: A dictionary with key = offsets to the possibilities and value = the possibilities
+        :return: A list of pairs (m, n) corresponding to the offsets with matching possibilities
+        i.e. get_naked_pairs_in_possibilities({0: [4, 7], 1: [2, 3], 3: [2, 3], 6: [4, 7], 8: [0, 7], 9: [2, 3]})
+        returns: [(0, 6), (1, 3), (1, 9), (3, 9)]
+        """
+        l = len(possibilities_dict)
+        if l < 2:
+            return []
+        keys = list(possibilities_dict.keys())
+        naked_pairs = []
+        for m in range(0, l):
+            possibilities_1 = possibilities_dict[keys[m]]
+            for n in range(m+1, l):
+                if possibilities_1 == possibilities_dict[keys[n]]:
+                    naked_pairs.append((keys[m], keys[n]))
+        return naked_pairs
+
+    def eliminate_possibilities_from_row(self, y, vals, x_to_exclude):
+        for cell_name in self.y_cell_list[y]:
+            cell = self.cells_dict[cell_name]
+            if cell.x not in x_to_exclude:
+                for val in vals:
+                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+
+    def naked_pair_y(self, y):
+        row_possibilities = self.enumerate_row_possibilities(y)
+        row_dict = {x: row_possibilities[x] for x in all_locs if len(row_possibilities[x]) == 2}
+        naked_pairs = SudokuPuzzle.get_naked_pairs_in_possibilities_dict(row_dict)
+        for naked_pair in naked_pairs:
+            self.eliminate_possibilities_from_row(y, row_possibilities[naked_pair[0]], naked_pair)
 
 
+    def naked_pair_x(self, x):
+        pass
 
+    def naked_pair_block(self, block_num):
+        pass
 
     def enumerate_row_possibilities(self, y):
         row_possibilities = []
