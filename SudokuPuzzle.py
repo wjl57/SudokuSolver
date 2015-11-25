@@ -345,6 +345,20 @@ class SudokuPuzzle:
                 for val in vals:
                     self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
 
+    def eliminate_possibilities_from_col(self, x, vals, y_to_exclude):
+        for cell_name in self.x_cell_list[x]:
+            cell = self.cells_dict[cell_name]
+            if cell.y not in y_to_exclude:
+                for val in vals:
+                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+
+    def eliminate_possibilities_from_block(self, block_num, vals, block_cell_nums_to_exclude):
+        for cell_name in self.block_cell_list[block_num]:
+            cell = self.cells_dict[cell_name]
+            if cell.block_cell_num not in block_cell_nums_to_exclude:
+                for val in vals:
+                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+
     def naked_pair_y(self, y):
         row_possibilities = self.enumerate_row_possibilities(y)
         row_dict = {x: row_possibilities[x] for x in all_locs if len(row_possibilities[x]) == 2}
@@ -352,12 +366,19 @@ class SudokuPuzzle:
         for naked_pair in naked_pairs:
             self.eliminate_possibilities_from_row(y, row_possibilities[naked_pair[0]], naked_pair)
 
-
     def naked_pair_x(self, x):
-        pass
+        col_possibilities = self.enumerate_col_possibilities(x)
+        col_dict = {y: col_possibilities[y] for y in all_locs if len(col_possibilities[y]) == 2}
+        naked_pairs = SudokuPuzzle.get_naked_pairs_in_possibilities_dict(col_dict)
+        for naked_pair in naked_pairs:
+            self.eliminate_possibilities_from_col(x, col_possibilities[naked_pair[0]], naked_pair)
 
     def naked_pair_block(self, block_num):
-        pass
+        block_possibilities = self.enumerate_block_possibilities(block_num)
+        block_dict = {c: block_possibilities[c] for c in all_locs if len(block_possibilities[c]) == 2}
+        naked_pairs = SudokuPuzzle.get_naked_pairs_in_possibilities_dict(block_dict)
+        for naked_pair in naked_pairs:
+            self.eliminate_possibilities_from_block(block_num, block_possibilities[naked_pair[0]], naked_pair)
 
     def enumerate_row_possibilities(self, y):
         row_possibilities = []

@@ -105,6 +105,18 @@ class TestSudokuPuzzle(unittest.TestCase):
         [9, None, None, None, None, None, None, None, None]
     ]
 
+    naked_pair_block_board = [
+        [None, None, None, None, None, 4, None, None, None],
+        [None, None, None, None, None, 2, None, None, None],
+        [None, None, None, 3, 5, 6, None, None, None],
+        [3, 1, None, None, None, 7, 2, 4, 6],
+        [7, 6, None, None, None, None, 3, None, 5],
+        [None, 2, None, None, None, None, 7, None, 1],
+        [None, None, None, None, None, 1, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None]
+    ]
+
     rotation_board = [
         [1, 2, None, None, None, None, None, None, 3],
         [None, None, None, None, None, None, None, None, None],
@@ -346,6 +358,30 @@ class TestSudokuPuzzle(unittest.TestCase):
         row_possibilities = sp.enumerate_row_possibilities(y)
         self.assert_should_contain(should_contain_after, row_possibilities, vals)
 
+    def test_naked_pair_x(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.naked_pair_board))
+        vals = {4, 7}
+        x = 0
+        should_contain_before = [True, True, False, True, True, True, False, True, False]
+        col_possibilities = sp.enumerate_col_possibilities(x)
+        self.assert_should_contain(should_contain_before, col_possibilities, vals)
+        sp.naked_pair_x(x)
+        should_contain_after = [True, False, False, False, True, False, False, False, False]
+        col_possibilities = sp.enumerate_col_possibilities(x)
+        self.assert_should_contain(should_contain_after, col_possibilities, vals)
+
+    def test_naked_pair_block(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.naked_pair_block_board))
+        vals = {8, 9}
+        block_num = 4
+        should_contain_before = [True, True, False, True, True, True, True, True, True]
+        block_possibilities = sp.enumerate_block_possibilities(block_num)
+        self.assert_should_contain(should_contain_before, block_possibilities, vals)
+        sp.naked_pair_block(block_num)
+        should_contain_after = [False, True, False, False, False, True, False, False, False]
+        block_possibilities = sp.enumerate_block_possibilities(block_num)
+        self.assert_should_contain(should_contain_after, block_possibilities, vals)
+
     def assert_should_contain(self, should_contain, possibilities, vals):
         """
         :param should_contain: Length n list containing True/False
@@ -358,7 +394,6 @@ class TestSudokuPuzzle(unittest.TestCase):
         for k in range(0, len(possibilities)):
             contains = vals.issubset(possibilities[k])
             self.assertTrue(contains == should_contain[k])
-
 
     def test_rotate_board_cw(self):
         expected_rotated_board = [
