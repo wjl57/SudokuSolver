@@ -339,6 +339,13 @@ class SudokuPuzzle:
         return naked_pairs
 
     def eliminate_possibilities_from_row(self, y, vals, x_to_exclude):
+        """
+        :param y: The row number. Precondition: 0 <= y < 9
+        :param vals: A set containing the values to eliminate. Precondition: 1 <= val <= 9 for val in vals
+        :param x_to_exclude: A tuple/list containing the x-offsets to ignore in the row.
+        Precondition: 0 <= x < 9 for x in x_to_exclude
+        Eliminates vals from the possibilities of all cells in the row except the ones with x-offsets in x_to_exclude.
+        """
         for cell_name in self.y_cell_list[y]:
             cell = self.cells_dict[cell_name]
             if cell.x not in x_to_exclude:
@@ -346,6 +353,13 @@ class SudokuPuzzle:
                     self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
 
     def eliminate_possibilities_from_col(self, x, vals, y_to_exclude):
+        """
+        :param x: The col number. Precondition: 0 <= x < 9
+        :param vals: A set containing the values to eliminate. Precondition: 1 <= val <= 9 for val in vals
+        :param y_to_exclude: A tuple/list containing the y-offsets to ignore in the col
+        Precondition: 0 <= y < 9 for y in y_to_exclude
+        Eliminates vals from the possibilities of all cells in the col except the ones with y-offsets in y_to_exclude.
+        """
         for cell_name in self.x_cell_list[x]:
             cell = self.cells_dict[cell_name]
             if cell.y not in y_to_exclude:
@@ -353,6 +367,14 @@ class SudokuPuzzle:
                     self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
 
     def eliminate_possibilities_from_block(self, block_num, vals, block_cell_nums_to_exclude):
+        """
+        :param block_num: The block number. Precondition: 0 <= block_num < 9
+        :param vals: A set containing the values to eliminate. Precondition: 1 <= val <= 9 for val in vals
+        :param block_cell_nums_to_exclude: A tuple/list containing the block-cell--offsets to ignore in the block
+        Precondition: 0 <= block_cell_num < 9 for block_cell_num in block_cell_nums_to_exclude
+        Eliminates vals from the possibilities of all cells in the block except the ones with block-cell-offsets in
+        block_cell_nums_to_exclude.
+        """
         for cell_name in self.block_cell_list[block_num]:
             cell = self.cells_dict[cell_name]
             if cell.block_cell_num not in block_cell_nums_to_exclude:
@@ -360,6 +382,10 @@ class SudokuPuzzle:
                     self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
 
     def naked_pair_y(self, y):
+        """
+        :param y: The row number. Precondition: 0 <= y < 9
+        Finds naked pairs in the row and eliminates possibilities accordingly
+        """
         row_possibilities = self.enumerate_row_possibilities(y)
         row_dict = {x: row_possibilities[x] for x in all_locs if len(row_possibilities[x]) == 2}
         naked_pairs = SudokuPuzzle.get_naked_pairs_in_possibilities_dict(row_dict)
@@ -367,6 +393,10 @@ class SudokuPuzzle:
             self.eliminate_possibilities_from_row(y, row_possibilities[naked_pair[0]], naked_pair)
 
     def naked_pair_x(self, x):
+        """
+        :param x: The col number. Precondition: 0 <= x < 9
+        Finds naked pairs in the col and eliminates possibilities accordingly
+        """
         col_possibilities = self.enumerate_col_possibilities(x)
         col_dict = {y: col_possibilities[y] for y in all_locs if len(col_possibilities[y]) == 2}
         naked_pairs = SudokuPuzzle.get_naked_pairs_in_possibilities_dict(col_dict)
@@ -374,6 +404,10 @@ class SudokuPuzzle:
             self.eliminate_possibilities_from_col(x, col_possibilities[naked_pair[0]], naked_pair)
 
     def naked_pair_block(self, block_num):
+        """
+        :param block_num: The block number. Precondition: 0 <= block_num < 9
+        Finds naked pairs in the block and eliminates possibilities accordingly
+        """
         block_possibilities = self.enumerate_block_possibilities(block_num)
         block_dict = {c: block_possibilities[c] for c in all_locs if len(block_possibilities[c]) == 2}
         naked_pairs = SudokuPuzzle.get_naked_pairs_in_possibilities_dict(block_dict)
@@ -381,18 +415,30 @@ class SudokuPuzzle:
             self.eliminate_possibilities_from_block(block_num, block_possibilities[naked_pair[0]], naked_pair)
 
     def enumerate_row_possibilities(self, y):
+        """
+        :param y: The row number. Precondition: 0 <= y < 9
+        :return: A list with all the possibilities in the row, listed in order
+        """
         row_possibilities = []
         for x in all_locs:
             row_possibilities.append(self.cells_dict[self.board[y][x]].possibilities)
         return row_possibilities
 
     def enumerate_col_possibilities(self, x):
+        """
+        :param x: The col number. Precondition: 0 <= x < 9
+        :return: A list with all the possibilities in the col, listed in order
+        """
         col_possibilities = []
         for y in all_locs:
             col_possibilities.append(self.cells_dict[self.board[y][x]].possibilities)
         return col_possibilities
 
     def enumerate_block_possibilities(self, block_num):
+        """
+        :param block_num: The block number. Precondition: 0 <= block_num < 9
+        :return: A list with all the possibilities in the block, listed in order
+        """
         block_possibilities = []
         y_block, x_block = SudokuHelper.block_num_to_block_offsets(block_num)
         for y_offset in cell_locs:
@@ -402,6 +448,9 @@ class SudokuPuzzle:
         return block_possibilities
 
     def print_board(self):
+        """
+        Pretty prints the filled in values for the board
+        """
         row_count = 0
         col_count = 0
         for y in all_locs:
@@ -423,6 +472,9 @@ class SudokuPuzzle:
         print('+-----------------------------+')
 
     def print_possibilities(self):
+        """
+        Pretty prints the board possibilities
+        """
         row_count = 0
         col_count = 0
         for y in all_locs:
@@ -442,6 +494,11 @@ class SudokuPuzzle:
 
     @staticmethod
     def rotate_board_cw(board, n=1):
+        """
+        :param board: The board to rotate
+        :param n: The number of times to rotate
+        :return: The board rotated clockwise n times
+        """
         def rotate_cw(board):
             rotated_board = [[None for _ in all_locs] for _ in all_locs]
             for y in all_locs:
@@ -455,6 +512,11 @@ class SudokuPuzzle:
 
     @staticmethod
     def rotate_board_ccw(board, n=1):
+        """
+        :param board: The board to rotate
+        :param n: The number of times to rotate
+        :return: The board rotated counterclockwise n times
+        """
         def rotate_ccw(board):
             rotated_board = [[None for _ in all_locs] for _ in all_locs]
             for y in all_locs:
@@ -468,6 +530,10 @@ class SudokuPuzzle:
 
     @staticmethod
     def reflect_board_over_xy(board):
+        """
+        :param board: The board to reflect
+        :return: The board reflected over the xy-axis. i.e. board[y][x] -> reflected_board[x][y]
+        """
         rotated_board = [[None for _ in all_locs] for _ in all_locs]
         for y in all_locs:
             for x in all_locs:
