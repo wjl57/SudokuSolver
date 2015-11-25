@@ -382,6 +382,12 @@ class TestSudokuPuzzle(unittest.TestCase):
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain(should_contain_after, block_possibilities, vals)
 
+    def test_get_naked_tuples_in_possibilities_dict(self):
+        possibilities_dict = {0: [2, 5], 1: [1, 2, 5], 3: [3, 4, 5, 7, 8], 7: [1, 5], 8: [4, 5, 6, 7]}
+        naked_tuples = SudokuPuzzle.get_naked_tuples_in_possibilities_dict(possibilities_dict, 3)
+        print(naked_tuples)
+
+
     def assert_should_contain(self, should_contain, possibilities, vals):
         """
         :param should_contain: Length n list containing True/False

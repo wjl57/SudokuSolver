@@ -1,5 +1,6 @@
 from collections import defaultdict
 import copy
+import itertools
 from SudokuCell import SudokuCell
 from SudokuHelper import all_locs
 from SudokuHelper import cell_locs
@@ -321,7 +322,7 @@ class SudokuPuzzle:
     @staticmethod
     def get_naked_pairs_in_possibilities_dict(possibilities_dict):
         """
-        :param possibilities_dict: A dictionary with key = offsets to the possibilities and value = the possibilities
+        :param possibilities_dict: A dictionary with key = offsets and value = the possibilities
         :return: A list of pairs (m, n) corresponding to the offsets with matching possibilities
         i.e. get_naked_pairs_in_possibilities({0: [4, 7], 1: [2, 3], 3: [2, 3], 6: [4, 7], 8: [0, 7], 9: [2, 3]})
         returns: [(0, 6), (1, 3), (1, 9), (3, 9)]
@@ -337,6 +338,34 @@ class SudokuPuzzle:
                 if possibilities_1 == possibilities_dict[keys[n]]:
                     naked_pairs.append((keys[m], keys[n]))
         return naked_pairs
+
+    @staticmethod
+    def get_naked_tuples_in_possibilities_dict(possibilities_dict, n):
+        """
+        :param possibilities_dict: A dictionary with key = offsets and value = the possibilities
+        :param n: The max number of unique vals in find within n items in possibilities_dict
+        :return: A list of sets corresponding to the offsets with matching possibilities
+        i.e. get_naked_tuples_in_possibilities_dict({0: [2, 5], 1: [1, 2, 5], 3: [3, 4, 5, 7, 8],
+            7: [1, 5]}, 8: [4, 5, 6, 7]})
+        returns: [[0, 1, 7]]
+        """
+        l = len(possibilities_dict)
+        if l < n:
+            return []
+        keys = list(possibilities_dict.keys())
+        naked_tuples = []
+        for combination in itertools.combinations(keys, n):
+            combined_possibilities = set()
+            combination_works = True
+            for i in range(0, n):
+                combined_possibilities.update(possibilities_dict[combination[i]])
+                if len(combined_possibilities) > n:
+                    combination_works = False
+                    break
+            if combination_works:
+                naked_tuples.append(combination)
+        return naked_tuples
+
 
     def eliminate_possibilities_from_row(self, y, vals, x_to_exclude):
         """
