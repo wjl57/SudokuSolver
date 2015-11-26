@@ -343,23 +343,28 @@ class TestSudokuPuzzle(unittest.TestCase):
 
     def test_get_naked_pairs_in_possibilities_dict(self):
         possibility_dict = {0: [4, 7], 1: [2, 3], 3: [2, 3], 6: [4, 7], 8: [0, 7], 9: [2, 3]}
-        naked_pair_vals = SudokuPuzzle.get_naked_pairs_in_possibilities_dict(possibility_dict)
+        naked_pair_vals = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(possibility_dict)
         offsets = [npv[0] for npv in naked_pair_vals]
         vals = [npv[1] for npv in naked_pair_vals]
         expected_offsets = [(0, 6), (1, 3), (1, 9), (3, 9)]
         expected_vals = [[4, 7], [2, 3], [2, 3], [2, 3]]
+        expected_naked_pair_vals = [x for x in zip(expected_offsets, expected_vals)]
         self.assertListEqual(offsets, expected_offsets)
         self.assertListEqual(vals, expected_vals)
+        self.assertListEqual(naked_pair_vals, expected_naked_pair_vals)
+
 
     def test_get_naked_tuples_in_possibilities_dict(self):
         possibilities_dict = {0: [2, 5], 1: [1, 2, 5], 3: [3, 4, 5, 7, 8], 7: [1, 5], 8: [4, 5, 6, 7]}
-        naked_tuple_vals = SudokuPuzzle.get_naked_tuples_in_possibilities_dict(possibilities_dict, 3)
+        naked_tuple_vals = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(possibilities_dict, 3)
         offsets = [ntv[0] for ntv in naked_tuple_vals]
         vals = [ntv[1] for ntv in naked_tuple_vals]
         expected_offsets = [(0, 1, 7)]
         expected_vals = [{1, 2, 5}]
+        expected_naked_tuple_vals = [x for x in zip(expected_offsets, expected_vals)]
         self.assertListEqual(offsets, expected_offsets)
         self.assertListEqual(vals, expected_vals)
+        self.assertListEqual(naked_tuple_vals, expected_naked_tuple_vals)
 
     def test_naked_pair_y(self):
         sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.naked_pair_board)))

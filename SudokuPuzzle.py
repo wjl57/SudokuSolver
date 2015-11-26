@@ -320,10 +320,10 @@ class SudokuPuzzle:
             self.block_block_interaction_vertical(block_num)
 
     @staticmethod
-    def get_naked_pairs_in_possibilities_dict(possibilities_dict):
+    def get_naked_pair_vals_in_possibilities_dict(possibilities_dict):
         """
         :param possibilities_dict: A dictionary with key = offsets and value = the possibilities
-        :return: A list of SudokuOffsetTuples corresponding to the offsets with matching possibilities
+        :return: A list of (offset, vals) tuples corresponding to the offsets with matching possibilities
         i.e. get_naked_pairs_in_possibilities({0: [4, 7], 1: [2, 3], 3: [2, 3], 6: [4, 7], 8: [0, 7], 9: [2, 3]})
         returns: [((0, 6), [4, 7]), ((1, 3), [2, 3]), ((1, 9), [2, 3]), ((3, 9), [2, 3])]
         """
@@ -340,11 +340,11 @@ class SudokuPuzzle:
         return naked_pairs_vals
 
     @staticmethod
-    def get_naked_tuples_in_possibilities_dict(possibilities_dict, n):
+    def get_naked_tuple_vals_in_possibilities_dict(possibilities_dict, n):
         """
         :param possibilities_dict: A dictionary with key = offsets and value = the possibilities
         :param n: The max number of unique vals in find within n items in possibilities_dict
-        :return: A list of SudokuOffsetTuples corresponding to the offsets with matching possibilities
+        :return: A list of (offset, vals) tuples corresponding to the offsets with matching possibilities
         i.e. get_naked_tuples_in_possibilities_dict({0: [2, 5], 1: [1, 2, 5], 3: [3, 4, 5, 7, 8],
             7: [1, 5]}, 8: [4, 5, 6, 7]})
         returns: [((0, 1, 7), [1, 2, 5])]
@@ -416,7 +416,7 @@ class SudokuPuzzle:
         """
         row_possibilities = self.enumerate_row_possibilities(y)
         row_dict = {x: row_possibilities[x] for x in all_locs if len(row_possibilities[x]) == 2}
-        naked_offset_pairs = SudokuPuzzle.get_naked_pairs_in_possibilities_dict(row_dict)
+        naked_offset_pairs = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(row_dict)
         for (offset_pair, vals) in naked_offset_pairs:
             self.eliminate_possibilities_from_row(y, vals, offset_pair)
 
@@ -427,7 +427,7 @@ class SudokuPuzzle:
         """
         col_possibilities = self.enumerate_col_possibilities(x)
         col_dict = {y: col_possibilities[y] for y in all_locs if len(col_possibilities[y]) == 2}
-        naked_offset_pairs = SudokuPuzzle.get_naked_pairs_in_possibilities_dict(col_dict)
+        naked_offset_pairs = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(col_dict)
         for (offset_pair, vals) in naked_offset_pairs:
             self.eliminate_possibilities_from_col(x, vals, offset_pair)
 
@@ -438,14 +438,14 @@ class SudokuPuzzle:
         """
         block_possibilities = self.enumerate_block_possibilities(block_num)
         block_dict = {c: block_possibilities[c] for c in all_locs if len(block_possibilities[c]) == 2}
-        naked_offset_pairs = SudokuPuzzle.get_naked_pairs_in_possibilities_dict(block_dict)
+        naked_offset_pairs = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(block_dict)
         for (offset_pair, vals) in naked_offset_pairs:
             self.eliminate_possibilities_from_block(block_num, vals, offset_pair)
 
     def naked_tuple_y(self, y, n):
         row_possibilities = self.enumerate_row_possibilities(y)
         row_dict = {x: row_possibilities[x] for x in all_locs if len(row_possibilities[x]) <= n}
-        naked_offset_tuples = SudokuPuzzle.get_naked_tuples_in_possibilities_dict(row_dict)
+        naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(row_dict)
         for (offset_tuple, vals) in naked_offset_tuples:
             self.eliminate_possibilities_from_row(y, vals, offset_tuple)
 
