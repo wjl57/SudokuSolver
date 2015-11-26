@@ -324,7 +324,8 @@ class SudokuPuzzle:
         """
         :param possibilities_dict: A dictionary with key = offsets and value = the possibilities
         :return: A list of (offset, vals) tuples corresponding to the offsets with matching possibilities
-        i.e. get_naked_pairs_in_possibilities({0: [4, 7], 1: [2, 3], 3: [2, 3], 6: [4, 7], 8: [0, 7], 9: [2, 3]})
+        i.e. get_naked_pairs_in_possibilities({0: [4, 7], 1: [2, 3], 3: [2, 3],
+        6: [4, 7], 7: [], 8: [0, 7], 9: [2, 3]})
         returns: [((0, 6), [4, 7]), ((1, 3), [2, 3]), ((1, 9), [2, 3]), ((3, 9), [2, 3])]
         """
         l = len(possibilities_dict)
@@ -415,7 +416,7 @@ class SudokuPuzzle:
         Finds naked pairs in the row and eliminates possibilities accordingly
         """
         row_possibilities = self.enumerate_row_possibilities(y)
-        row_dict = {x: row_possibilities[x] for x in all_locs if len(row_possibilities[x]) == 2}
+        row_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(row_possibilities, lambda l: l == 2)
         naked_offset_pairs = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(row_dict)
         for (offset_pair, vals) in naked_offset_pairs:
             self.eliminate_possibilities_from_row(y, vals, offset_pair)
@@ -426,7 +427,7 @@ class SudokuPuzzle:
         Finds naked pairs in the col and eliminates possibilities accordingly
         """
         col_possibilities = self.enumerate_col_possibilities(x)
-        col_dict = {y: col_possibilities[y] for y in all_locs if len(col_possibilities[y]) == 2}
+        col_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(col_possibilities, lambda l: l == 2)
         naked_offset_pairs = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(col_dict)
         for (offset_pair, vals) in naked_offset_pairs:
             self.eliminate_possibilities_from_col(x, vals, offset_pair)
@@ -437,17 +438,29 @@ class SudokuPuzzle:
         Finds naked pairs in the block and eliminates possibilities accordingly
         """
         block_possibilities = self.enumerate_block_possibilities(block_num)
-        block_dict = {c: block_possibilities[c] for c in all_locs if len(block_possibilities[c]) == 2}
+        block_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(block_possibilities, lambda l: l == 2)
         naked_offset_pairs = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(block_dict)
         for (offset_pair, vals) in naked_offset_pairs:
             self.eliminate_possibilities_from_block(block_num, vals, offset_pair)
 
     def naked_tuple_y(self, y, n):
         row_possibilities = self.enumerate_row_possibilities(y)
-        row_dict = {x: row_possibilities[x] for x in all_locs if len(row_possibilities[x]) <= n}
-        naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(row_dict)
+        row_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(row_possibilities, lambda l: 0 < l <= n)
+        naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(row_dict, n)
         for (offset_tuple, vals) in naked_offset_tuples:
             self.eliminate_possibilities_from_row(y, vals, offset_tuple)
+
+    @staticmethod
+    def possibilities_to_dict_with_len_constraint(possibilities, len_lambda):
+        """
+        :param possibilities: The possibilities to create the dict from.
+        Precondition: 1 <= val <= 9 for val in possibilities
+        :param len_lambda: The lambda function to execute of the length of each possibility.
+        Should be a function that takes in a length and returns true/false
+        :return: A dictionary from a cell offset within a row/col/block to the possibilities in that cell given the
+        possibilities satisfy the supplied lambda
+        """
+        return {offset: possibilities[offset] for offset in all_locs if len_lambda(len(possibilities[offset]))}
 
     def enumerate_row_possibilities(self, y):
         """

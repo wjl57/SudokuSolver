@@ -342,7 +342,7 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assert_should_contain(should_contain_after, block_possibilities, {val})
 
     def test_get_naked_pairs_in_possibilities_dict(self):
-        possibility_dict = {0: [4, 7], 1: [2, 3], 3: [2, 3], 6: [4, 7], 8: [0, 7], 9: [2, 3]}
+        possibility_dict = {0: [4, 7], 1: [2, 3], 3: [2, 3], 6: [4, 7], 7: [], 8: [0, 7], 9: [2, 3]}
         naked_pair_vals = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(possibility_dict)
         offsets = [npv[0] for npv in naked_pair_vals]
         vals = [npv[1] for npv in naked_pair_vals]
@@ -352,7 +352,6 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assertListEqual(offsets, expected_offsets)
         self.assertListEqual(vals, expected_vals)
         self.assertListEqual(naked_pair_vals, expected_naked_pair_vals)
-
 
     def test_get_naked_tuples_in_possibilities_dict(self):
         possibilities_dict = {0: [2, 5], 1: [1, 2, 5], 3: [3, 4, 5, 7, 8], 7: [1, 5], 8: [4, 5, 6, 7]}
@@ -401,6 +400,42 @@ class TestSudokuPuzzle(unittest.TestCase):
         should_contain_after = [False, True, False, False, False, True, False, False, False]
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain(should_contain_after, block_possibilities, vals)
+
+    def test_naked_tuple_y_2(self):
+        sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.naked_pair_board)))
+        vals = {4, 7}
+        y = 0
+        should_contain_before = [True, True, False, True, True, True, False, True, False]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain(should_contain_before, row_possibilities, vals)
+        sp.naked_tuple_y(y, 2)
+        should_contain_after = [True, False, False, False, True, False, False, False, False]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain(should_contain_after, row_possibilities, vals)
+
+    def test_naked_tuple_x_2(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.naked_pair_board))
+        # vals = {4, 7}
+        # x = 0
+        # should_contain_before = [True, True, False, True, True, True, False, True, False]
+        # col_possibilities = sp.enumerate_col_possibilities(x)
+        # self.assert_should_contain(should_contain_before, col_possibilities, vals)
+        # sp.naked_tuple_x(x, 2)
+        # should_contain_after = [True, False, False, False, True, False, False, False, False]
+        # col_possibilities = sp.enumerate_col_possibilities(x)
+        # self.assert_should_contain(should_contain_after, col_possibilities, vals)
+
+    def test_naked_tuple_block_2(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.naked_pair_block_board))
+        # vals = {8, 9}
+        # block_num = 4
+        # should_contain_before = [True, True, False, True, True, True, True, True, True]
+        # block_possibilities = sp.enumerate_block_possibilities(block_num)
+        # self.assert_should_contain(should_contain_before, block_possibilities, vals)
+        # sp.naked_tuple_block(block_num, 2)
+        # should_contain_after = [False, True, False, False, False, True, False, False, False]
+        # block_possibilities = sp.enumerate_block_possibilities(block_num)
+        # self.assert_should_contain(should_contain_after, block_possibilities, vals)
 
     def assert_should_contain(self, should_contain, possibilities, vals):
         """
