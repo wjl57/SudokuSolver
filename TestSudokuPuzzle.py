@@ -343,8 +343,23 @@ class TestSudokuPuzzle(unittest.TestCase):
 
     def test_get_naked_pairs_in_possibilities_dict(self):
         possibility_dict = {0: [4, 7], 1: [2, 3], 3: [2, 3], 6: [4, 7], 8: [0, 7], 9: [2, 3]}
-        naked_pairs = SudokuPuzzle.get_naked_pairs_in_possibilities_dict(possibility_dict)
-        self.assertListEqual(naked_pairs, [(0, 6), (1, 3), (1, 9), (3, 9)])
+        naked_pair_vals = SudokuPuzzle.get_naked_pairs_in_possibilities_dict(possibility_dict)
+        offsets = [npv[0] for npv in naked_pair_vals]
+        vals = [npv[1] for npv in naked_pair_vals]
+        expected_offsets = [(0, 6), (1, 3), (1, 9), (3, 9)]
+        expected_vals = [[4, 7], [2, 3], [2, 3], [2, 3]]
+        self.assertListEqual(offsets, expected_offsets)
+        self.assertListEqual(vals, expected_vals)
+
+    def test_get_naked_tuples_in_possibilities_dict(self):
+        possibilities_dict = {0: [2, 5], 1: [1, 2, 5], 3: [3, 4, 5, 7, 8], 7: [1, 5], 8: [4, 5, 6, 7]}
+        naked_tuple_vals = SudokuPuzzle.get_naked_tuples_in_possibilities_dict(possibilities_dict, 3)
+        offsets = [ntv[0] for ntv in naked_tuple_vals]
+        vals = [ntv[1] for ntv in naked_tuple_vals]
+        expected_offsets = [(0, 1, 7)]
+        expected_vals = [{1, 2, 5}]
+        self.assertListEqual(offsets, expected_offsets)
+        self.assertListEqual(vals, expected_vals)
 
     def test_naked_pair_y(self):
         sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.naked_pair_board)))
@@ -381,12 +396,6 @@ class TestSudokuPuzzle(unittest.TestCase):
         should_contain_after = [False, True, False, False, False, True, False, False, False]
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain(should_contain_after, block_possibilities, vals)
-
-    def test_get_naked_tuples_in_possibilities_dict(self):
-        possibilities_dict = {0: [2, 5], 1: [1, 2, 5], 3: [3, 4, 5, 7, 8], 7: [1, 5], 8: [4, 5, 6, 7]}
-        naked_tuples = SudokuPuzzle.get_naked_tuples_in_possibilities_dict(possibilities_dict, 3)
-        print(naked_tuples)
-
 
     def assert_should_contain(self, should_contain, possibilities, vals):
         """
