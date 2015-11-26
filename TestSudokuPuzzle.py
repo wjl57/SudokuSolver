@@ -415,27 +415,27 @@ class TestSudokuPuzzle(unittest.TestCase):
 
     def test_naked_tuple_x_2(self):
         sp = SudokuPuzzle(self.get_board_copy(self.naked_pair_board))
-        # vals = {4, 7}
-        # x = 0
-        # should_contain_before = [True, True, False, True, True, True, False, True, False]
-        # col_possibilities = sp.enumerate_col_possibilities(x)
-        # self.assert_should_contain(should_contain_before, col_possibilities, vals)
-        # sp.naked_tuple_x(x, 2)
-        # should_contain_after = [True, False, False, False, True, False, False, False, False]
-        # col_possibilities = sp.enumerate_col_possibilities(x)
-        # self.assert_should_contain(should_contain_after, col_possibilities, vals)
+        vals = {4, 7}
+        x = 0
+        should_contain_before = [True, True, False, True, True, True, False, True, False]
+        col_possibilities = sp.enumerate_col_possibilities(x)
+        self.assert_should_contain(should_contain_before, col_possibilities, vals)
+        sp.naked_tuple_x(x, 2)
+        should_contain_after = [True, False, False, False, True, False, False, False, False]
+        col_possibilities = sp.enumerate_col_possibilities(x)
+        self.assert_should_contain(should_contain_after, col_possibilities, vals)
 
     def test_naked_tuple_block_2(self):
         sp = SudokuPuzzle(self.get_board_copy(self.naked_pair_block_board))
-        # vals = {8, 9}
-        # block_num = 4
-        # should_contain_before = [True, True, False, True, True, True, True, True, True]
-        # block_possibilities = sp.enumerate_block_possibilities(block_num)
-        # self.assert_should_contain(should_contain_before, block_possibilities, vals)
-        # sp.naked_tuple_block(block_num, 2)
-        # should_contain_after = [False, True, False, False, False, True, False, False, False]
-        # block_possibilities = sp.enumerate_block_possibilities(block_num)
-        # self.assert_should_contain(should_contain_after, block_possibilities, vals)
+        vals = {8, 9}
+        block_num = 4
+        should_contain_before = [True, True, False, True, True, True, True, True, True]
+        block_possibilities = sp.enumerate_block_possibilities(block_num)
+        self.assert_should_contain(should_contain_before, block_possibilities, vals)
+        sp.naked_tuple_block(block_num, 2)
+        should_contain_after = [False, True, False, False, False, True, False, False, False]
+        block_possibilities = sp.enumerate_block_possibilities(block_num)
+        self.assert_should_contain(should_contain_after, block_possibilities, vals)
 
     def assert_should_contain(self, should_contain, possibilities, vals):
         """

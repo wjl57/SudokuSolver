@@ -443,12 +443,28 @@ class SudokuPuzzle:
         for (offset_pair, vals) in naked_offset_pairs:
             self.eliminate_possibilities_from_block(block_num, vals, offset_pair)
 
+    # NOTE: naked_tuple_[...] with n = 2 should behave pretty much exactly like naked_pair_[...]
+
     def naked_tuple_y(self, y, n):
         row_possibilities = self.enumerate_row_possibilities(y)
         row_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(row_possibilities, lambda l: 0 < l <= n)
         naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(row_dict, n)
         for (offset_tuple, vals) in naked_offset_tuples:
             self.eliminate_possibilities_from_row(y, vals, offset_tuple)
+
+    def naked_tuple_x(self, x, n):
+        col_possibilities = self.enumerate_col_possibilities(x)
+        col_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(col_possibilities, lambda l: 0 < l <= n)
+        naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(col_dict, n)
+        for (offset_tuple, vals) in naked_offset_tuples:
+            self.eliminate_possibilities_from_col(x, vals, offset_tuple)
+
+    def naked_tuple_block(self, block_num, n):
+        block_possibilities = self.enumerate_block_possibilities(block_num)
+        block_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(block_possibilities, lambda l: 0 < l <= n)
+        naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(block_dict, n)
+        for (offset_tuple, vals) in naked_offset_tuples:
+            self.eliminate_possibilities_from_block(block_num, vals, offset_tuple)
 
     @staticmethod
     def possibilities_to_dict_with_len_constraint(possibilities, len_lambda):
