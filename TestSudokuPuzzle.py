@@ -117,6 +117,30 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, None, None, None, None, None, None, None]
     ]
 
+    naked_triple_board = [
+        [None, None, None, 2, 9, 4, 3, 8, None],
+        [None, None, None, 1, 7, 8, 6, 4, None],
+        [4, 8, None, 3, 5, 6, 1, None, None],
+        [None, None, None, 8, 3, 7, 5, None, 1],
+        [None, None, None, 4, 1, 5, 7, None, None],
+        [None, None, None, 6, 2, 9, 8, 3, 4],
+        [9, 5, 3, None, None, None, None, None, None],
+        [1, 2, 6, None, None, None, None, None, None],
+        [None, 4, None, None, None, None, None, None, None]
+    ]
+
+    naked_triple_block_board = [
+        [3, 9, None, None, None, None, 7, None, None],
+        [None, None, None, None, None, None, 6, 5, None],
+        [5, None, 7, None, None, None, 3, 4, 9],
+        [None, None, None, 3, 8, None, None, None, None],
+        [None, None, None, None, 5, 4, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, 8, None, None, None, None, None],
+        [None, None, None, 9, 4, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None]
+    ]
+
     rotation_board = [
         [1, 2, None, None, None, None, None, None, 3],
         [None, None, None, None, None, None, None, None, None],
@@ -437,6 +461,31 @@ class TestSudokuPuzzle(unittest.TestCase):
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain(should_contain_after, block_possibilities, vals)
 
+    # http://hodoku.sourceforge.net/en/tech_naked.php
+    def test_naked_triple_col_3(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.naked_triple_board))
+        vals = {3, 6, 9}
+        x = 1
+        should_contain_before = [1, 2, 0, 2, 3, 0, 0, 0, 0]
+        col_possibilities = sp.enumerate_col_possibilities(x)
+        self.assert_should_contain_count(should_contain_before, col_possibilities, vals)
+        sp.naked_tuple_x(x, 3)
+        should_contain_after = [0, 2, 0, 2, 3, 0, 0, 0, 0]
+        col_possibilities = sp.enumerate_col_possibilities(x)
+        self.assert_should_contain_count(should_contain_after, col_possibilities, vals)
+
+    def test_naked_tuple_block_3(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.naked_triple_block_board))
+        vals = {1, 2, 6}
+        block_num = 1
+        should_contain_any_before = [3, 3, 3, 2, 2, 2, 3, 3, 3]
+        block_possibilities = sp.enumerate_block_possibilities(block_num)
+        self.assert_should_contain_count(should_contain_any_before, block_possibilities, vals)
+        sp.naked_tuple_block(block_num, 3)
+        should_contain_any_after = [0, 3, 0, 0, 0, 0, 3, 3, 0]
+        block_possibilities = sp.enumerate_block_possibilities(block_num)
+        self.assert_should_contain_count(should_contain_any_after, block_possibilities, vals)
+
     def assert_should_contain(self, should_contain, possibilities, vals):
         """
         :param should_contain: Length n list containing True/False
@@ -449,6 +498,20 @@ class TestSudokuPuzzle(unittest.TestCase):
         for k in range(0, len(possibilities)):
             contains = vals.issubset(possibilities[k])
             self.assertTrue(contains == should_contain[k])
+
+    def assert_should_contain_count(self, should_contain_count, possibilities, vals):
+        """
+
+        :param should_contain_count: Length n list containing ints
+        :param possibilities: Length n list containing sets of possibilities
+        :param vals: The values to check that are in possibilities
+        Asserts that intersection between vals and possibilities[k] has length == should_contain_n[k]
+        """
+        if len(possibilities) != len(should_contain_count):
+            self.fail("should_contain_n and possibilities do not have the same length")
+        for k in range(0, len(possibilities)):
+            count = len(possibilities[k].intersection(vals))
+            self.assertTrue(count == should_contain_count[k])
 
     def test_rotate_board_cw(self):
         expected_rotated_board = [
