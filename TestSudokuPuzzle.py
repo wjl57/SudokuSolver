@@ -141,6 +141,54 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, None, None, None, None, None, None, None]
     ]
 
+    naked_quad_block_board = [
+        [5, 3, 2, None, None, None, None, None, None],
+        [9, 7, 8, None, None, None, None, None, None],
+        [None, None, 1, None, None, None, None, None, None],
+        [None, 2, 5, None, None, None, None, None, None],
+        [None, None, 3, None, None, None, None, None, None],
+        [7, None, None, None, None, None, None, None, None],
+        [None, None, None, 1, None, None, None, None, None],
+        [None, None, None, 8, None, 5, 1, None, 6],
+        [None, None, None, 3, None, None, None, 9, 8]
+    ]
+
+    naked_quad_board = [
+        [None, 1, None, 7, 2, None, 5, 6, 3],
+        [None, 5, 6, None, 3, None, 2, 4, 7],
+        [7, 3, 2, 5, 4, 6, 1, 8, 9],
+        [6, 9, 3, 2, 8, 7, 4, 1, 5],
+        [2, 4, 7, 6, 1, 5, 9, 3, 8],
+        [5, 8, 1, 3, 9, 4, None, None, None],
+        [None, None, None, None, None, 2, None, None, None],
+        [None, None, None, None, None, None, None, None, 1],
+        [None, None, 5, 8, 7, None, None, None, None]
+    ]
+
+    hidden_pair_board = [
+        [None, 4, 9, 1, 3, 2, None, None, None],
+        [None, 8, 1, 4, 7, 9, None, None, None],
+        [3, 2, 7, 6, 8, 5, 9, 1, 4],
+        [None, 9, 6, None, 5, 1, 8, None, None],
+        [None, 7, 5, None, 2, 8, None, None, None],
+        [None, 3, 8, None, 4, 6, None, None, 5],
+        [8, 5, 3, 2, 6, 7, None, None, None],
+        [7, 1, 2, 8, 9, 4, 5, 6, 3],
+        [9, 6, 4, 5, 1, 3, None, None, None]
+    ]
+
+    hidden_pair_block_board = [
+        [None, None, None, None, 6, None, None, None, None],
+        [None, None, None, None, 4, 2, 7, 3, 6],
+        [None, None, 6, 7, 3, None, None, 4, None],
+        [None, 9, 4, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [6, None, 7, None, None, None, None, None, None],
+        [1, None, None, None, None, None, None, None, None],
+        [None, 6, None, None, None, None, None, None, None],
+        [None, None, 5, None, None, None, None, None, None]
+    ]
+
     rotation_board = [
         [1, 2, None, None, None, None, None, None, 3],
         [None, None, None, None, None, None, None, None, None],
@@ -462,7 +510,19 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assert_should_contain(should_contain_after, block_possibilities, vals)
 
     # http://hodoku.sourceforge.net/en/tech_naked.php
-    def test_naked_triple_col_3(self):
+    def test_naked_triple_y_3(self):
+        sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.naked_triple_board)))
+        vals = {3, 6, 9}
+        y = 1
+        should_contain_before = [1, 2, 0, 2, 3, 0, 0, 0, 0]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain_count(should_contain_before, row_possibilities, vals)
+        sp.naked_tuple_y(y, 3)
+        should_contain_after = [0, 2, 0, 2, 3, 0, 0, 0, 0]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain_count(should_contain_after, row_possibilities, vals)
+
+    def test_naked_triple_x_3(self):
         sp = SudokuPuzzle(self.get_board_copy(self.naked_triple_board))
         vals = {3, 6, 9}
         x = 1
@@ -486,6 +546,81 @@ class TestSudokuPuzzle(unittest.TestCase):
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain_count(should_contain_any_after, block_possibilities, vals)
 
+    def test_naked_tuple_y_4(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.naked_quad_board))
+        vals = {3, 4, 8, 9}
+        y = 7
+        should_contain_before = [4, 0, 3, 2, 0, 2, 2, 1, 0]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain_count(should_contain_before, row_possibilities, vals)
+        sp.naked_tuple_y(y, 4)
+        should_contain_after = [4, 0, 3, 2, 0, 2, 0, 0, 0]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain_count(should_contain_after, row_possibilities, vals)
+
+    def test_naked_tuple_x_4(self):
+        sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.naked_quad_board)))
+        vals = {3, 4, 8, 9}
+        x = 7
+        should_contain_before = [4, 0, 3, 2, 0, 2, 2, 1, 0]
+        col_possibilities = sp.enumerate_col_possibilities(x)
+        self.assert_should_contain_count(should_contain_before, col_possibilities, vals)
+        sp.naked_tuple_x(x, 4)
+        should_contain_after = [4, 0, 3, 2, 0, 2, 0, 0, 0]
+        col_possibilities = sp.enumerate_col_possibilities(x)
+        self.assert_should_contain_count(should_contain_after, col_possibilities, vals)
+
+    def test_naked_tuple_block_4(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.naked_quad_block_board))
+        vals = {4, 6, 7, 9}
+        block_num = 6
+        should_contain_before = [2, 3, 4, 1, 2, 3, 2, 2, 3]
+        block_possibilities = sp.enumerate_block_possibilities(block_num)
+        self.assert_should_contain_count(should_contain_before, block_possibilities, vals)
+        sp.naked_tuple_block(block_num, 4)
+        should_contain_after = [0, 0, 4, 0, 2, 3, 0, 0, 3]
+        block_possibilities = sp.enumerate_block_possibilities(block_num)
+        self.assert_should_contain_count(should_contain_after, block_possibilities, vals)
+
+    def test_hidden_subset_row_2(self):
+        sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.hidden_pair_board)))
+        vals = {1, 9}
+        y = 8
+        excluded_vals = all_possibilities.difference(vals)
+        should_contain_before = [3, 2, 0, 2, 1, 0, 0, 0, 3]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain_count(should_contain_before, row_possibilities, excluded_vals)
+        sp.hidden_subset_row(y, 2)
+        should_contain_after = [3, 2, 0, 2, 0, 0, 0, 0, 3]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain_count(should_contain_after, row_possibilities, excluded_vals)
+
+    def test_hidden_subset_col_2(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.hidden_pair_board))
+        vals = {1, 9}
+        x = 8
+        excluded_vals = all_possibilities.difference(vals)
+        should_contain_before = [3, 2, 0, 2, 1, 0, 0, 0, 3]
+        col_possibilities = sp.enumerate_col_possibilities(x)
+        self.assert_should_contain_count(should_contain_before, col_possibilities, excluded_vals)
+        sp.hidden_subset_col(x, 2)
+        should_contain_after = [3, 2, 0, 2, 0, 0, 0, 0, 3]
+        col_possibilities = sp.enumerate_col_possibilities(x)
+        self.assert_should_contain_count(should_contain_after, col_possibilities, excluded_vals)
+
+    def test_hidden_subset_block_2(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.hidden_pair_block_board))
+        vals = {4, 7}
+        block_num = 0
+        excluded_vals = all_possibilities.difference(vals)
+        should_contain_before = [5, 5, 5, 3, 3, 3, 4, 4, 0]
+        block_possibilities = sp.enumerate_block_possibilities(block_num)
+        self.assert_should_contain_count(should_contain_before, block_possibilities, excluded_vals)
+        sp.hidden_subset_block(block_num, 2)
+        should_contain_after = [0, 0, 5, 3, 3, 3, 4, 4, 0]
+        block_possibilities = sp.enumerate_block_possibilities(block_num)
+        self.assert_should_contain_count(should_contain_after, block_possibilities, excluded_vals)
+
     def assert_should_contain(self, should_contain, possibilities, vals):
         """
         :param should_contain: Length n list containing True/False
@@ -501,7 +636,6 @@ class TestSudokuPuzzle(unittest.TestCase):
 
     def assert_should_contain_count(self, should_contain_count, possibilities, vals):
         """
-
         :param should_contain_count: Length n list containing ints
         :param possibilities: Length n list containing sets of possibilities
         :param vals: The values to check that are in possibilities
@@ -511,6 +645,7 @@ class TestSudokuPuzzle(unittest.TestCase):
             self.fail("should_contain_n and possibilities do not have the same length")
         for k in range(0, len(possibilities)):
             count = len(possibilities[k].intersection(vals))
+            # print(k, possibilities[k].intersection(vals), count, should_contain_count[k])
             self.assertTrue(count == should_contain_count[k])
 
     def test_rotate_board_cw(self):
@@ -590,8 +725,8 @@ class TestSudokuPuzzle(unittest.TestCase):
                 self.assertEqual(sp1.cells_dict[sp1.board[y][x]].val, sp2.cells_dict[sp2.board[y][x]].val)
 
 if __name__ == '__main__':
-    suite = unittest.TestSuite()
-    suite.addTest(TestSudokuPuzzle("test_naked_pair_y"))
-    runner = unittest.TextTestRunner()
-    runner.run(suite)
-    # unittest.main()
+    pass
+    # suite = unittest.TestSuite()
+    # suite.addTest(TestSudokuPuzzle("test_naked_pair_y"))
+    # runner = unittest.TextTestRunner()
+    # runner.run(suite)

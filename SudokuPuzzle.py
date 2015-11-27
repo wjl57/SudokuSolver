@@ -395,19 +395,65 @@ class SudokuPuzzle:
                 for val in vals:
                     self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
 
-    def eliminate_possibilities_from_block(self, block_num, vals, block_cell_nums_to_exclude):
+    def eliminate_other_possibilities_from_cells_in_row(self, y, excluded_vals, offsets):
+        """
+        :param y: The row number. Precondition: 0 <= y < 9
+        :param excluded_vals: A set containing the values to eliminate. Precondition: 1 <= val <= 9 for val in excluded_vals
+        :param offsets: An enumerable containing the row offsets from which to eliminate all other candidates other
+        than the ones in excluded_vals
+        Eliminates candidates not in excluded_vals from the possibilities of cells in the row with offset in offsets
+        """
+        for cell_name in self.y_cell_list[y]:
+            cell = self.cells_dict[cell_name]
+            if cell.x in offsets:
+                possibilities_to_remove = cell.possibilities.difference(excluded_vals)
+                for candidate in possibilities_to_remove:
+                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, candidate)
+
+    def eliminate_other_possibilities_from_cells_in_col(self, x, excluded_vals, offsets):
+        """
+        :param x: The col number. Precondition: 0 <= y < 9
+        :param excluded_vals: A set containing the values to eliminate. Precondition: 1 <= val <= 9 for val in excluded_vals
+        :param offsets: An enumerable containing the col offsets from which to eliminate all other candidates other
+        than the ones in excluded_vals
+        Eliminates candidates not in excluded_vals from the possibilities of cells in the col with offset in offsets
+        """
+        for cell_name in self.x_cell_list[x]:
+            cell = self.cells_dict[cell_name]
+            if cell.y in offsets:
+                possibilities_to_remove = cell.possibilities.difference(excluded_vals)
+                for candidate in possibilities_to_remove:
+                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, candidate)
+
+    def eliminate_other_possibilities_from_cells_in_block(self, block_num, excluded_vals, offsets):
         """
         :param block_num: The block number. Precondition: 0 <= block_num < 9
-        :param vals: A set containing the values to eliminate. Precondition: 1 <= val <= 9 for val in vals
-        :param block_cell_nums_to_exclude: A tuple/list containing the block-cell--offsets to ignore in the block
-        Precondition: 0 <= block_cell_num < 9 for block_cell_num in block_cell_nums_to_exclude
-        Eliminates vals from the possibilities of all cells in the block except the ones with block-cell-offsets in
-        block_cell_nums_to_exclude.
+        :param excluded_vals: A set containing the values to eliminate. Precondition: 1 <= val <= 9 for val in excluded_vals
+        :param offsets: An enumerable containing the block-cell-offsets from which to eliminate all other
+        candidates other than the ones in excluded_vals
+        Eliminates candidates not in excluded_vals from the possibilities of cells in the block with block cell nums in
+        block-cell-nums
         """
         for cell_name in self.block_cell_list[block_num]:
             cell = self.cells_dict[cell_name]
-            if cell.block_cell_num not in block_cell_nums_to_exclude:
-                for val in vals:
+            if cell.block_cell_num in offsets:
+                possibilities_to_remove = cell.possibilities.difference(excluded_vals)
+                for candidate in possibilities_to_remove:
+                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, candidate)
+
+    def eliminate_other_possibilities_from_other_cells_in_block(self, block_num, excluded_vals, other_block_cell_nums):
+        """
+        :param block_num: The block number. Precondition: 0 <= block_num < 9
+        :param excluded_vals: A set containing the values to eliminate.
+        Precondition: 1 <= val <= 9 for val in excluded_vals
+        :param other_block_cell_nums: A tuple/list containing the block-cell-offsets to ignore in the block
+        Precondition: 0 <= block_cell_num < 9 for block_cell_num in other_block_cell_nums
+        Eliminates all possibilities from the the cells in other_block_cell_nums except for the ones in excluded_vals.
+        """
+        for cell_name in self.block_cell_list[block_num]:
+            cell = self.cells_dict[cell_name]
+            if cell.block_cell_num not in other_block_cell_nums:
+                for val in excluded_vals:
                     self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
 
     def naked_pair_y(self, y):
@@ -441,7 +487,7 @@ class SudokuPuzzle:
         block_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(block_possibilities, lambda l: l == 2)
         naked_offset_pairs = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(block_dict)
         for (offset_pair, vals) in naked_offset_pairs:
-            self.eliminate_possibilities_from_block(block_num, vals, offset_pair)
+            self.eliminate_other_possibilities_from_other_cells_in_block(block_num, vals, offset_pair)
 
     # NOTE: naked_tuple_[...] with n = 2 should behave pretty much exactly like naked_pair_[...]
 
@@ -464,7 +510,7 @@ class SudokuPuzzle:
         block_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(block_possibilities, lambda l: 0 < l <= n)
         naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(block_dict, n)
         for (offset_tuple, vals) in naked_offset_tuples:
-            self.eliminate_possibilities_from_block(block_num, vals, offset_tuple)
+            self.eliminate_other_possibilities_from_other_cells_in_block(block_num, vals, offset_tuple)
 
     @staticmethod
     def possibilities_to_dict_with_len_constraint(possibilities, len_lambda):
@@ -477,6 +523,63 @@ class SudokuPuzzle:
         possibilities satisfy the supplied lambda
         """
         return {offset: possibilities[offset] for offset in all_locs if len_lambda(len(possibilities[offset]))}
+
+    def hidden_subset_row(self, y, n):
+        """
+        :param: y: The row number. Precondition: 0 <= y < 9
+        :param n: The number of candidates to find within the row
+        Finds hidden subsets in the row and eliminates possibilities accordingly
+        """
+        possibilities = self.remaining_in_y[y]
+        locs_left = self.locs_left_by_y[y]
+        for possibilities_tuple in itertools.combinations(possibilities, n):
+            locations = set()
+            hidden_subset_found = True
+            for candidate in possibilities_tuple:
+                locations.update(locs_left[candidate])
+                if len(locations) > n:
+                    hidden_subset_found = False
+                    break
+            if hidden_subset_found:
+                self.eliminate_other_possibilities_from_cells_in_row(y, set(possibilities_tuple), locations)
+
+    def hidden_subset_col(self, x, n):
+        """
+        :param x: The col number. Precondition: 0 <= y < 9
+        :param n: The number of candidates to find within the col
+        Finds hidden subsets in the row and eliminates possibilities accordingly
+        """
+        possibilities = self.remaining_in_x[x]
+        locs_left = self.locs_left_by_x[x]
+        for possibilities_tuple in itertools.combinations(possibilities, n):
+            locations = set()
+            hidden_subset_found = True
+            for candidate in possibilities_tuple:
+                locations.update(locs_left[candidate])
+                if len(locations) > n:
+                    hidden_subset_found = False
+                    break
+            if hidden_subset_found:
+                self.eliminate_other_possibilities_from_cells_in_col(x, set(possibilities_tuple), locations)
+
+    def hidden_subset_block(self, block_num, n):
+        """
+        :param block_num: The block number. Precondition: 0 <= block_num < 9
+        :param n: The number of candidates to find within the block
+        Finds hidden subsets in the block and eliminates possibilities accordingly
+        """
+        possibilities = self.remaining_in_blocks[block_num]
+        locs_left = self.locs_left_by_block[block_num]
+        for possibilities_tuple in itertools.combinations(possibilities, n):
+            locations = set()
+            hidden_subset_found = True
+            for candidate in possibilities_tuple:
+                locations.update(locs_left[candidate])
+                if len(locations) > n:
+                    hidden_subset_found = False
+                    break
+            if hidden_subset_found:
+                self.eliminate_other_possibilities_from_cells_in_block(block_num, set(possibilities_tuple), locations)
 
     def enumerate_row_possibilities(self, y):
         """
