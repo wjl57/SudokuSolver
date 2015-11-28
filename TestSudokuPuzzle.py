@@ -189,6 +189,30 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, 5, None, None, None, None, None, None]
     ]
 
+    hidden_triple_board = [
+        [5, None, None, 6, 2, None, None, 3, 7],
+        [None, None, 4, 8, 9, None, None, None, None],
+        [None, None, None, None, 5, None, None, None, None],
+        [9, 3, None, None, None, None, None, None, None],
+        [None, 2, None, None, None, None, 6, None, 5],
+        [7, None, None, None, None, None, None, None, 3],
+        [None, None, None, None, None, 9, None, None, None],
+        [None, None, None, None, None, None, 7, None, None],
+        [6, 8, None, 5, 7, None, None, None, 2]
+    ]
+
+    hidden_triple_block_board = [
+        [2, 8, None, None, None, None, 4, 7, 3],
+        [5, 3, 4, 8, 2, 7, 1, 9, 6],
+        [None, 7, 1, None, 3, 4, None, 8, None],
+        [3, None, None, 5, None, None, None, 4, None],
+        [None, None, None, 3, 4, None, None, 6, None],
+        [4, 6, None, 7, 9, None, 3, 1, None],
+        [None, 9, None, 2, None, 3, 6, 5, 4],
+        [None, None, 3, None, None, 9, 8, 2, 1],
+        [None, None, None, None, 8, None, 9, 3, 7]
+    ]
+
     rotation_board = [
         [1, 2, None, None, None, None, None, None, 3],
         [None, None, None, None, None, None, None, None, None],
@@ -618,6 +642,45 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assert_should_contain_count(should_contain_before, block_possibilities, excluded_vals)
         sp.hidden_subset_block(block_num, 2)
         should_contain_after = [0, 0, 5, 3, 3, 3, 4, 4, 0]
+        block_possibilities = sp.enumerate_block_possibilities(block_num)
+        self.assert_should_contain_count(should_contain_after, block_possibilities, excluded_vals)
+
+    def test_hidden_subset_row_3(self):
+        sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.hidden_triple_board)))
+        vals = {2, 5, 6}
+        y = 5
+        excluded_vals = all_possibilities.difference(vals)
+        should_contain_before = [2, 3, 4, 4, 5, 3, 0, 4, 3]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain_count(should_contain_before, row_possibilities, excluded_vals)
+        sp.hidden_subset_row(y, 3)
+        should_contain_after = [2, 3, 4, 0, 5, 0, 0, 0, 3]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain_count(should_contain_after, row_possibilities, excluded_vals)
+
+    def test_hidden_subset_col_3(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.hidden_triple_board))
+        vals = {2, 5, 6}
+        x = 5
+        excluded_vals = all_possibilities.difference(vals)
+        should_contain_before = [2, 3, 4, 4, 5, 3, 0, 4, 3]
+        col_possibilities = sp.enumerate_col_possibilities(x)
+        self.assert_should_contain_count(should_contain_before, col_possibilities, excluded_vals)
+        sp.hidden_subset_col(x, 3)
+        should_contain_after = [2, 3, 4, 0, 5, 0, 0, 0, 3]
+        col_possibilities = sp.enumerate_col_possibilities(x)
+        self.assert_should_contain_count(should_contain_after, col_possibilities, excluded_vals)
+
+    def test_hidden_subset_block_3(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.hidden_triple_block_board))
+        vals = {2, 4, 5}
+        block_num = 6
+        excluded_vals = all_possibilities.difference(vals)
+        should_contain_before = [3, 0, 2, 2, 0, 0, 2, 1, 1]
+        block_possibilities = sp.enumerate_block_possibilities(block_num)
+        self.assert_should_contain_count(should_contain_before, block_possibilities, excluded_vals)
+        sp.hidden_subset_block(block_num, 3)
+        should_contain_after = [3, 0, 2, 2, 0, 0, 2, 0, 0]
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain_count(should_contain_after, block_possibilities, excluded_vals)
 
