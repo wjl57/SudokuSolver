@@ -461,6 +461,11 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assertListEqual(vals, expected_vals)
         self.assertListEqual(naked_tuple_vals, expected_naked_tuple_vals)
 
+    ###############################################################################################################
+    # Naked pair tests
+    # http://hodoku.sourceforge.net/en/tech_naked.php
+    # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
+    ###############################################################################################################
     def test_naked_pair_y(self):
         sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.naked_pair_board)))
         vals = {4, 7}
@@ -497,6 +502,11 @@ class TestSudokuPuzzle(unittest.TestCase):
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain(should_contain_after, block_possibilities, vals)
 
+    ###############################################################################################################
+    # Naked tuple tests
+    # http://hodoku.sourceforge.net/en/tech_naked.php
+    # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
+    ###############################################################################################################
     def test_naked_tuple_y_2(self):
         sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.naked_pair_board)))
         vals = {4, 7}
@@ -533,8 +543,7 @@ class TestSudokuPuzzle(unittest.TestCase):
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain(should_contain_after, block_possibilities, vals)
 
-    # http://hodoku.sourceforge.net/en/tech_naked.php
-    def test_naked_triple_y_3(self):
+    def test_naked_tuple_y_3(self):
         sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.naked_triple_board)))
         vals = {3, 6, 9}
         y = 1
@@ -546,7 +555,7 @@ class TestSudokuPuzzle(unittest.TestCase):
         row_possibilities = sp.enumerate_row_possibilities(y)
         self.assert_should_contain_count(should_contain_after, row_possibilities, vals)
 
-    def test_naked_triple_x_3(self):
+    def test_naked_tuple_x_3(self):
         sp = SudokuPuzzle(self.get_board_copy(self.naked_triple_board))
         vals = {3, 6, 9}
         x = 1
@@ -606,6 +615,10 @@ class TestSudokuPuzzle(unittest.TestCase):
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain_count(should_contain_after, block_possibilities, vals)
 
+    ###############################################################################################################
+    # Hidden subset tests
+    # http://hodoku.sourceforge.net/en/tech_hidden.php
+    ###############################################################################################################
     def test_hidden_subset_row_2(self):
         sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.hidden_pair_board)))
         vals = {1, 9}
