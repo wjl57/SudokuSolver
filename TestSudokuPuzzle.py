@@ -228,6 +228,11 @@ class TestSudokuPuzzle(unittest.TestCase):
     def get_board_copy(self, board):
         return copy.deepcopy(board)
 
+    ###############################################################################################################
+    # Constructor tests
+    # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
+    ###############################################################################################################
+
     def test_init_possibilities(self):
         sp = SudokuPuzzle(self.get_board_copy(self.test_board))
         board = sp.get_board()
@@ -309,6 +314,11 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assertDictEqual(sp.locs_left_by_block[0], expected_locs_left_by_block_0)
         self.assertDictEqual(sp.locs_left_by_block[7], expected_locs_left_by_block_7)
 
+    ###############################################################################################################
+    # Enumerate candidates tests
+    # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
+    ###############################################################################################################
+
     def test_enumerate_possibilities_by_row(self):
         sp = SudokuPuzzle(self.get_board_copy(self.test_board))
         row_1_possibilities = sp.enumerate_row_possibilities(1)
@@ -333,6 +343,11 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assertListEqual(block_6_possibilities, [{2, 5, 6, 7}, {1, 2, 3, 5, 7}, set(), {6, 7},
                                                      {1, 3, 7}, {1, 3, 7}, {2}, set(), set()])
 
+    ###############################################################################################################
+    # Sole candidate tests
+    # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
+    ###############################################################################################################
+
     def test_fill_sole_candidates(self):
         sp = SudokuPuzzle(self.get_board_copy(self.sole_candidate_board))
         (cell_y, cell_x) = (5, 5)
@@ -347,6 +362,11 @@ class TestSudokuPuzzle(unittest.TestCase):
             self.assertTrue(5 not in new_p[y][cell_x])
         for x in all_locs:
             self.assertTrue(5 not in new_p[cell_y][x])
+
+    ###############################################################################################################
+    # Unique candidate tests
+    # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
+    ###############################################################################################################
 
     def test_fill_unique_candidates(self):
         sp = SudokuPuzzle(self.get_board_copy(self.unique_candidate_board))
@@ -370,6 +390,10 @@ class TestSudokuPuzzle(unittest.TestCase):
         sp.fill_unique_candidates()
         self.assertEqual(cell.val, 4)
 
+    ###############################################################################################################
+    # Helper methods for block row/column interactions
+    # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
+    ###############################################################################################################
     def test_find_unique_offsets_for_block_num_and_val(self):
         self.assertEqual(SudokuPuzzle.find_unique_offsets_for_cell_nums({0}), ({0}, {0}))
         self.assertEqual(SudokuPuzzle.find_unique_offsets_for_cell_nums({5}), ({1}, {2}))
@@ -398,6 +422,11 @@ class TestSudokuPuzzle(unittest.TestCase):
         col_possibilities = sp.enumerate_col_possibilities(x)
         self.assert_should_contain(should_contain, col_possibilities, {val})
 
+    ###############################################################################################################
+    # Block row/column interaction tests
+    # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
+    ###############################################################################################################
+
     def test_block_rc_interaction(self):
         sp = SudokuPuzzle(self.get_board_copy(self.block_rc_board))
         y = 4
@@ -412,6 +441,11 @@ class TestSudokuPuzzle(unittest.TestCase):
         should_contain = [False, False, False, True, False, True, False, False, False]
         row_possibilities = sp.enumerate_row_possibilities(y)
         self.assert_should_contain(should_contain, row_possibilities, {val})
+
+    ###############################################################################################################
+    # Block block interaction tests
+    # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
+    ###############################################################################################################
 
     def test_block_block_horizontal_interaction(self):
         sp = SudokuPuzzle(self.get_board_copy(self.block_block_board))
@@ -436,6 +470,12 @@ class TestSudokuPuzzle(unittest.TestCase):
         should_contain_after = [False, True, False, False, True, False, False, True, False]
         block_possibilities = sp.enumerate_block_possibilities(excluded_block_num)
         self.assert_should_contain(should_contain_after, block_possibilities, {val})
+
+    ###############################################################################################################
+    # Naked pair/tuple helper method tests
+    # http://hodoku.sourceforge.net/en/tech_naked.php
+    # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
+    ###############################################################################################################
 
     def test_get_naked_pairs_in_possibilities_dict(self):
         possibility_dict = {0: [4, 7], 1: [2, 3], 3: [2, 3], 6: [4, 7], 7: [], 8: [0, 7], 9: [2, 3]}
