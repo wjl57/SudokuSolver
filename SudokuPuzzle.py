@@ -492,6 +492,11 @@ class SudokuPuzzle:
     # NOTE: naked_tuple_[...] with n = 2 should behave pretty much exactly like naked_pair_[...]
 
     def naked_tuple_y(self, y, n):
+        """
+        :param y: The row number. Precondition: 0 <= y < 9
+        :param n: The tuple size. Usually n <= 4
+        Finds naked tuples in the row and eliminates possibilities accordingly
+        """
         row_possibilities = self.enumerate_row_possibilities(y)
         row_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(row_possibilities, lambda l: 0 < l <= n)
         naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(row_dict, n)
@@ -499,6 +504,11 @@ class SudokuPuzzle:
             self.eliminate_possibilities_from_row(y, vals, offset_tuple)
 
     def naked_tuple_x(self, x, n):
+        """
+        :param x: The col number. Precondition: 0 <= x < 9
+        :param n: The tuple size. Usually n <= 4
+        Finds naked pairs in the col and eliminates possibilities accordingly
+        """
         col_possibilities = self.enumerate_col_possibilities(x)
         col_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(col_possibilities, lambda l: 0 < l <= n)
         naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(col_dict, n)
@@ -506,6 +516,11 @@ class SudokuPuzzle:
             self.eliminate_possibilities_from_col(x, vals, offset_tuple)
 
     def naked_tuple_block(self, block_num, n):
+        """
+        :param block_num: The block number. Precondition: 0 <= block_num < 9
+        :param n: The tuple size. Usually n <= 4
+        Finds naked pairs in the block and eliminates possibilities accordingly
+        """
         block_possibilities = self.enumerate_block_possibilities(block_num)
         block_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(block_possibilities, lambda l: 0 < l <= n)
         naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(block_dict, n)

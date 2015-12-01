@@ -213,6 +213,18 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, None, None, 8, None, 9, 3, 7]
     ]
 
+    x_wing_row_board = [
+        [None, 4, 1, 7, 2, 9, None, 3, None],
+        [7, 6, 9, None, None, 3, 4, None, 2],
+        [None, 3, 2, 6, 4, None, 7, 1, 9],
+        [4, None, 3, 9, None, None, 1, 7, None],
+        [6, None, 7, None, None, 4, 9, None, 3],
+        [1, 9, 5, 3, 7, None, None, 2, 4],
+        [2, 1, 4, 5, 6, 7, 3, 9, 8],
+        [3, 7, 6, None, 9, None, 5, 4, 1],
+        [9, 5, 8, 4, 3, 1, 2, 6, 7]
+    ]
+
     rotation_board = [
         [1, 2, None, None, None, None, None, None, 3],
         [None, None, None, None, None, None, None, None, None],
