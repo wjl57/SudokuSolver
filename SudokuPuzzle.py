@@ -601,8 +601,9 @@ class SudokuPuzzle:
         y1_locs_left = self.locs_left_by_y[y1]
         y2_locs_left = self.locs_left_by_y[y2]
         for candidate in candidates:
-            if y1_locs_left[candidate] == y2_locs_left[candidate] and len(y1_locs_left[candidate]) == 2:
-                for x in y1_locs_left[candidate]:
+            possible_locs = y1_locs_left[candidate]
+            if possible_locs == y2_locs_left[candidate] and len(possible_locs) == 2:
+                for x in possible_locs:
                     # Make sure there is a candidate worth eliminating
                     if len(self.locs_left_by_x[x][candidate]) > 2:
                         self.eliminate_possibilities_from_col(x, {candidate}, {y1, y2})
@@ -612,8 +613,9 @@ class SudokuPuzzle:
         x1_locs_left = self.locs_left_by_x[x1]
         x2_locs_left = self.locs_left_by_x[x2]
         for candidate in candidates:
-            if x1_locs_left[candidate] == x2_locs_left[candidate] and len(x1_locs_left[candidate]) == 2:
-                for y in x1_locs_left[candidate]:
+            possible_locs = x1_locs_left[candidate]
+            if possible_locs == x2_locs_left[candidate] and len(possible_locs) == 2:
+                for y in possible_locs:
                     # Make sure there is a candidate worth eliminating
                     if len(self.locs_left_by_y[y][candidate]) > 2:
                         self.eliminate_possibilities_from_row(y, {candidate}, {x1, x2})
