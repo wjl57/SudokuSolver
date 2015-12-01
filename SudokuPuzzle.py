@@ -596,6 +596,28 @@ class SudokuPuzzle:
             if hidden_subset_found:
                 self.eliminate_other_possibilities_from_cells_in_block(block_num, set(possibilities_tuple), locations)
 
+    def basic_fish_in_rows(self, y1, y2):
+        candidates = self.remaining_in_y[y1].intersection(self.remaining_in_y[y2])
+        y1_locs_left = self.locs_left_by_y[y1]
+        y2_locs_left = self.locs_left_by_y[y2]
+        for candidate in candidates:
+            if y1_locs_left[candidate] == y2_locs_left[candidate] and len(y1_locs_left[candidate]) == 2:
+                for x in y1_locs_left[candidate]:
+                    # Make sure there is a candidate worth eliminating
+                    if len(self.locs_left_by_x[x][candidate]) > 2:
+                        self.eliminate_possibilities_from_col(x, {candidate}, {y1, y2})
+
+    def basic_fish_in_cols(self, x1, x2):
+        candidates = self.remaining_in_x[x1].intersection(self.remaining_in_x[x2])
+        x1_locs_left = self.locs_left_by_x[x1]
+        x2_locs_left = self.locs_left_by_x[x2]
+        for candidate in candidates:
+            if x1_locs_left[candidate] == x2_locs_left[candidate] and len(x1_locs_left[candidate]) == 2:
+                for y in x1_locs_left[candidate]:
+                    # Make sure there is a candidate worth eliminating
+                    if len(self.locs_left_by_y[y][candidate]) > 2:
+                        self.eliminate_possibilities_from_row(y, {candidate}, {x1, x2})
+
     def enumerate_row_possibilities(self, y):
         """
         :param y: The row number. Precondition: 0 <= y < 9

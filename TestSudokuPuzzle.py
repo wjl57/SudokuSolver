@@ -213,7 +213,7 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, None, None, 8, None, 9, 3, 7]
     ]
 
-    x_wing_row_board = [
+    basic_fish_row_board = [
         [None, 4, 1, 7, 2, 9, None, 3, None],
         [7, 6, 9, None, None, 3, 4, None, 2],
         [None, 3, 2, 6, 4, None, 7, 1, 9],
@@ -223,6 +223,18 @@ class TestSudokuPuzzle(unittest.TestCase):
         [2, 1, 4, 5, 6, 7, 3, 9, 8],
         [3, 7, 6, None, 9, None, 5, 4, 1],
         [9, 5, 8, 4, 3, 1, 2, 6, 7]
+    ]
+
+    basic_fish_col_board = [
+        [9, 8, None, None, 6, 2, 7, 5, 3],
+        [None, 6, 5, None, None, 3, None, None, None],
+        [3, 2, 7, None, 5, None, None, None, 6],
+        [7, 9, None, None, 3, None, 5, None, None],
+        [None, 5, None, None, None, 9, None, None, None],
+        [8, 3, 2, None, 4, 5, None, None, 9],
+        [6, 7, 3, 5, 9, 1, 4, 2, 8],
+        [2, 4, 9, None, 8, 7, None, None, 5],
+        [5, 1, 8, None, 2, None, None, None, 7]
     ]
 
     rotation_board = [
@@ -671,6 +683,7 @@ class TestSudokuPuzzle(unittest.TestCase):
     # Hidden subset tests
     # http://hodoku.sourceforge.net/en/tech_hidden.php
     ###############################################################################################################
+
     def test_hidden_subset_row_2(self):
         sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.hidden_pair_board)))
         vals = {1, 9}
@@ -748,6 +761,57 @@ class TestSudokuPuzzle(unittest.TestCase):
         should_contain_after = [3, 0, 2, 2, 0, 0, 2, 0, 0]
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain_count(should_contain_after, block_possibilities, excluded_vals)
+
+    ###############################################################################################################
+    # X-Wing/Basic fish tests
+    # http://hodoku.sourceforge.net/en/tech_fishb.php
+    ###############################################################################################################
+
+    def test_basic_fish_in_rows(self):
+        y1 = 1
+        y2 = 4
+        x1 = 4
+        x2 = 7
+        val = 5
+        sp = SudokuPuzzle(self.get_board_copy(self.basic_fish_row_board))
+        should_contain_before_x1 = [False, True, False, True, True, False, False, False, False]
+        should_contain_before_x2 = [False, True, False, False, True, False, False, False, False]
+        x1_possibilities = sp.enumerate_col_possibilities(x1)
+        x2_possibilities = sp.enumerate_col_possibilities(x2)
+        self.assert_should_contain(should_contain_before_x1, x1_possibilities, {val})
+        self.assert_should_contain(should_contain_before_x2, x2_possibilities, {val})
+        sp.basic_fish_in_rows(y1, y2)
+        should_contain_after_x1 = [False, True, False, False, True, False, False, False, False]
+        should_contain_after_x2 = [False, True, False, False, True, False, False, False, False]
+        x1_possibilities = sp.enumerate_col_possibilities(x1)
+        x2_possibilities = sp.enumerate_col_possibilities(x2)
+        self.assert_should_contain(should_contain_after_x1, x1_possibilities, {val})
+        self.assert_should_contain(should_contain_after_x2, x2_possibilities, {val})
+
+    def test_basic_fish_in_cols(self):
+        x1 = 0
+        x2 = 4
+        y1 = 1
+        y2 = 4
+        val = 1
+        sp = SudokuPuzzle(self.get_board_copy(self.basic_fish_col_board))
+        should_contain_before_y1 = [True, False, False, True, True, False, True, True, True]
+        should_contain_before_y2 = [True, False, True, True, True, False, True, True, True]
+        y1_possibilities = sp.enumerate_row_possibilities(y1)
+        y2_possibilities = sp.enumerate_row_possibilities(y2)
+        self.assert_should_contain(should_contain_before_y1, y1_possibilities, {val})
+        self.assert_should_contain(should_contain_before_y2, y2_possibilities, {val})
+        sp.basic_fish_in_cols(x1, x2)
+        should_contain_after_y1 = [True, False, False, False, True, False, False, False, False]
+        should_contain_after_y2 = [True, False, False, False, True, False, False, False, False]
+        y1_possibilities = sp.enumerate_row_possibilities(y1)
+        y2_possibilities = sp.enumerate_row_possibilities(y2)
+        self.assert_should_contain(should_contain_after_y1, y1_possibilities, {val})
+        self.assert_should_contain(should_contain_after_y2, y2_possibilities, {val})
+
+    ###############################################################################################################
+    # Helper methods
+    ###############################################################################################################
 
     def assert_should_contain(self, should_contain, possibilities, vals):
         """
