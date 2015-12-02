@@ -620,6 +620,22 @@ class SudokuPuzzle:
                     if len(self.locs_left_by_y[y][candidate]) > 2:
                         self.eliminate_possibilities_from_row(y, {candidate}, {x1, x2})
 
+    def fish_in_rows(self, ys):
+        n = len(ys)
+        candidates = copy.deepcopy(all_possibilities)
+        for y in ys:
+            candidates.intersection_update(self.remaining_in_y[y])
+        for candidate in candidates:
+            possible_locs = set()
+            for y in ys:
+                possible_locs.update(self.locs_left_by_y[y][candidate])
+                if len(possible_locs) > n:
+                    break
+            if len(possible_locs) == n:
+                for x in possible_locs:
+                    for y_to_remove in self.locs_left_by_x[x][candidate].difference(ys):
+                        self.remove_possibility_from_puzzle_by_loc(y_to_remove, x, candidate)
+
     def enumerate_row_possibilities(self, y):
         """
         :param y: The row number. Precondition: 0 <= y < 9

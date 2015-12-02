@@ -237,6 +237,18 @@ class TestSudokuPuzzle(unittest.TestCase):
         [5, 1, 8, None, 2, None, None, None, 7]
     ]
 
+    fish_3_row_board = [
+        [1, 6, None, 5, 4, 3, None, 7, None],
+        [None, 7, 8, 6, None, 1, 4, 3, 5],
+        [4, 3, 5, 8, None, 7, 6, None, 1],
+        [7, 2, None, 4, 5, 8, None, 6, 9],
+        [6, None, None, 9, 1, 2, None, 5, 7],
+        [None, None, None, 3, 7, 6, None, None, 4],
+        [None, 1, 6, None, 3, None, None, 4, None],
+        [3, None, None, None, 8, None, None, 1, 6],
+        [None, None, 7, 1, 6, 4, 5, None, 3]
+    ]
+
     rotation_board = [
         [1, 2, None, None, None, None, None, None, 3],
         [None, None, None, None, None, None, None, None, None],
@@ -808,6 +820,35 @@ class TestSudokuPuzzle(unittest.TestCase):
         y2_possibilities = sp.enumerate_row_possibilities(y2)
         self.assert_should_contain(should_contain_after_y1, y1_possibilities, {val})
         self.assert_should_contain(should_contain_after_y2, y2_possibilities, {val})
+
+    def test_fish_3_in_rows(self):
+        y1 = 1
+        y2 = 2
+        y3 = 8
+        x1 = 0
+        x2 = 4
+        x3 = 7
+        val = 2
+        sp = SudokuPuzzle(self.get_board_copy(self.fish_3_row_board))
+        should_contain_before_x1 = [False, True, False, False, False, False, True, False, True]
+        should_contain_before_x2 = [False, True, True, False, False, False, False, False, False]
+        should_contain_before_x3 = [False, False, True, False, False, True, False, False, True]
+        x1_possibilities = sp.enumerate_col_possibilities(x1)
+        x2_possibilities = sp.enumerate_col_possibilities(x2)
+        x3_possibilities = sp.enumerate_col_possibilities(x3)
+        self.assert_should_contain(should_contain_before_x1, x1_possibilities, {val})
+        self.assert_should_contain(should_contain_before_x2, x2_possibilities, {val})
+        self.assert_should_contain(should_contain_before_x3, x3_possibilities, {val})
+        sp.fish_in_rows({y1, y2, y3})
+        should_contain_after_x1 = [False, True, False, False, False, False, False, False, True]
+        should_contain_after_x2 = [False, True, True, False, False, False, False, False, False]
+        should_contain_after_x3 = [False, False, True, False, False, False, False, False, True]
+        x1_possibilities = sp.enumerate_col_possibilities(x1)
+        x2_possibilities = sp.enumerate_col_possibilities(x2)
+        x3_possibilities = sp.enumerate_col_possibilities(x3)
+        self.assert_should_contain(should_contain_after_x1, x1_possibilities, {val})
+        self.assert_should_contain(should_contain_after_x2, x2_possibilities, {val})
+        self.assert_should_contain(should_contain_after_x3, x3_possibilities, {val})
 
     ###############################################################################################################
     # Helper methods
