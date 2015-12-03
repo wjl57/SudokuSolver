@@ -273,6 +273,18 @@ class TestSudokuPuzzle(unittest.TestCase):
         [4, None, None, None, None, None, None, None, 1]
     ]
 
+    skyscraper_col_board = [
+        [6, 9, 7, None, None, None, None, None, 2],
+        [None, None, 1, 9, 7, 2, None, 6, 3],
+        [None, None, 3, None, None, 6, 7, 9, None],
+        [9, 1, 2, None, None, None, 6, None, 7],
+        [3, 7, 4, 2, 6, None, 9, 5, None],
+        [8, 6, 5, 7, None, 9, None, 2, 4],
+        [1, 4, 8, 6, 9, 3, 2, 7, 5],
+        [7, None, 9, None, 2, 4, None, None, 6],
+        [None, None, 6, 8, None, 7, None, None, 9]
+    ]
+
     rotation_board = [
         [1, 2, None, None, None, None, None, None, 3],
         [None, None, None, None, None, None, None, None, None],
@@ -997,6 +1009,31 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assert_should_contain(should_contain_after_x2, x2_possibilities, {val})
         self.assert_should_contain(should_contain_after_x3, x3_possibilities, {val})
         self.assert_should_contain(should_contain_after_x4, x4_possibilities, {val})
+
+    ###############################################################################################################
+    # Skyscraper
+    # http://hodoku.sourceforge.net/en/tech_sdp.php
+    ###############################################################################################################
+
+    def test_skyscraper_cols(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.skyscraper_col_board))
+        candidate = 1
+        y1 = 0
+        y2 = 2
+        should_contain_before_y1 = [False, False, False, True, True, True, True, True, False]
+        should_contain_before_y2 = [False, False, False, True, True, False, False, False, True]
+        y1_possibilities = sp.enumerate_row_possibilities(y1)
+        y2_possibilities = sp.enumerate_row_possibilities(y2)
+        self.assert_should_contain(should_contain_before_y1, y1_possibilities, {candidate})
+        self.assert_should_contain(should_contain_before_y2, y2_possibilities, {candidate})
+        sp.skyscraper_in_cols(candidate)
+        should_contain_after_y1 = [False, False, False, True, True, True, False, False, False]
+        should_contain_after_y2 = [False, False, False, False, False, False, False, False, True]
+        y1_possibilities = sp.enumerate_row_possibilities(y1)
+        y2_possibilities = sp.enumerate_row_possibilities(y2)
+        self.assert_should_contain(should_contain_after_y1, y1_possibilities, {candidate})
+        self.assert_should_contain(should_contain_after_y2, y2_possibilities, {candidate})
+
 
     ###############################################################################################################
     # Helper methods

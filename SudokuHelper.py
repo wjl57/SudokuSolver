@@ -35,7 +35,7 @@ def loc_to_block_cell_num(y, x):
     """
     :param y: The y location of the cell on the board. Precondition: 0 <= y < 9
     :param x: The x location of the cell on the board. Precondition: 0 <= x < 9
-    :return: The cell number inside a block
+    :return: The cell number offset inside a block
     """
     return (y % 3) * 3 + (x % 3)
 

@@ -652,6 +652,45 @@ class SudokuPuzzle:
                     for x_to_remove in self.locs_left_by_y[y][candidate].difference(xs):
                         self.remove_possibility_from_puzzle_by_loc(y, x_to_remove, candidate)
 
+    def skyscraper_in_cols(self, val):
+        candidate_loc_dict = {}
+        for x in all_locs:
+            if len(self.locs_left_by_x[x][val]) == 2:
+                candidate_loc_dict[x] = self.locs_left_by_x[x][val]
+        for (x1, x2) in itertools.combinations(candidate_loc_dict.keys(), 2):
+            locs_1 = candidate_loc_dict[x1]
+            locs_2 = candidate_loc_dict[x2]
+            loc_in_both = locs_1.intersection(locs_2)
+            if loc_in_both:
+                y1 = next(iter(locs_1.difference(loc_in_both)))
+                y2 = next(iter(locs_2.difference(loc_in_both)))
+                cell_name_1 = self.board[y1][x1]
+                cell_name_2 = self.board[y2][x2]
+                cells_seen_by_both = self.get_cell_names_seen_by_both_cells(cell_name_1, cell_name_2)
+                for cell_name in cells_seen_by_both:
+                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+
+    def get_cell_names_seen_by_both_cells(self, cell_name_1, cell_name_2):
+        """
+        :param cell_name_1: The name of the 1st cell
+        :param cell_name_2: The name of the 2nd cell
+        :return: The names of all cells that can be seen by both cells
+        """
+        cell_1 = self.cells_dict[cell_name_1]
+        seen_by_1 = set()
+        seen_by_1.update(self.y_cell_list[cell_1.y])
+        seen_by_1.update(self.x_cell_list[cell_1.x])
+        seen_by_1.update(self.block_cell_list[cell_1.block])
+        cell_2 = self.cells_dict[cell_name_2]
+        seen_by_2 = set()
+        seen_by_2.update(self.y_cell_list[cell_2.y])
+        seen_by_2.update(self.x_cell_list[cell_2.x])
+        seen_by_2.update(self.block_cell_list[cell_2.block])
+        # Get the cells in the intersection of the cells seen by each
+        cells_seen_by_both = seen_by_1.intersection(seen_by_2)
+        cells_seen_by_both.difference_update({cell_name_1, cell_name_2})
+        return cells_seen_by_both
+
     def enumerate_row_possibilities(self, y):
         """
         :param y: The row number. Precondition: 0 <= y < 9
