@@ -9,6 +9,17 @@ __author__ = 'william'
 
 class TestSudokuPuzzle(unittest.TestCase):
 
+    ###############################################################################################################
+    # Test Boards
+    # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
+    # http://hodoku.sourceforge.net/en/
+    ###############################################################################################################
+    # region
+
+    def get_board_copy(self, board):
+        return copy.deepcopy(board)
+
+    # region Test board
     test_board = [
         [4, None, 2, None, 3, 1, 7, 6, None],
         [None, 6, None, None, 8, 7, None, None, None],
@@ -20,7 +31,9 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, None, 4, 2, None, None, 5, None],
         [None, 4, 9, 7, 5, None, 3, None, 6]
     ]
+    # endregion
 
+    # region Empty board
     empty_board = [
         [None, None, None, None, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None],
@@ -32,7 +45,9 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, None, None, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None]
     ]
+    # endregion
 
+    # region Sole and unique candidate boards
     sole_candidate_board = [
         [None, None, None, None, None, 1, None, None, None],
         [None, None, None, None, None, None, None, None, None],
@@ -68,7 +83,9 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, None, None, None, None, None, None, None],
         [None, None, None, None, 4, None, None, None, None]
     ]
+    # endregion
 
+    # region Block+row/column/block boards
     block_rc_board = [
         [None, None, None, None, 7, None, None, None, None],
         [None, None, None, None, None, None, None, None, None],
@@ -92,7 +109,9 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, None, 8, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None]
     ]
+    # endregion
 
+    # region Naked tuple boards
     naked_pair_board = [
         [None, 2, None, 1, None, None, None, None, None],
         [None, None, 6, None, None, None, None, None, None],
@@ -164,7 +183,9 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, None, None, None, None, None, None, 1],
         [None, None, 5, 8, 7, None, None, None, None]
     ]
+    # endregion
 
+    # region Hidden tuple boards
     hidden_pair_board = [
         [None, 4, 9, 1, 3, 2, None, None, None],
         [None, 8, 1, 4, 7, 9, None, None, None],
@@ -212,7 +233,9 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, 3, None, None, 9, 8, 2, 1],
         [None, None, None, None, 8, None, 9, 3, 7]
     ]
+    # endregion
 
+    # region Fish boards
     basic_fish_row_board = [
         [None, 4, 1, 7, 2, 9, None, 3, None],
         [7, 6, 9, None, None, 3, 4, None, 2],
@@ -272,7 +295,9 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, 9, None, 2, None, None, None, 7, None],
         [4, None, None, None, None, None, None, None, 1]
     ]
+    # endregion
 
+    # region Single digit pattern boards
     skyscraper_col_board = [
         [6, 9, 7, None, None, None, None, None, 2],
         [None, None, 1, 9, 7, 2, None, 6, 3],
@@ -285,6 +310,20 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, 6, 8, None, 7, None, None, 9]
     ]
 
+    skyscraper_row_board = [
+        [None, None, 1, None, 2, 8, 7, 5, 9],
+        [None, 8, 7, 9, None, 5, 1, 3, 2],
+        [9, 5, 2, 1, 7, 3, 4, 8, 6],
+        [None, 2, None, 7, None, None, 3, 4, None],
+        [None, None, None, 5, None, None, 2, 7, None],
+        [7, 1, 4, 8, 3, 2, 6, 9, 5],
+        [None, None, None, None, 9, None, 8, 1, 7],
+        [None, 7, 8, None, 5, 1, 9, 6, 3],
+        [1, 9, None, None, 8, 7, 5, 2, 4]
+    ]
+    # endregion
+
+    # region Rotation boards
     rotation_board = [
         [1, 2, None, None, None, None, None, None, 3],
         [None, None, None, None, None, None, None, None, None],
@@ -296,15 +335,14 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, None, None, None, 7, None, None, None],
         [4, None, None, None, None, None, None, None, 8]
     ]
+    # endregion
 
-    def get_board_copy(self, board):
-        return copy.deepcopy(board)
-
+    # endregion
     ###############################################################################################################
     # Constructor tests
     # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
     ###############################################################################################################
-
+    # region
     def test_init_possibilities(self):
         sp = SudokuPuzzle(self.get_board_copy(self.test_board))
         board = sp.get_board()
@@ -386,17 +424,21 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assertDictEqual(sp.locs_left_by_block[0], expected_locs_left_by_block_0)
         self.assertDictEqual(sp.locs_left_by_block[7], expected_locs_left_by_block_7)
 
+    # endregion
     ###############################################################################################################
     # Enumerate candidates tests
     # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
     ###############################################################################################################
-
+    # region
     def test_enumerate_possibilities_by_row(self):
         sp = SudokuPuzzle(self.get_board_copy(self.test_board))
         row_1_possibilities = sp.enumerate_row_possibilities(1)
-        self.assertListEqual(row_1_possibilities, [{9, 5}, set(), {1, 3}, {9, 2, 5}, set(), set(), {9, 2, 5}, {9, 2, 3, 4}, {9, 2, 4}])
+        self.assertListEqual(row_1_possibilities,
+                             [{9, 5}, set(), {1, 3}, {9, 2, 5}, set(), set(), {9, 2, 5}, {9, 2, 3, 4}, {9, 2, 4}])
         row_6_possibilities = sp.enumerate_row_possibilities(6)
-        self.assertListEqual(row_6_possibilities, [{2, 5, 6, 7}, {1, 2, 3, 5, 7}, set(), {1, 6}, set(), {3, 6}, {2}, {1, 2, 4, 7}, {2, 4, 7}])
+        self.assertListEqual(row_6_possibilities,
+                             [{2, 5, 6, 7}, {1, 2, 3, 5, 7}, set(), {1, 6}, set(), {3, 6}, {2}, {1, 2, 4, 7},
+                              {2, 4, 7}])
 
     def test_enumerate_possibilities_by_col(self):
         sp = SudokuPuzzle(self.get_board_copy(self.test_board))
@@ -410,16 +452,17 @@ class TestSudokuPuzzle(unittest.TestCase):
     def test_enumerate_possibilities_by_block(self):
         sp = SudokuPuzzle(self.get_board_copy(self.test_board))
         block_1_possibilities = sp.enumerate_block_possibilities(1)
-        self.assertListEqual(block_1_possibilities, [{9, 5}, set(), set(), {9, 2, 5}, set(), set(), {9, 2, 5, 6}, set(), {9, 5, 6}])
+        self.assertListEqual(block_1_possibilities,
+                             [{9, 5}, set(), set(), {9, 2, 5}, set(), set(), {9, 2, 5, 6}, set(), {9, 5, 6}])
         block_6_possibilities = sp.enumerate_block_possibilities(6)
         self.assertListEqual(block_6_possibilities, [{2, 5, 6, 7}, {1, 2, 3, 5, 7}, set(), {6, 7},
                                                      {1, 3, 7}, {1, 3, 7}, {2}, set(), set()])
-
+    # endregion
     ###############################################################################################################
     # Sole candidate tests
     # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
     ###############################################################################################################
-
+    # region
     def test_fill_sole_candidates(self):
         sp = SudokuPuzzle(self.get_board_copy(self.sole_candidate_board))
         (cell_y, cell_x) = (5, 5)
@@ -434,12 +477,12 @@ class TestSudokuPuzzle(unittest.TestCase):
             self.assertTrue(5 not in new_p[y][cell_x])
         for x in all_locs:
             self.assertTrue(5 not in new_p[cell_y][x])
-
+    # endregion
     ###############################################################################################################
     # Unique candidate tests
     # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
     ###############################################################################################################
-
+    # region
     def test_fill_unique_candidates(self):
         sp = SudokuPuzzle(self.get_board_copy(self.unique_candidate_board))
         (cell_y, cell_x) = (0, 7)
@@ -462,10 +505,13 @@ class TestSudokuPuzzle(unittest.TestCase):
         sp.fill_unique_candidates()
         self.assertEqual(cell.val, 4)
 
+    # endregion
     ###############################################################################################################
     # Helper methods for block row/column interactions
     # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
     ###############################################################################################################
+    # region
+
     def test_find_unique_offsets_for_block_num_and_val(self):
         self.assertEqual(SudokuPuzzle.find_unique_offsets_for_cell_nums({0}), ({0}, {0}))
         self.assertEqual(SudokuPuzzle.find_unique_offsets_for_cell_nums({5}), ({1}, {2}))
@@ -514,10 +560,12 @@ class TestSudokuPuzzle(unittest.TestCase):
         row_possibilities = sp.enumerate_row_possibilities(y)
         self.assert_should_contain(should_contain, row_possibilities, {val})
 
+    # endregion
     ###############################################################################################################
     # Block block interaction tests
     # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
     ###############################################################################################################
+    # region
 
     def test_block_block_horizontal_interaction(self):
         sp = SudokuPuzzle(self.get_board_copy(self.block_block_board))
@@ -573,11 +621,14 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assertListEqual(vals, expected_vals)
         self.assertListEqual(naked_tuple_vals, expected_naked_tuple_vals)
 
+    # endregion
     ###############################################################################################################
     # Naked pair tests
     # http://hodoku.sourceforge.net/en/tech_naked.php
     # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
     ###############################################################################################################
+    # region
+
     def test_naked_pair_y(self):
         sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.naked_pair_board)))
         vals = {4, 7}
@@ -614,11 +665,14 @@ class TestSudokuPuzzle(unittest.TestCase):
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain(should_contain_after, block_possibilities, vals)
 
+    # endregion
     ###############################################################################################################
     # Naked tuple tests
     # http://hodoku.sourceforge.net/en/tech_naked.php
     # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
     ###############################################################################################################
+    # region
+
     def test_naked_tuple_y_2(self):
         sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.naked_pair_board)))
         vals = {4, 7}
@@ -727,10 +781,12 @@ class TestSudokuPuzzle(unittest.TestCase):
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain_count(should_contain_after, block_possibilities, vals)
 
+    # endregion
     ###############################################################################################################
     # Hidden subset tests
     # http://hodoku.sourceforge.net/en/tech_hidden.php
     ###############################################################################################################
+    # region
 
     def test_hidden_subset_row_2(self):
         sp = SudokuPuzzle(self.get_board_copy(SudokuPuzzle.reflect_board_over_xy(self.hidden_pair_board)))
@@ -810,10 +866,12 @@ class TestSudokuPuzzle(unittest.TestCase):
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain_count(should_contain_after, block_possibilities, excluded_vals)
 
+    # endregion
     ###############################################################################################################
     # X-Wing/Basic fish tests
     # http://hodoku.sourceforge.net/en/tech_fishb.php
     ###############################################################################################################
+    # region
 
     def test_basic_fish_in_rows(self):
         y1 = 1
@@ -1010,10 +1068,31 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assert_should_contain(should_contain_after_x3, x3_possibilities, {val})
         self.assert_should_contain(should_contain_after_x4, x4_possibilities, {val})
 
+    #endregion
     ###############################################################################################################
     # Skyscraper
     # http://hodoku.sourceforge.net/en/tech_sdp.php
     ###############################################################################################################
+    # region
+
+    def test_skyscraper_rows(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.skyscraper_row_board))
+        candidate = 4
+        x1 = 3
+        x2 = 4
+        should_contain_before_x1 = [True, False, False, False, False, False, True, True, False]
+        should_contain_before_x2 = [False, True, False, False, True, False, False, False, False]
+        x1_possibilities = sp.enumerate_col_possibilities(x1)
+        x2_possibilities = sp.enumerate_col_possibilities(x2)
+        self.assert_should_contain(should_contain_before_x1, x1_possibilities, {candidate})
+        self.assert_should_contain(should_contain_before_x2, x2_possibilities, {candidate})
+        sp.skyscraper_in_rows(candidate)
+        should_contain_after_x1 = [False, False, False, False, False, False, True, True, False]
+        should_contain_after_x2 = [False, True, False, False, True, False, False, False, False]
+        x1_possibilities = sp.enumerate_col_possibilities(x1)
+        x2_possibilities = sp.enumerate_col_possibilities(x2)
+        self.assert_should_contain(should_contain_after_x1, x1_possibilities, {candidate})
+        self.assert_should_contain(should_contain_after_x2, x2_possibilities, {candidate})
 
     def test_skyscraper_cols(self):
         sp = SudokuPuzzle(self.get_board_copy(self.skyscraper_col_board))
@@ -1034,38 +1113,12 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assert_should_contain(should_contain_after_y1, y1_possibilities, {candidate})
         self.assert_should_contain(should_contain_after_y2, y2_possibilities, {candidate})
 
-
+    # endregion
     ###############################################################################################################
     # Helper methods
     ###############################################################################################################
 
-    def assert_should_contain(self, should_contain, possibilities, vals):
-        """
-        :param should_contain: Length n list containing True/False
-        :param possibilities: Length n list containing sets of possibilities
-        :param vals: The values to check that are in possibilities
-        Asserts that vals is a subset of possibilities[k] iff should_contain[k] == true
-        """
-        if len(possibilities) != len(should_contain):
-            self.fail("should_contain and possibilities do not have the same length")
-        for k in range(0, len(possibilities)):
-            contains = vals.issubset(possibilities[k])
-            self.assertTrue(contains == should_contain[k])
-
-    def assert_should_contain_count(self, should_contain_count, possibilities, vals):
-        """
-        :param should_contain_count: Length n list containing ints
-        :param possibilities: Length n list containing sets of possibilities
-        :param vals: The values to check that are in possibilities
-        Asserts that intersection between vals and possibilities[k] has length == should_contain_n[k]
-        """
-        if len(possibilities) != len(should_contain_count):
-            self.fail("should_contain_n and possibilities do not have the same length")
-        for k in range(0, len(possibilities)):
-            count = len(possibilities[k].intersection(vals))
-            # print(k, possibilities[k].intersection(vals), count, should_contain_count[k])
-            self.assertTrue(count == should_contain_count[k])
-
+    # region Board Rotation/Reflection
     def test_rotate_board_cw(self):
         expected_rotated_board = [
             [None, None, None, None, 2, None, None, None, None],
@@ -1112,7 +1165,7 @@ class TestSudokuPuzzle(unittest.TestCase):
 
         # Rotating cw then ccw should stay the same
         self.assertListEqual(SudokuPuzzle.rotate_board_ccw(
-                SudokuPuzzle.rotate_board_cw(self.block_block_board)), self.block_block_board)
+            SudokuPuzzle.rotate_board_cw(self.block_block_board)), self.block_block_board)
 
     def test_reflect_board_over_xy(self):
         expected_reflected_board = [
@@ -1131,6 +1184,38 @@ class TestSudokuPuzzle(unittest.TestCase):
         sp2 = SudokuPuzzle(SudokuPuzzle.reflect_board_over_xy(SudokuPuzzle.reflect_board_over_xy(self.get_board_copy(
             self.rotation_board))))
         self.assert_sp_board_equal(sp2, self.rotation_board)
+    # endregion
+
+    # region Assert Should Contain
+
+    def assert_should_contain(self, should_contain, possibilities, vals):
+        """
+        :param should_contain: Length n list containing True/False
+        :param possibilities: Length n list containing sets of possibilities
+        :param vals: The values to check that are in possibilities
+        Asserts that vals is a subset of possibilities[k] iff should_contain[k] == true
+        """
+        if len(possibilities) != len(should_contain):
+            self.fail("should_contain and possibilities do not have the same length")
+        for k in range(0, len(possibilities)):
+            contains = vals.issubset(possibilities[k])
+            self.assertTrue(contains == should_contain[k])
+
+    def assert_should_contain_count(self, should_contain_count, possibilities, vals):
+        """
+        :param should_contain_count: Length n list containing ints
+        :param possibilities: Length n list containing sets of possibilities
+        :param vals: The values to check that are in possibilities
+        Asserts that intersection between vals and possibilities[k] has length == should_contain_n[k]
+        """
+        if len(possibilities) != len(should_contain_count):
+            self.fail("should_contain_n and possibilities do not have the same length")
+        for k in range(0, len(possibilities)):
+            count = len(possibilities[k].intersection(vals))
+            # print(k, possibilities[k].intersection(vals), count, should_contain_count[k])
+            self.assertTrue(count == should_contain_count[k])
+
+    # endregion
 
     def assert_sp_board_equal(self, sp, expected_board):
         for y in all_locs:
@@ -1141,6 +1226,7 @@ class TestSudokuPuzzle(unittest.TestCase):
         for y in all_locs:
             for x in all_locs:
                 self.assertEqual(sp1.cells_dict[sp1.board[y][x]].val, sp2.cells_dict[sp2.board[y][x]].val)
+
 
 if __name__ == '__main__':
     pass
