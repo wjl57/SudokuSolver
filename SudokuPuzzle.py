@@ -707,10 +707,7 @@ class SudokuPuzzle:
         :param val: The candidate to find. Precondition: 1 <= val <= 9
         Finds skyscrapers with the 'base' in a row and eliminates possibilities accordingly.
         """
-        candidate_loc_dict = {}
-        for y in all_locs:
-            if len(self.locs_left_by_y[y][val]) == 2:
-                candidate_loc_dict[y] = self.locs_left_by_y[y][val]
+        candidate_loc_dict = self.loc_dict_with_len_constraint_for_val(self.locs_left_by_y, val, lambda l: l == 2)
         for (y1, y2) in itertools.combinations(candidate_loc_dict.keys(), 2):
             locs_1 = candidate_loc_dict[y1]
             locs_2 = candidate_loc_dict[y2]
@@ -729,10 +726,7 @@ class SudokuPuzzle:
         :param val: The candidate to find. Precondition: 1 <= val <= 9
         Finds skyscrapers with the 'base' in a col and eliminates possibilities accordingly.
         """
-        candidate_loc_dict = {}
-        for x in all_locs:
-            if len(self.locs_left_by_x[x][val]) == 2:
-                candidate_loc_dict[x] = self.locs_left_by_x[x][val]
+        candidate_loc_dict = self.loc_dict_with_len_constraint_for_val(self.locs_left_by_x, val, lambda l: l == 2)
         for (x1, x2) in itertools.combinations(candidate_loc_dict.keys(), 2):
             locs_1 = candidate_loc_dict[x1]
             locs_2 = candidate_loc_dict[x2]
@@ -746,6 +740,21 @@ class SudokuPuzzle:
                 for cell_name in cells_seen_by_both:
                     self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
     # endregion
+
+    @staticmethod
+    def loc_dict_with_len_constraint_for_val(locs_left_by, val, len_lambda):
+        """
+        :param locs_left_by: locs_left_by[offset][val] should contain a set with all occurrences of val in the
+        Row/Col/Block
+        :param val: The candidate to find in locs_left_by. Precondition: 1 <= val <= 9
+        :param len_lambda: The lambda function to execute of the length of each possibility.
+        Should be a function that takes in a length and returns true/false
+        :return: A dictionary with:
+        Key: Offset within a row/col/block.
+        Value: A set containing all possible locs for that val
+        where the length of the set satisfies the supplied lambda
+        """
+        return {o: locs_left_by[o][val] for o in all_locs if len_lambda(len(locs_left_by[o][val]))}
 
     def get_cell_names_seen_by_both_cells(self, cell_name_1, cell_name_2):
         """
@@ -767,6 +776,38 @@ class SudokuPuzzle:
         cells_seen_by_both = seen_by_1.intersection(seen_by_2)
         cells_seen_by_both.difference_update({cell_name_1, cell_name_2})
         return cells_seen_by_both
+
+    # region Kite
+    def kite(self, val):
+        """
+        :param val: The candidate to find. Precondition: 1 <= val <= 9
+        Finds kites with the candidate and eliminates possibilities accordingly.
+        """
+        candidate_loc_dict_y = self.loc_dict_with_len_constraint_for_val(self.locs_left_by_y, val, lambda l: l == 2)
+        candidate_loc_dict_x = self.loc_dict_with_len_constraint_for_val(self.locs_left_by_x, val, lambda l: l == 2)
+
+        y_block_num_cell_dict = defaultdict(set)
+        x_block_num_cell_dict = defaultdict(set)
+        for y, locs in candidate_loc_dict_y.items():
+            for x in locs:
+                cell = self.cells_dict[self.board[y][x]]
+                y_block_num_cell_dict[cell.block].add(cell)
+        for x, locs in candidate_loc_dict_x.items():
+            for y in locs:
+                cell = self.cells_dict[self.board[y][x]]
+                x_block_num_cell_dict[cell.block].add(cell)
+
+        # If any of the cells from the y_loc_dict are in the same block num as one from the x_loc_dict
+        shared_block_nums = set(y_block_num_cell_dict.keys()).intersection(set(x_block_num_cell_dict.keys()))
+        for block_num in shared_block_nums:
+            y_cells = y_block_num_cell_dict[block_num]
+            x_cells = x_block_num_cell_dict[block_num]
+            for y_cell in y_cells:
+                x = next(iter(candidate_loc_dict_y[y_cell.y].difference({y_cell.x})))
+                for x_cell in x_cells:
+                    y = next(iter(candidate_loc_dict_x[x_cell.x].difference({x_cell.y})))
+                    self.remove_possibility_from_puzzle_by_loc(y, x, val)
+    # endregion
 
     # region Enumerate Possibilities
     def enumerate_row_possibilities(self, y):

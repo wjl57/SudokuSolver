@@ -321,6 +321,30 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, 7, 8, None, 5, 1, 9, 6, 3],
         [1, 9, None, None, 8, 7, 5, 2, 4]
     ]
+
+    kite_board = [
+        [None, 8, 1, None, 2, None, 6, None, None],
+        [None, 4, 2, None, 6, None, None, 8, 9],
+        [None, 5, 6, 8, None, None, 2, 4, None],
+        [6, 9, 3, 1, 4, 2, 7, 5, 8],
+        [4, 2, 8, 3, 5, 7, 9, 1, 6],
+        [1, 7, 5, 6, 8, 9, 3, 2, 4],
+        [5, 1, None, None, 3, 6, 8, 9, 2],
+        [2, 3, None, None, None, 8, 4, 6, None],
+        [8, 6, None, 2, None, None, None, None, None]
+    ]
+
+    dual_kite_board = [
+        [3, 2, None, 5, 4, 7, 9, None, 6],
+        [None, None, 6, 2, 1, 3, None, 5, None],
+        [None, 4, 5, 6, 9, 8, 2, 3, None],
+        [5, None, None, 4, 7, 2, None, None, None],
+        [None, None, 7, 9, None, 1, None, 2, 5],
+        [None, None, 2, 8, None, 5, 7, None, None],
+        [2, 1, 4, 3, 5, 9, 6, 7, 8],
+        [6, 7, 3, 1, 8, 4, 5, 9, 2],
+        [None, 5, None, 7, 2, 6, 1, 4, 3]
+    ]
     # endregion
 
     # region Rotation boards
@@ -1113,6 +1137,25 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assert_should_contain(should_contain_after_y1, y1_possibilities, {candidate})
         self.assert_should_contain(should_contain_after_y2, y2_possibilities, {candidate})
 
+    def test_kite(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.kite_board))
+        candidate = 5
+        p = sp.get_possibilities()
+        self.assertSetEqual(p[1][3], {5, 7})
+        sp.kite(candidate)
+        p = sp.get_possibilities()
+        self.assertSetEqual(p[1][3], {7})
+
+    def test_dual_kite(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.dual_kite_board))
+        candidate = 1
+        p = sp.get_possibilities()
+        self.assertSetEqual(p[3][8], {1, 9})
+        self.assertSetEqual(p[5][7], {1, 6})
+        sp.kite(candidate)
+        p = sp.get_possibilities()
+        self.assertSetEqual(p[3][8], {9})
+        self.assertSetEqual(p[5][7], {6})
     # endregion
     ###############################################################################################################
     # Helper methods
