@@ -52,7 +52,21 @@ class SudokuPuzzle:
         cell = self.cells_dict[cell_name]
         self.set_val_in_puzzle(cell.y, cell.x, candidate)
 
+    def revert_guess(self):
+        """
+        Reverts the SudokuPuzzle to the previous state before the current guess
+        """
+        if self.guess:
+            self.cells_dict = self.guess.previous_cells_dict
+            self.remove_possibility_from_puzzle_by_cell_name(self.guess.guess_cell_name, self.guess.guess_candidate)
+            self.guess = self.guess.previous_guess
+            self.recalculate_fields()
+
     def initialize_new_puzzle(self, board):
+        """
+        Used when initializing a new puzzle
+        :param board: A 2D-matrix containing known values
+        """
         # For every location create a SudokuCell object and add it to the appropriate cell lists
         for y in all_locs:
             for x in all_locs:
@@ -70,9 +84,23 @@ class SudokuPuzzle:
                 if val is not None:
                     self.set_val_in_puzzle(y, x, val)
 
-        # Initialize all locs_left_by according to the remaining possibilities
+        # Calculate remaining_in and locs_left_by fields
+        self.recalculate_fields()
+
+    def recalculate_fields(self):
+        """
+        Recalculate the remaining_in and locs_left_by fields based on the cells_dict
+        """
+        self.remaining_in_y = [copy.deepcopy(all_possibilities) for _ in all_locs]
+        self.remaining_in_x = [copy.deepcopy(all_possibilities) for _ in all_locs]
+        self.remaining_in_blocks = [copy.deepcopy(all_possibilities) for _ in all_locs]
+
         for cell_name in self.cells_dict.keys():
             cell = self.cells_dict[cell_name]
+            if cell.val:
+                self.remaining_in_y[cell.y].discard(cell.val)
+                self.remaining_in_x[cell.x].discard(cell.val)
+                self.remaining_in_blocks[cell.block].discard(cell.val)
             possibilities = cell.possibilities
             for p in possibilities:
                 self.locs_left_by_y[cell.y][p].add(cell.x)

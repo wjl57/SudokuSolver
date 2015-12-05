@@ -35,9 +35,9 @@ class TestSudokuPuzzle(unittest.TestCase):
 
     # region Guess board
     guess_board = [
-        [4, None, None, None, None, None, None, None, None],
-        [None, None, None, 4, None, None, None, None, None],
-        [None, None, None, None, None, None, None, 5, None],
+        [1, 2, 3, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None],
@@ -1178,9 +1178,21 @@ class TestSudokuPuzzle(unittest.TestCase):
     def test_make_guess(self):
         sp = SudokuPuzzle(self.get_board_copy(self.guess_board))
         sp.print_board()
-        sp.make_guess(4, sp.board[2][6])
+        sp.make_guess(4, sp.board[0][3])
         sp.print_board()
-        sp.make_guess(6, sp.board[1][1])
+        sp.make_guess(5, sp.board[0][4])
+        sp.print_board()
+        sp.make_guess(6, sp.board[0][5])
+        sp.print_board()
+        sp.revert_guess()
+        sp.print_board()
+        sp.make_guess(7, sp.board[0][5])
+        sp.print_board()
+        sp.revert_guess()
+        sp.print_board()
+        sp.revert_guess()
+        sp.print_board()
+        sp.revert_guess()
         sp.print_board()
     # endregion
 
@@ -1287,6 +1299,7 @@ class TestSudokuPuzzle(unittest.TestCase):
 
     # endregion
 
+    # region Assert Board Equality
     def assert_sp_board_equal(self, sp, expected_board):
         for y in all_locs:
             for x in all_locs:
@@ -1296,7 +1309,7 @@ class TestSudokuPuzzle(unittest.TestCase):
         for y in all_locs:
             for x in all_locs:
                 self.assertEqual(sp1.cells_dict[sp1.board[y][x]].val, sp2.cells_dict[sp2.board[y][x]].val)
-
+    # endregion
 
 if __name__ == '__main__':
     pass
