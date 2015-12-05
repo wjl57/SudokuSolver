@@ -2,6 +2,7 @@ from collections import defaultdict
 import copy
 import itertools
 from SudokuCell import SudokuCell
+from SudokuGuess import SudokuGuess
 from SudokuHelper import all_locs
 from SudokuHelper import cell_locs
 from SudokuHelper import all_possibilities
@@ -12,7 +13,7 @@ __author__ = 'william'
 
 class SudokuPuzzle:
 
-    def __init__(self, board):
+    def __init__(self, board=None):
         # A dictionary from cell name to the SudokuCell object
         self.cells_dict = {}
         # A 2D-matrix containing cell names
@@ -35,7 +36,23 @@ class SudokuPuzzle:
         self.locs_left_by_x = [defaultdict(set) for x in all_locs]
         # locs_left_by_block[b][val] contains a set with all the block cell nums of val in block b
         self.locs_left_by_block = [defaultdict(set) for block_num in all_locs]
+        # guess contains a None or a SudokuGuess object
+        self.guess = None
 
+        if board is not None:
+            self.initialize_new_puzzle(board)
+
+    def make_guess(self, candidate, cell_name):
+        """
+        :param candidate: The candidate which is thought to be in the location of cell_name
+        :param cell_name: The cell name which is thought to contain the candidate
+        Sets self.guess according to the candidate and cell_name of the next guess
+        """
+        self.guess = SudokuGuess(candidate, cell_name, self.cells_dict, self.guess)
+        cell = self.cells_dict[cell_name]
+        self.set_val_in_puzzle(cell.y, cell.x, candidate)
+
+    def initialize_new_puzzle(self, board):
         # For every location create a SudokuCell object and add it to the appropriate cell lists
         for y in all_locs:
             for x in all_locs:
@@ -264,7 +281,6 @@ class SudokuPuzzle:
                 for val in possibilities:
                     self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
     # endregion
-
     # endregion
 
     def get_possibilities(self):
@@ -279,6 +295,7 @@ class SudokuPuzzle:
         """
         return [[self.cells_dict[self.board[y][x]].val for x in all_locs] for y in all_locs]
 
+    # region Sole Candidates
     def fill_sole_candidates(self):
         """
         Fills in sole candidates
@@ -288,6 +305,7 @@ class SudokuPuzzle:
             cell = self.cells_dict[cell_name]
             if len(cell.possibilities) == 1:
                 self.set_val_in_puzzle(cell.y, cell.x, next(iter(cell.possibilities)))
+    # endregion
 
     # region Unique Candidates
     def fill_unique_candidates_y(self, y):
@@ -891,7 +909,7 @@ class SudokuPuzzle:
         print('+-------------------------------------------------------------------+')
     # endregion
 
-    # region Rotate Board
+    # region Rotate/Reflect Board
     @staticmethod
     def rotate_board_cw(board, n=1):
         """
@@ -927,7 +945,6 @@ class SudokuPuzzle:
         for _ in range(0, n % 4):
             board = rotate_ccw(board)
         return board
-    # endregion
 
     @staticmethod
     def reflect_board_over_xy(board):
@@ -940,3 +957,6 @@ class SudokuPuzzle:
             for x in all_locs:
                 rotated_board[y][x] = board[x][y]
         return rotated_board
+    # endregion
+
+    # End file

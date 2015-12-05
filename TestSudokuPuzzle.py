@@ -33,6 +33,19 @@ class TestSudokuPuzzle(unittest.TestCase):
     ]
     # endregion
 
+    # region Guess board
+    guess_board = [
+        [4, None, None, None, None, None, None, None, None],
+        [None, None, None, 4, None, None, None, None, None],
+        [None, None, None, None, None, None, None, 5, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None]
+    ]
+
     # region Empty board
     empty_board = [
         [None, None, None, None, None, None, None, None, None],
@@ -1094,7 +1107,7 @@ class TestSudokuPuzzle(unittest.TestCase):
 
     #endregion
     ###############################################################################################################
-    # Skyscraper
+    # Single Digit Patterns
     # http://hodoku.sourceforge.net/en/tech_sdp.php
     ###############################################################################################################
     # region
@@ -1157,6 +1170,20 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assertSetEqual(p[3][8], {9})
         self.assertSetEqual(p[5][7], {6})
     # endregion
+    ###############################################################################################################
+    # Guessing
+    ###############################################################################################################
+    # region
+
+    def test_make_guess(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.guess_board))
+        sp.print_board()
+        sp.make_guess(4, sp.board[2][6])
+        sp.print_board()
+        sp.make_guess(6, sp.board[1][1])
+        sp.print_board()
+    # endregion
+
     ###############################################################################################################
     # Helper methods
     ###############################################################################################################
