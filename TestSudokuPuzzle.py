@@ -1177,23 +1177,86 @@ class TestSudokuPuzzle(unittest.TestCase):
 
     def test_make_guess(self):
         sp = SudokuPuzzle(self.get_board_copy(self.guess_board))
-        sp.print_board()
+        self.assert_row_contains_candidates(sp, 0, [1, 2, 3, None, None, None, None, None, None])
+        self.assert_missing_row_possibilities(sp, 8, [{1}, {2}, {3}, None, None, None, None, None, None])
+        # Guess 1.0
         sp.make_guess(4, sp.board[0][3])
-        sp.print_board()
+        self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, None, None, None, None, None])
+        self.assert_missing_row_possibilities(sp, 8, [{1}, {2}, {3}, {4}, None, None, None, None, None])
+        # Guess 2.0
         sp.make_guess(5, sp.board[0][4])
-        sp.print_board()
+        sp.set_val_in_puzzle(0, 8, 9)
+        sp.remove_possibility_from_puzzle_by_loc(8, 0, 2)
+        self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, 5, None, None, None, 9])
+        self.assert_missing_row_possibilities(sp, 8, [{1, 2}, {2}, {3}, {4}, {5}, None, None, None, {9}])
+        # Guess 3.0
         sp.make_guess(6, sp.board[0][5])
-        sp.print_board()
+        sp.set_val_in_puzzle(0, 7, 8)
+        sp.remove_possibility_from_puzzle_by_loc(8, 1, 3)
+        self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, 5, 6, None, 8, 9])
+        self.assert_missing_row_possibilities(sp, 8, [{1, 2}, {2, 3}, {3}, {4}, {5}, {6}, None, {8}, {9}])
+        p = sp.get_possibilities()
+        sp.print_possibilities()
+        # Guesses 1.0, 2.0, 3.0 still apply
+        self.assertTrue(6 not in p[0][5])
+        self.assertTrue(5 not in p[0][4])
+        self.assertTrue(4 not in p[0][3])
+        # Revert Guess 3.0
         sp.revert_guess()
-        sp.print_board()
+        sp.print_possibilities()
+        self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, 5, None, None, None, 9])
+        self.assert_missing_row_possibilities(sp, 8, [{1, 2}, {2}, {3}, {4}, {5}, None, None, None, {9}])
+        p = sp.get_possibilities()
+        # The guess from 3.0 should still apply.
+        # So should guesses 1.0, 2.0
+        self.assertTrue(6 not in p[0][5])
+        self.assertTrue(5 not in p[0][4])
+        self.assertTrue(4 not in p[0][3])
+        # Guess 3.1
         sp.make_guess(7, sp.board[0][5])
-        sp.print_board()
+        self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, 5, 7, None, None, 9])
+        self.assert_missing_row_possibilities(sp, 8, [{1, 2}, {2}, {3}, {4}, {5}, {7}, None, None, {9}])
+        p = sp.get_possibilities()
+        # We made another guess (3.1) after rolling back 3.0 so the removed possibilities from 3.0 still apply
+        # So should guesses 1.0, 2.0, 3.1
+        self.assertTrue(6 not in p[0][5])
+        self.assertTrue(7 not in p[0][5])
+        self.assertTrue(5 not in p[0][4])
+        self.assertTrue(4 not in p[0][3])
+        # Revert Guess 3.1
         sp.revert_guess()
-        sp.print_board()
+        self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, 5, None, None, None, 9])
+        self.assert_missing_row_possibilities(sp, 8, [{1, 2}, {2}, {3}, {4}, {5}, None, None, None, {9}])
+        p = sp.get_possibilities()
+        # We have now back in 2.0 after rolling back 3.0, 3.1 so their eliminated guesses still apply
+        # So should guesses 1.0, 2.0
+        self.assertTrue(6 not in p[0][5])
+        self.assertTrue(7 not in p[0][5])
+        self.assertTrue(5 not in p[0][4])
+        self.assertTrue(4 not in p[0][3])
+        # Revert Guess 2.0
         sp.revert_guess()
-        sp.print_board()
+        self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, None, None, None, None, None])
+        self.assert_missing_row_possibilities(sp, 8, [{1}, {2}, {3}, {4}, None, None, None, None, None])
+        p = sp.get_possibilities()
+        # The removed guesses from 3.1, 3.2 no longer apply since we rolled back twice
+        # Now only guesses 1.0, 2.0 apply
+        self.assertTrue(6 in p[0][5])
+        self.assertTrue(7 in p[0][5])
+        self.assertTrue(5 not in p[0][4])
+        self.assertTrue(4 not in p[0][3])
+        # Revert Guess 1
         sp.revert_guess()
-        sp.print_board()
+        self.assert_row_contains_candidates(sp, 0, [1, 2, 3, None, None, None, None, None, None])
+        self.assert_missing_row_possibilities(sp, 8, [{1}, {2}, {3}, None, None, None, None, None, None])
+        p = sp.get_possibilities()
+        # The removed guesses from 2.0, 3.0, 3.1 no longer apply since we rolled back at least 2 times
+        # Now only guess 1.0 applies
+        self.assertTrue(6 in p[0][5])
+        self.assertTrue(7 in p[0][5])
+        self.assertTrue(5 in p[0][4])
+        self.assertTrue(4 not in p[0][3])
+
     # endregion
 
     ###############################################################################################################
@@ -1310,6 +1373,21 @@ class TestSudokuPuzzle(unittest.TestCase):
             for x in all_locs:
                 self.assertEqual(sp1.cells_dict[sp1.board[y][x]].val, sp2.cells_dict[sp2.board[y][x]].val)
     # endregion
+
+    def assert_loc_contains_candidate(self, sp, y, x, candidate):
+        self.assertEqual(sp.cells_dict[sp.board[y][x]].val, candidate)
+
+    def assert_row_contains_candidates(self, sp, y, candidates):
+        for x in all_locs:
+            self.assertEqual(sp.cells_dict[sp.board[y][x]].val, candidates[x])
+
+    def assert_missing_row_possibilities(self, sp, y, removed_possibilities):
+        for x in all_locs:
+            if removed_possibilities[x] is not None:
+                self.assertSetEqual(sp.cells_dict[sp.board[y][x]].possibilities,
+                                    all_possibilities.difference(removed_possibilities[x]))
+            else:
+                self.assertSetEqual(sp.cells_dict[sp.board[y][x]].possibilities, all_possibilities)
 
 if __name__ == '__main__':
     pass

@@ -11,9 +11,9 @@ class SudokuCell:
         self.x = x
         self.block = SudokuHelper.loc_to_block_num(y, x)
         self.block_cell_num = SudokuHelper.loc_to_block_cell_num(y, x)
-        self.possibilities = copy.deepcopy(possibilities) if possibilities else {1, 2, 3, 4, 5, 6, 7, 8, 9}
+        self.possibilities = copy.deepcopy(possibilities) if possibilities is not None else {1, 2, 3, 4, 5, 6, 7, 8, 9}
         self.name = 'c' + str(self.y) + str(self.x) + str(self.block)
-        self.val = val if val else None
+        self.val = val
 
     def set_val(self, val):
         self.val = val
