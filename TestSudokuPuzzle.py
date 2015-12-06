@@ -1196,14 +1196,12 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, 5, 6, None, 8, 9])
         self.assert_missing_row_possibilities(sp, 8, [{1, 2}, {2, 3}, {3}, {4}, {5}, {6}, None, {8}, {9}])
         p = sp.get_possibilities()
-        sp.print_possibilities()
         # Guesses 1.0, 2.0, 3.0 still apply
         self.assertTrue(6 not in p[0][5])
         self.assertTrue(5 not in p[0][4])
         self.assertTrue(4 not in p[0][3])
         # Revert Guess 3.0
         sp.revert_guess()
-        sp.print_possibilities()
         self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, 5, None, None, None, 9])
         self.assert_missing_row_possibilities(sp, 8, [{1, 2}, {2}, {3}, {4}, {5}, None, None, None, {9}])
         p = sp.get_possibilities()

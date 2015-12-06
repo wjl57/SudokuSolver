@@ -155,6 +155,7 @@ class SudokuPuzzle:
         self.locs_left_by_y[cell.y][val].discard(cell.x)
         self.locs_left_by_x[cell.x][val].discard(cell.y)
         self.locs_left_by_block[cell.block][val].discard(cell.block_cell_num)
+        # TODO: Verify removing the possibility is legal if there was a guess
     # endregion
 
     # region Eliminate Possibilities from Row/Col/Block (except excluded)

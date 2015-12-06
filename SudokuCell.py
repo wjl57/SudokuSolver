@@ -1,5 +1,6 @@
 import copy
 import SudokuHelper
+from SudokuHelper import all_possibilities
 
 __author__ = 'william'
 
@@ -11,7 +12,7 @@ class SudokuCell:
         self.x = x
         self.block = SudokuHelper.loc_to_block_num(y, x)
         self.block_cell_num = SudokuHelper.loc_to_block_cell_num(y, x)
-        self.possibilities = copy.deepcopy(possibilities) if possibilities is not None else {1, 2, 3, 4, 5, 6, 7, 8, 9}
+        self.possibilities = copy.deepcopy(possibilities if possibilities is not None else all_possibilities)
         self.name = 'c' + str(self.y) + str(self.x) + str(self.block)
         self.val = val
 
@@ -19,7 +20,7 @@ class SudokuCell:
         self.val = val
         self.possibilities = set()
 
-    def remove_possibility(self, possibilities):
-        self.possibilities.discard(possibilities)
+    def remove_possibility(self, possibility):
+        self.possibilities.discard(possibility)
 
 
