@@ -25,4 +25,3 @@ class SudokuCell:
             self.possibilities.discard(possibility)
             return True
         return False
-

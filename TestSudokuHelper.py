@@ -97,3 +97,12 @@ class TestSudokuHelper(unittest.TestCase):
         self.assertListEqual(SudokuHelper.get_other_block_nums_vertical(7), [1, 4])
         self.assertListEqual(SudokuHelper.get_other_block_nums_vertical(8), [2, 5])
 
+    def test_cell_name_to_loc(self):
+        self.assertEqual(SudokuHelper.cell_name_to_loc('c000'), (0, 0))
+        self.assertEqual(SudokuHelper.cell_name_to_loc('c100'), (1, 0))
+        self.assertEqual(SudokuHelper.cell_name_to_loc('c220'), (2, 2))
+        self.assertEqual(SudokuHelper.cell_name_to_loc('c241'), (2, 4))
+        self.assertEqual(SudokuHelper.cell_name_to_loc('c313'), (3, 1))
+        self.assertEqual(SudokuHelper.cell_name_to_loc('c455'), (4, 5))
+        self.assertEqual(SudokuHelper.cell_name_to_loc('c688'), (6, 8))
+        self.assertEqual(SudokuHelper.cell_name_to_loc('c757'), (7, 5))

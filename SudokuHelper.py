@@ -78,3 +78,11 @@ def get_other_block_nums_vertical(excluded_block_num):
     """
     start = excluded_block_num % 3
     return [start+3*n for n in cell_locs if start+3*n != excluded_block_num]
+
+
+def cell_name_to_loc(cell_name):
+    """
+    :param cell_name: A cell name in the form 'cYXB' where Y is y-coord, X is x-coord, B is block num
+    :return: (y, x) location of the cell
+    """
+    return int(cell_name[1]), int(cell_name[2])
