@@ -520,6 +520,7 @@ class TestSudokuPuzzle(unittest.TestCase):
     # https://www.kristanix.com/sudokuepic/sudoku-solving-techniques.php
     ###############################################################################################################
     # region
+
     def test_fill_unique_candidates(self):
         sp = SudokuPuzzle(self.get_board_copy(self.unique_candidate_board))
         (cell_y, cell_x) = (0, 7)
