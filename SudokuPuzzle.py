@@ -139,22 +139,27 @@ class SudokuPuzzle:
         :param y: The y location of the cell. Precondition: 0 <= y < 9
         :param x: The x location of the cell. Precondition: 0 <= x < 9
         :param val: The value to remove. Precondition: 1 <= val <= 9
+        :return True if the possibility was removed. False otherwise
         """
         cell_name = self.board[y][x]
-        self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+        return self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
 
     def remove_possibility_from_puzzle_by_cell_name(self, cell_name, val):
         """
         Removes the val from the cell's possibilities.
         Also removes the val from the locs_left_by dicts
         :param cell_name: The name of the cell
-        :param val: The value to remove. Precondition: 1 <= val <= 9
+        :param val: The value to remove. Precondition: 1 <= val <=
+        :return True if the possibility was removed. False otherwise
         """
         cell = self.cells_dict[cell_name]
-        cell.remove_possibility(val)
-        self.locs_left_by_y[cell.y][val].discard(cell.x)
-        self.locs_left_by_x[cell.x][val].discard(cell.y)
-        self.locs_left_by_block[cell.block][val].discard(cell.block_cell_num)
+        val_removed = False
+        if cell.val is None:
+            val_removed = cell.remove_possibility(val)
+            self.locs_left_by_y[cell.y][val].discard(cell.x)
+            self.locs_left_by_x[cell.x][val].discard(cell.y)
+            self.locs_left_by_block[cell.block][val].discard(cell.block_cell_num)
+        return val_removed
         # TODO: Verify removing the possibility is legal if there was a guess
     # endregion
 
@@ -166,12 +171,16 @@ class SudokuPuzzle:
         :param x_to_exclude: A tuple/list containing the x-offsets to ignore in the row.
         Precondition: 0 <= x < 9 for x in x_to_exclude
         Eliminates vals from the possibilities of all cells in the row except the ones with x-offsets in x_to_exclude.
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         for cell_name in self.y_cell_list[y]:
             cell = self.cells_dict[cell_name]
             if cell.x not in x_to_exclude:
                 for val in vals:
-                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+                    if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
+                        any_removed = True
+        return any_removed
 
     def eliminate_possibilities_from_col(self, x, vals, y_to_exclude):
         """
@@ -180,12 +189,16 @@ class SudokuPuzzle:
         :param y_to_exclude: A tuple/list containing the y-offsets to ignore in the col
         Precondition: 0 <= y < 9 for y in y_to_exclude
         Eliminates vals from the possibilities of all cells in the col except the ones with y-offsets in y_to_exclude.
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         for cell_name in self.x_cell_list[x]:
             cell = self.cells_dict[cell_name]
             if cell.y not in y_to_exclude:
                 for val in vals:
-                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+                    if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
+                        any_removed = True
+        return any_removed
     # endregion
 
     # region Eliminate Other Possibilities with Row/Col/Block offsets (except excluded)
@@ -196,13 +209,17 @@ class SudokuPuzzle:
         :param offsets: An enumerable containing the row offsets from which to eliminate all other candidates other
         than the ones in excluded_vals
         Eliminates candidates not in excluded_vals from the possibilities of cells in the row with offset in offsets
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         for cell_name in self.y_cell_list[y]:
             cell = self.cells_dict[cell_name]
             if cell.x in offsets:
                 possibilities_to_remove = cell.possibilities.difference(excluded_vals)
                 for candidate in possibilities_to_remove:
-                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, candidate)
+                    if self.remove_possibility_from_puzzle_by_cell_name(cell_name, candidate):
+                        any_removed = True
+        return any_removed
 
     def eliminate_other_possibilities_from_cells_in_col(self, x, excluded_vals, offsets):
         """
@@ -211,13 +228,17 @@ class SudokuPuzzle:
         :param offsets: An enumerable containing the col offsets from which to eliminate all other candidates other
         than the ones in excluded_vals
         Eliminates candidates not in excluded_vals from the possibilities of cells in the col with offset in offsets
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         for cell_name in self.x_cell_list[x]:
             cell = self.cells_dict[cell_name]
             if cell.y in offsets:
                 possibilities_to_remove = cell.possibilities.difference(excluded_vals)
                 for candidate in possibilities_to_remove:
-                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, candidate)
+                    if self.remove_possibility_from_puzzle_by_cell_name(cell_name, candidate):
+                        any_removed = True
+        return any_removed
 
     def eliminate_other_possibilities_from_cells_in_block(self, block_num, excluded_vals, offsets):
         """
@@ -227,13 +248,17 @@ class SudokuPuzzle:
         candidates other than the ones in excluded_vals
         Eliminates candidates not in excluded_vals from the possibilities of cells in the block with block cell nums in
         block-cell-nums
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         for cell_name in self.block_cell_list[block_num]:
             cell = self.cells_dict[cell_name]
             if cell.block_cell_num in offsets:
                 possibilities_to_remove = cell.possibilities.difference(excluded_vals)
                 for candidate in possibilities_to_remove:
-                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, candidate)
+                    if self.remove_possibility_from_puzzle_by_cell_name(cell_name, candidate):
+                        any_removed = True
+        return any_removed
 
     def eliminate_other_possibilities_from_other_cells_in_block(self, block_num, excluded_vals, other_block_cell_nums):
         """
@@ -243,12 +268,17 @@ class SudokuPuzzle:
         :param other_block_cell_nums: A tuple/list containing the block-cell-offsets to ignore in the block
         Precondition: 0 <= block_cell_num < 9 for block_cell_num in other_block_cell_nums
         Eliminates all possibilities from the the cells in other_block_cell_nums except for the ones in excluded_vals.
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         for cell_name in self.block_cell_list[block_num]:
             cell = self.cells_dict[cell_name]
             if cell.block_cell_num not in other_block_cell_nums:
                 for val in excluded_vals:
-                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+                    if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
+                        any_removed = True
+        return any_removed
+
     # endregion
 
     # region Eliminate possibility in Row/Col not in Block
@@ -260,12 +290,16 @@ class SudokuPuzzle:
         :param block_num: The block number. Precondition: 0 <= block_num < 9
         :param y_offset: The y-offset in the block. Precondition: 0 <= y_offset < 3
         :param val: The val to find. Precondition: 1 <= val <= 9
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         y_block, x_block = SudokuHelper.block_num_to_block_offsets(block_num)
         y = y_block + y_offset
         for cell_name in self.y_cell_list[y]:
             if self.cells_dict[cell_name].block != block_num:
-                self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+                if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
+                    any_removed = True
+        return any_removed
 
     def remove_possibility_not_in_block_with_x_offset(self, block_num, x_offset, val):
         """
@@ -276,11 +310,14 @@ class SudokuPuzzle:
         :param x_offset: The x-offset in the block. Precondition: 0 <= x_offset < 3
         :param val: The val to find. Precondition: 1 <= val <= 9
         """
+        any_removed = False
         y_block, x_block = SudokuHelper.block_num_to_block_offsets(block_num)
         x = x_block + x_offset
         for cell_name in self.x_cell_list[x]:
             if self.cells_dict[cell_name].block != block_num:
-                self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+                if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
+                    any_removed = True
+        return any_removed
     # endregion
 
     # region Eliminate possibilities in Block not in Row/Col
@@ -290,12 +327,16 @@ class SudokuPuzzle:
         :param block_num: The block number of the block to remove possibilities from. Precondition: 0 <= block_num < 9
         :param y: The row number of cells to ignore. Precondition: 0 <= y < 9
         :param possibilities: The possibilities to remove. Precondition: 1 <= val <= 9 for val in possibilities
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         for cell_name in self.block_cell_list[block_num]:
             cell = self.cells_dict[cell_name]
             if cell.y != y:
                 for val in possibilities:
-                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+                    if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
+                        any_removed = True
+        return any_removed
 
     def remove_possibilities_in_block_not_in_col(self, block_num, x, possibilities):
         """
@@ -303,12 +344,16 @@ class SudokuPuzzle:
         :param block_num: The block number of the block to remove possibilities from. Precondition: 0 <= block_num < 9
         :param x: The col number of cells to ignore. Precondition: 0 <= x < 9
         :param possibilities: The possibilities to remove. Precondition: 1 <= val <= 9 for val in possibilities
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         for cell_name in self.block_cell_list[block_num]:
             cell = self.cells_dict[cell_name]
             if cell.x != x:
                 for val in possibilities:
-                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+                    if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
+                        any_removed = True
+        return any_removed
     # endregion
     # endregion
 
@@ -410,20 +455,32 @@ class SudokuPuzzle:
         """
         Perform all block and row/column interactions involving the block
         :param block_num: The block number. Precondition: 0 <= block_num < 9
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         for val in copy.deepcopy(self.remaining_in_blocks[block_num]):
             cell_nums = self.locs_left_by_block[block_num][val]
             y_offsets, x_offsets = SudokuPuzzle.find_unique_offsets_for_cell_nums(cell_nums)
             if len(y_offsets) == 1:
                 y_offset = next(iter(y_offsets))
-                self.remove_possibility_not_in_block_with_y_offset(block_num, y_offset, val)
+                if self.remove_possibility_not_in_block_with_y_offset(block_num, y_offset, val):
+                    any_removed = True
             if len(x_offsets) == 1:
                 x_offset = next(iter(x_offsets))
-                self.remove_possibility_not_in_block_with_x_offset(block_num, x_offset, val)
+                if self.remove_possibility_not_in_block_with_x_offset(block_num, x_offset, val):
+                    any_removed = True
+        return any_removed
 
     def all_block_rc_interactions(self):
+        """
+        Perform all block and row/column interactions
+        :return True if any possibilities were removed. False otherwise
+        """
+        any_removed = False
         for block_num in all_locs:
-            self.block_rc_interaction(block_num)
+            if self.block_rc_interaction(block_num):
+                any_removed = True
+        return any_removed
     # endregion
 
     # region Block-Block Interactions
@@ -432,7 +489,9 @@ class SudokuPuzzle:
         Performs all block block interactions by row.
         i.e. eliminates possibilities from the excluded block based on the other two blocks in the row
         :param excluded_block_num: The block number to exclude. Precondition: 0 <= excluded_block_num < 9
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         excluded_block_possibilities = copy.deepcopy(self.remaining_in_blocks[excluded_block_num])
         y_block, x_block = SudokuHelper.block_num_to_block_offsets(excluded_block_num)
         for y_offset in cell_locs:
@@ -445,14 +504,18 @@ class SudokuPuzzle:
                 if cell.block != excluded_block_num:
                     possibilities.difference_update(cell.possibilities)
             # Remove the possibilities from the cells in the block which are not in the row
-            self.remove_possibilities_in_block_not_in_row(excluded_block_num, y, possibilities)
+            if self.remove_possibilities_in_block_not_in_row(excluded_block_num, y, possibilities):
+                any_removed = True
+        return any_removed
 
     def block_block_interaction_vertical(self, excluded_block_num):
         """
         Performs all block block interactions by col.
         i.e. eliminates possibilities from the excluded block based on the other two blocks in the col
         :param excluded_block_num: The block number to exclude. Precondition: 0 <= excluded_block_num < 9
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         excluded_block_possibilities = copy.deepcopy(self.remaining_in_blocks[excluded_block_num])
         y_block, x_block = SudokuHelper.block_num_to_block_offsets(excluded_block_num)
         for x_offset in cell_locs:
@@ -465,13 +528,22 @@ class SudokuPuzzle:
                 if cell.block != excluded_block_num:
                     possibilities.difference_update(cell.possibilities)
             # Remove the possibilities from the cells in the block which are not in the row
-            self.remove_possibilities_in_block_not_in_col(excluded_block_num, x, possibilities)
+            if self.remove_possibilities_in_block_not_in_col(excluded_block_num, x, possibilities):
+                any_removed = True
+        return any_removed
 
     def all_block_block_interactions(self):
+        """
+        :return True if any possibilities were removed. False otherwise
+        """
+        any_removed = False
         for block_num in all_locs:
-            self.block_block_interaction_horizontal(block_num)
+            if self.block_block_interaction_horizontal(block_num):
+                any_removed = True
         for block_num in all_locs:
-            self.block_block_interaction_vertical(block_num)
+            if self.block_block_interaction_vertical(block_num):
+                any_removed = True
+        return any_removed
     # endregion
 
     @staticmethod
@@ -527,34 +599,45 @@ class SudokuPuzzle:
         """
         :param y: The row number. Precondition: 0 <= y < 9
         Finds naked pairs in the row and eliminates possibilities accordingly
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         row_possibilities = self.enumerate_row_possibilities(y)
         row_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(row_possibilities, lambda l: l == 2)
         naked_offset_pairs = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(row_dict)
         for (offset_pair, vals) in naked_offset_pairs:
-            self.eliminate_possibilities_from_row(y, vals, offset_pair)
+            if self.eliminate_possibilities_from_row(y, vals, offset_pair):
+                any_removed = True
+        return any_removed
 
     def naked_pair_x(self, x):
         """
         :param x: The col number. Precondition: 0 <= x < 9
         Finds naked pairs in the col and eliminates possibilities accordingly
         """
+        any_removed = False
         col_possibilities = self.enumerate_col_possibilities(x)
         col_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(col_possibilities, lambda l: l == 2)
         naked_offset_pairs = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(col_dict)
         for (offset_pair, vals) in naked_offset_pairs:
-            self.eliminate_possibilities_from_col(x, vals, offset_pair)
+            if self.eliminate_possibilities_from_col(x, vals, offset_pair):
+                any_removed = True
+        return any_removed
 
     def naked_pair_block(self, block_num):
         """
         :param block_num: The block number. Precondition: 0 <= block_num < 9
         Finds naked pairs in the block and eliminates possibilities accordingly
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         block_possibilities = self.enumerate_block_possibilities(block_num)
         block_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(block_possibilities, lambda l: l == 2)
         naked_offset_pairs = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(block_dict)
         for (offset_pair, vals) in naked_offset_pairs:
-            self.eliminate_other_possibilities_from_other_cells_in_block(block_num, vals, offset_pair)
+            if self.eliminate_other_possibilities_from_other_cells_in_block(block_num, vals, offset_pair):
+                any_removed = True
+        return any_removed
 
     # NOTE: naked_tuple_[...] with n = 2 should behave pretty much exactly like naked_pair_[...]
 
@@ -563,36 +646,48 @@ class SudokuPuzzle:
         :param y: The row number. Precondition: 0 <= y < 9
         :param n: The tuple size. Usually n <= 4
         Finds naked tuples in the row and eliminates possibilities accordingly
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         row_possibilities = self.enumerate_row_possibilities(y)
         row_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(row_possibilities, lambda l: 0 < l <= n)
         naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(row_dict, n)
         for (offset_tuple, vals) in naked_offset_tuples:
-            self.eliminate_possibilities_from_row(y, vals, offset_tuple)
+            if self.eliminate_possibilities_from_row(y, vals, offset_tuple):
+                any_removed = True
+        return any_removed
 
     def naked_tuple_x(self, x, n):
         """
         :param x: The col number. Precondition: 0 <= x < 9
         :param n: The tuple size. Usually n <= 4
         Finds naked pairs in the col and eliminates possibilities accordingly
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         col_possibilities = self.enumerate_col_possibilities(x)
         col_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(col_possibilities, lambda l: 0 < l <= n)
         naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(col_dict, n)
         for (offset_tuple, vals) in naked_offset_tuples:
-            self.eliminate_possibilities_from_col(x, vals, offset_tuple)
+            if self.eliminate_possibilities_from_col(x, vals, offset_tuple):
+                any_removed = True
+        return any_removed
 
     def naked_tuple_block(self, block_num, n):
         """
         :param block_num: The block number. Precondition: 0 <= block_num < 9
         :param n: The tuple size. Usually n <= 4
         Finds naked pairs in the block and eliminates possibilities accordingly
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         block_possibilities = self.enumerate_block_possibilities(block_num)
         block_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(block_possibilities, lambda l: 0 < l <= n)
         naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(block_dict, n)
         for (offset_tuple, vals) in naked_offset_tuples:
-            self.eliminate_other_possibilities_from_other_cells_in_block(block_num, vals, offset_tuple)
+            if self.eliminate_other_possibilities_from_other_cells_in_block(block_num, vals, offset_tuple):
+                any_removed = True
+        return any_removed
     # endregion
 
     @staticmethod
@@ -613,7 +708,9 @@ class SudokuPuzzle:
         :param: y: The row number. Precondition: 0 <= y < 9
         :param n: The number of candidates to find within the row
         Finds hidden subsets in the row and eliminates possibilities accordingly
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         possibilities = self.remaining_in_y[y]
         locs_left = self.locs_left_by_y[y]
         for possibilities_tuple in itertools.combinations(possibilities, n):
@@ -625,14 +722,18 @@ class SudokuPuzzle:
                     hidden_subset_found = False
                     break
             if hidden_subset_found:
-                self.eliminate_other_possibilities_from_cells_in_row(y, set(possibilities_tuple), locations)
+                if self.eliminate_other_possibilities_from_cells_in_row(y, set(possibilities_tuple), locations):
+                    any_removed = True
+        return any_removed
 
     def hidden_subset_col(self, x, n):
         """
         :param x: The col number. Precondition: 0 <= y < 9
         :param n: The number of candidates to find within the col
         Finds hidden subsets in the row and eliminates possibilities accordingly
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         possibilities = self.remaining_in_x[x]
         locs_left = self.locs_left_by_x[x]
         for possibilities_tuple in itertools.combinations(possibilities, n):
@@ -644,7 +745,9 @@ class SudokuPuzzle:
                     hidden_subset_found = False
                     break
             if hidden_subset_found:
-                self.eliminate_other_possibilities_from_cells_in_col(x, set(possibilities_tuple), locations)
+                if self.eliminate_other_possibilities_from_cells_in_col(x, set(possibilities_tuple), locations):
+                    any_removed = True
+        return any_removed
 
     def hidden_subset_block(self, block_num, n):
         """
@@ -652,6 +755,7 @@ class SudokuPuzzle:
         :param n: The number of candidates to find within the block
         Finds hidden subsets in the block and eliminates possibilities accordingly
         """
+        any_removed = False
         possibilities = self.remaining_in_blocks[block_num]
         locs_left = self.locs_left_by_block[block_num]
         for possibilities_tuple in itertools.combinations(possibilities, n):
@@ -663,7 +767,10 @@ class SudokuPuzzle:
                     hidden_subset_found = False
                     break
             if hidden_subset_found:
-                self.eliminate_other_possibilities_from_cells_in_block(block_num, set(possibilities_tuple), locations)
+                if self.eliminate_other_possibilities_from_cells_in_block(
+                        block_num, set(possibilities_tuple), locations):
+                    any_removed = True
+        return any_removed
     # endregion
 
     # region Fish
@@ -672,7 +779,9 @@ class SudokuPuzzle:
         :param y1: The 1st row number. Precondition: 0 <= y1 < 9
         :param y2: The 2nd row number. Precondition: 0 <= y2 < 9
         Finds a basic fish in rows and eliminates possibilities accordingly
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         candidates = self.remaining_in_y[y1].intersection(self.remaining_in_y[y2])
         y1_locs_left = self.locs_left_by_y[y1]
         y2_locs_left = self.locs_left_by_y[y2]
@@ -682,14 +791,18 @@ class SudokuPuzzle:
                 for x in possible_locs:
                     # Make sure there is a candidate worth eliminating
                     if len(self.locs_left_by_x[x][candidate]) > 2:
-                        self.eliminate_possibilities_from_col(x, {candidate}, {y1, y2})
+                        if self.eliminate_possibilities_from_col(x, {candidate}, {y1, y2}):
+                            any_removed = True
+        return any_removed
 
     def basic_fish_in_cols(self, x1, x2):
         """
         :param x1: The 1st col number. Precondition: 0 <= x1 < 9
         :param x2: The 2nd col number. Precondition: 0 <= x2 < 9
         Finds a basic fish in cols and eliminates possibilities accordingly
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         candidates = self.remaining_in_x[x1].intersection(self.remaining_in_x[x2])
         x1_locs_left = self.locs_left_by_x[x1]
         x2_locs_left = self.locs_left_by_x[x2]
@@ -699,7 +812,9 @@ class SudokuPuzzle:
                 for y in possible_locs:
                     # Make sure there is a candidate worth eliminating
                     if len(self.locs_left_by_y[y][candidate]) > 2:
-                        self.eliminate_possibilities_from_row(y, {candidate}, {x1, x2})
+                        if self.eliminate_possibilities_from_row(y, {candidate}, {x1, x2}):
+                            any_removed = True
+        return any_removed
 
     def fish_in_rows(self, ys):
         """
@@ -708,7 +823,9 @@ class SudokuPuzzle:
         A fish of size n (n=len(ys)) in rows is when all potential cells for that candidate in the rows ys
         are contained in n cols total.
         All other occurrences of the candidate in those n cols can be eliminated as a result.
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         n = len(ys)
         candidates = copy.deepcopy(all_possibilities)
         for y in ys:
@@ -722,7 +839,9 @@ class SudokuPuzzle:
             if len(possible_locs) == n:
                 for x in possible_locs:
                     for y_to_remove in self.locs_left_by_x[x][candidate].difference(ys):
-                        self.remove_possibility_from_puzzle_by_loc(y_to_remove, x, candidate)
+                        if self.remove_possibility_from_puzzle_by_loc(y_to_remove, x, candidate):
+                            any_removed = True
+        return any_removed
 
     def fish_in_cols(self, xs):
         """
@@ -731,7 +850,9 @@ class SudokuPuzzle:
         A fish of size n (n=len(ys)) in cols is when all potential cells for that candidate in the cols xs
         are contained in n rows total.
         All other occurrences of the candidate in those n rows can be eliminated as a result.
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         n = len(xs)
         candidates = copy.deepcopy(all_possibilities)
         for x in xs:
@@ -745,7 +866,9 @@ class SudokuPuzzle:
             if len(possible_locs) == n:
                 for y in possible_locs:
                     for x_to_remove in self.locs_left_by_y[y][candidate].difference(xs):
-                        self.remove_possibility_from_puzzle_by_loc(y, x_to_remove, candidate)
+                        if self.remove_possibility_from_puzzle_by_loc(y, x_to_remove, candidate):
+                            any_removed = True
+        return any_removed
     # endregion
 
     # region Skyscraper
@@ -753,7 +876,9 @@ class SudokuPuzzle:
         """
         :param val: The candidate to find. Precondition: 1 <= val <= 9
         Finds skyscrapers with the 'base' in a row and eliminates possibilities accordingly.
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         candidate_loc_dict = self.loc_dict_with_len_constraint_for_val(self.locs_left_by_y, val, lambda l: l == 2)
         for (y1, y2) in itertools.combinations(candidate_loc_dict.keys(), 2):
             locs_1 = candidate_loc_dict[y1]
@@ -766,13 +891,17 @@ class SudokuPuzzle:
                 cell_name_2 = self.board[y2][x2]
                 cells_seen_by_both = self.get_cell_names_seen_by_both_cells(cell_name_1, cell_name_2)
                 for cell_name in cells_seen_by_both:
-                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+                    if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
+                        any_removed = True
+        return any_removed
 
     def skyscraper_in_cols(self, val):
         """
         :param val: The candidate to find. Precondition: 1 <= val <= 9
         Finds skyscrapers with the 'base' in a col and eliminates possibilities accordingly.
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         candidate_loc_dict = self.loc_dict_with_len_constraint_for_val(self.locs_left_by_x, val, lambda l: l == 2)
         for (x1, x2) in itertools.combinations(candidate_loc_dict.keys(), 2):
             locs_1 = candidate_loc_dict[x1]
@@ -785,7 +914,9 @@ class SudokuPuzzle:
                 cell_name_2 = self.board[y2][x2]
                 cells_seen_by_both = self.get_cell_names_seen_by_both_cells(cell_name_1, cell_name_2)
                 for cell_name in cells_seen_by_both:
-                    self.remove_possibility_from_puzzle_by_cell_name(cell_name, val)
+                    if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
+                        any_removed = True
+        return any_removed
     # endregion
 
     @staticmethod
@@ -829,7 +960,9 @@ class SudokuPuzzle:
         """
         :param val: The candidate to find. Precondition: 1 <= val <= 9
         Finds kites with the candidate and eliminates possibilities accordingly.
+        :return True if any possibilities were removed. False otherwise
         """
+        any_removed = False
         candidate_loc_dict_y = self.loc_dict_with_len_constraint_for_val(self.locs_left_by_y, val, lambda l: l == 2)
         candidate_loc_dict_x = self.loc_dict_with_len_constraint_for_val(self.locs_left_by_x, val, lambda l: l == 2)
 
@@ -853,7 +986,9 @@ class SudokuPuzzle:
                 x = next(iter(candidate_loc_dict_y[y_cell.y].difference({y_cell.x})))
                 for x_cell in x_cells:
                     y = next(iter(candidate_loc_dict_x[x_cell.x].difference({x_cell.y})))
-                    self.remove_possibility_from_puzzle_by_loc(y, x, val)
+                    if self.remove_possibility_from_puzzle_by_loc(y, x, val):
+                        any_removed = True
+        return any_removed
     # endregion
 
     # region Enumerate Possibilities

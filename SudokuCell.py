@@ -21,6 +21,8 @@ class SudokuCell:
         self.possibilities = set()
 
     def remove_possibility(self, possibility):
-        self.possibilities.discard(possibility)
-
+        if possibility in self.possibilities:
+            self.possibilities.discard(possibility)
+            return True
+        return False
 
