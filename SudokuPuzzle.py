@@ -50,7 +50,7 @@ class SudokuPuzzle:
         """
         self.guess = SudokuGuess(candidate, cell_name, self.cells_dict, self.guess)
         cell = self.cells_dict[cell_name]
-        self.set_val_in_puzzle(cell.y, cell.x, candidate)
+        self.set_val_in_puzzle_by_cell_name(cell.name, candidate)
 
     def revert_guess(self):
         """
@@ -116,6 +116,15 @@ class SudokuPuzzle:
         :param val: The value to set. Precondition: 1 <= val <= 9
         """
         cell_name = self.board[y][x]
+        self.set_val_in_puzzle_by_cell_name(cell_name, val)
+
+    def set_val_in_puzzle_by_cell_name(self, cell_name, val):
+        """
+        Sets the cell with the provided cell_name to the val.
+        Removes possibilities from remaining_in and locs_left_by fields
+        :param cell_name: The cell_name of the cell.
+        :param val: The value to set. Precondition: 1 <= val <= 9
+        """
         c = self.cells_dict[cell_name]
         self.remaining_in_y[c.y].discard(val)
         self.remaining_in_x[c.x].discard(val)
@@ -149,7 +158,7 @@ class SudokuPuzzle:
         Removes the val from the cell's possibilities.
         Also removes the val from the locs_left_by dicts
         :param cell_name: The name of the cell
-        :param val: The value to remove. Precondition: 1 <= val <=
+        :param val: The value to remove. Precondition: 1 <= val <= 9
         :return True if the possibility was removed. False otherwise
         """
         cell = self.cells_dict[cell_name]
@@ -375,11 +384,16 @@ class SudokuPuzzle:
         """
         Fills in sole candidates
         i.e. when a specific cell can only contain a single number
+        :return A list of (cell_name, val) tuples set by this method
         """
+        filled_cells = []
         for cell_name in self.cells_dict.keys():
             cell = self.cells_dict[cell_name]
             if len(cell.possibilities) == 1:
-                self.set_val_in_puzzle(cell.y, cell.x, next(iter(cell.possibilities)))
+                val = next(iter(cell.possibilities))
+                self.set_val_in_puzzle_by_cell_name(cell_name, val)
+                filled_cells.append((cell_name, val))
+        return filled_cells
     # endregion
 
     # region Unique Candidates
@@ -388,50 +402,69 @@ class SudokuPuzzle:
         Fills in unique candidates by row
         i.e. when a number can only go in one spot in row y
         :param y: The row number. Precondition: 0 <= y < 9
+        :return A list of (cell_name, val) tuples set by this method
         """
+        filled_cells = []
         y_locs_left = self.locs_left_by_y[y]
         y_possibilities = self.remaining_in_y[y]
         for val in copy.deepcopy(y_possibilities):
             if len(y_locs_left[val]) == 1:
-                self.set_val_in_puzzle(y, next(iter(y_locs_left[val])), val)
+                cell_name = self.board[y][next(iter(y_locs_left[val]))]
+                self.set_val_in_puzzle_by_cell_name(cell_name, val)
+                filled_cells.append((cell_name, val))
+        return filled_cells
 
     def fill_unique_candidates_x(self, x):
         """
         Fills in unique candidates by col
         i.e. when a number can only go in one spot in col x
         :param x: The col number. Precondition: 0 <= y < 9
+        :return A list of (cell_name, val) tuples set by this method
         """
+        filled_cells = []
         x_locs_left = self.locs_left_by_x[x]
         x_possibilities = self.remaining_in_x[x]
         for val in copy.deepcopy(x_possibilities):
             if len(x_locs_left[val]) == 1:
-                self.set_val_in_puzzle(next(iter(x_locs_left[val])), x, val)
+                cell_name = self.board[next(iter(x_locs_left[val]))][x]
+                self.set_val_in_puzzle_by_cell_name(cell_name, val)
+                filled_cells.append((cell_name, val))
+        return filled_cells
 
     def fill_unique_candidates_block(self, block_num):
         """
         Fills in unique candidates by block
         i.e. when a number can only go in one spot in block block_number
         :param block_num: The block number. Precondition: 0 <= y < 9
+        :return A list of (cell_name, val) tuples set by this method
         """
+        filled_cells = []
         block_locs_left = self.locs_left_by_block[block_num]
         block_possibilities = self.remaining_in_blocks[block_num]
         for val in copy.deepcopy(block_possibilities):
             if len(block_locs_left[val]) == 1:
                 (y, x) = SudokuHelper.block_num_and_cell_num_to_offsets(
                     block_num, next(iter(block_locs_left[block_num])))
-                self.set_val_in_puzzle(y, x, val)
+                cell_name = self.board[y][x]
+                self.set_val_in_puzzle_by_cell_name(cell_name, val)
+                filled_cells.append((cell_name, val))
+        return filled_cells
+
 
     def fill_unique_candidates(self):
         """
         Fills in unique candidates
         i.e. when a number can only go in one spot in a row/col/block
+        :return A list of (cell_name, val) tuples set by this method
         """
+        filled_cells = []
         for y in all_locs:
-            self.fill_unique_candidates_y(y)
+            filled_cells += self.fill_unique_candidates_y(y)
         for x in all_locs:
-            self.fill_unique_candidates_x(x)
+            filled_cells += self.fill_unique_candidates_x(x)
         for block_num in all_locs:
-            self.fill_unique_candidates_block(block_num)
+            filled_cells += self.fill_unique_candidates_block(block_num)
+        return filled_cells
     # endregion
 
     @staticmethod
