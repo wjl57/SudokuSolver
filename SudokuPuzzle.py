@@ -444,12 +444,11 @@ class SudokuPuzzle:
         for val in copy.deepcopy(block_possibilities):
             if len(block_locs_left[val]) == 1:
                 (y, x) = SudokuHelper.block_num_and_cell_num_to_offsets(
-                    block_num, next(iter(block_locs_left[block_num])))
+                    block_num, next(iter(block_locs_left[val])))
                 cell_name = self.board[y][x]
                 self.set_val_in_puzzle_by_cell_name(cell_name, val)
                 filled_cells.append((cell_name, val))
         return filled_cells
-
 
     def fill_unique_candidates(self):
         """

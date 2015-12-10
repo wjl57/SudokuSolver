@@ -1,44 +1,29 @@
 import requests
 import pickle
 from bs4 import BeautifulSoup
-from SudokuBoard import SudokuBoard
+from SudokuPuzzle import SudokuPuzzle
 
 __author__ = 'william'
 
 
 def main():
-    # board = save_and_get_new_board()
+    # board = save_and_get_new_board(3)
+    # print(board)
     board = read_saved_board(2)
-    sb = SudokuBoard(board)
-    sb.print_board()
-    print(sb.board)
-    print(sb.rows)
-    print(sb.cols)
-    print(sb.blocks)
-    print("Num unknowns: ", sb.num_unknowns)
+    sp = SudokuPuzzle(board)
+    sp.print_board()
 
-    sb.fill_unique_candidates()
-    sb.print_board()
-    # while not sb.verify_board_full():
-    #     sb.solve_next_step()
-    #     sb.print_board()
-    #     print("Num unknowns: ", sb.num_unknowns)
-
-    # nc = sb.row_to_numbered_cells(0)
-    # print(nc)
-    # nc = sb.col_to_numbered_cells(0)
-    # print(nc)
-    # nc = sb.block_to_numbered_cells(0)
-    # print(nc)
-    # d = SudokuBoard.find_val_with_count_in_numbered_cells(sb.remaining_blocks[2], nc, 1)
-    # print(d)
-    # sb.set_board_with_block_values(2, d)
-    # sb.calculate_possibilities()
-    # sb.print_board()
+    for i in range(0, 5):
+        filled_cells = sp.fill_unique_candidates()
+        print("unique candidates " + str(i) + " : " + str(filled_cells))
+        sp.print_board()
+        filled_cells = sp.fill_sole_candidates()
+        print("sole candidates " + str(i) + " : " + str(filled_cells))
+        sp.print_board()
 
 
-def save_and_get_new_board():
-    url = "http://show.websudoku.com/"
+def save_and_get_new_board(level=1):
+    url = "http://show.websudoku.com/" + "?level=" + str(level)
     response = requests.get(url)
     html = response.content
 
