@@ -129,6 +129,9 @@ class SudokuPuzzle:
         self.remaining_in_y[c.y].discard(val)
         self.remaining_in_x[c.x].discard(val)
         self.remaining_in_blocks[c.block].discard(val)
+        self.locs_left_by_y[c.y][val].discard(c.x)
+        self.locs_left_by_y[c.x][val].discard(c.y)
+        self.locs_left_by_y[c.block][val].discard(c.block_cell_num)
         c.set_val(val)
 
         # Remove possibilities from row, col, block
