@@ -2,6 +2,7 @@ import requests
 import pickle
 from bs4 import BeautifulSoup
 from SudokuPuzzle import SudokuPuzzle
+from SudokuSolver import SudokuSolver
 
 __author__ = 'william'
 
@@ -9,19 +10,22 @@ __author__ = 'william'
 def main():
     # board = save_and_get_new_board(4)
     # print(board)
-    board = read_saved_board(10)
+    board = read_saved_board(8)
     sp = SudokuPuzzle(board)
-    sp.print_board()
+    # sp.print_board()
 
-    for i in range(0, 8):
-        filled_cells = sp.fill_unique_candidates()
-        print("unique candidates " + str(i) + " : " + str(filled_cells))
-        sp.print_board()
-        # sp.print_possibilities()
-        filled_cells = sp.fill_sole_candidates()
-        print("sole candidates " + str(i) + " : " + str(filled_cells))
-        sp.print_board()
-        # sp.print_possibilities()
+    ss = SudokuSolver(sp)
+    ss.do_work()
+
+    # for i in range(0, 8):
+    #     filled_cells = sp.fill_unique_candidates()
+    #     print("unique candidates " + str(i) + " : " + str(filled_cells))
+    #     sp.print_board()
+    #     # sp.print_possibilities()
+    #     filled_cells = sp.fill_sole_candidates()
+    #     print("sole candidates " + str(i) + " : " + str(filled_cells))
+    #     sp.print_board()
+    #     # sp.print_possibilities()
 
 
 def save_and_get_new_board(level=1):
