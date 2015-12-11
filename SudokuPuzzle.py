@@ -665,6 +665,16 @@ class SudokuPuzzle:
             updated_cells += self.eliminate_other_possibilities_from_other_cells_in_block(block_num, vals, offset_pair)
         return updated_cells
 
+    def all_naked_pairs(self):
+        updated_cells = []
+        for y in all_locs:
+            updated_cells += (self.naked_pair_y(y))
+        for x in all_locs:
+            updated_cells += (self.naked_pair_x(x))
+        for block_num in all_locs:
+            updated_cells += (self.naked_pair_block(block_num))
+        return updated_cells
+
     # NOTE: naked_tuple_[...] with n = 2 should behave pretty much exactly like naked_pair_[...]
 
     def naked_tuple_y(self, y, n):
