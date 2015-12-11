@@ -10,7 +10,18 @@ __author__ = 'william'
 def main():
     # board = save_and_get_new_board(4)
     # print(board)
-    board = read_saved_board(8)
+    # board = read_saved_board(11)
+    board = [
+        [None, None, None, None, 7, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, 2, None, 1, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, 9, None, 6, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None]
+    ]
     sp = SudokuPuzzle(board)
     # sp.print_board()
 

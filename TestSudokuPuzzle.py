@@ -599,6 +599,15 @@ class TestSudokuPuzzle(unittest.TestCase):
         row_possibilities = sp.enumerate_row_possibilities(y)
         self.assert_should_contain(should_contain, row_possibilities, {val})
 
+    def test_all_block_rc_interactions(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.block_rc_board))
+        y = 4
+        val = 7
+        sp.all_block_rc_interactions()
+        should_contain = [False, False, False, True, False, True, False, False, False]
+        row_possibilities = sp.enumerate_row_possibilities(y)
+        self.assert_should_contain(should_contain, row_possibilities, {val})
+
     # endregion
     ###############################################################################################################
     # Block block interaction tests
