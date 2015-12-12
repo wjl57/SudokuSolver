@@ -1,6 +1,7 @@
 from collections import defaultdict
 import copy
 import itertools
+from BadGuessError import BadGuessError
 from SudokuCell import SudokuCell
 from SudokuGuess import SudokuGuess
 from SudokuHelper import all_locs
@@ -65,20 +66,19 @@ class SudokuPuzzle:
     def validate_updated_cells(self, updated_cells):
         """
         :param updated_cells: A list of (cell_name, val) tuples set by this method
-        :return: True if removing the possibilities did not cause the Sudoku Puzzle to break any rules
-        i.e. Every number can still be placed in every row/col/block and no cell has an empty set for possibilities
+        Raises a BadGuessError if removing the possibilities causes the Sudoku Puzzle to break any rules.
+        i.e. A candidate can no longer be placed in every row/col/block or a cell has an empty set for possibilities
         """
         for (cell_name, val) in updated_cells:
             cell = self.cells_dict[cell_name]
             if cell.possibilities is None or len(cell.possibilities) == 0:
-                return False
+                raise BadGuessError(cell_name, val, "No more possibilities for cell")
             if self.locs_left_by_y[cell.y][val] is None or len(self.locs_left_by_y[cell.y][val]) == 0:
-                return False
+                raise BadGuessError(cell_name, val, "Can't place val in row")
             if self.locs_left_by_x[cell.x][val] is None or len(self.locs_left_by_x[cell.x][val]) == 0:
-                return False
+                raise BadGuessError(cell_name, val, "Can't place val in col")
             if self.locs_left_by_block[cell.block][val] is None or len(self.locs_left_by_block[cell.block][val]) == 0:
-                return False
-        return True
+                raise BadGuessError(cell_name, val, "Can't place val in block")
 
     def initialize_new_puzzle(self, board):
         """

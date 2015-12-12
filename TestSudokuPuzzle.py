@@ -1,5 +1,6 @@
 import copy
 import unittest
+from BadGuessError import BadGuessError
 from SudokuPuzzle import SudokuPuzzle
 from SudokuHelper import all_locs
 from SudokuHelper import all_possibilities
@@ -1304,7 +1305,13 @@ class TestSudokuPuzzle(unittest.TestCase):
         cell_name = sp.board[2][8]
         # Can't remove the candidate or else we can't place it in the row
         sp.remove_possibility_from_puzzle_by_cell_name(cell_name, 1)
-        self.assertEqual(sp.validate_updated_cells([(cell_name, 1)]), False)
+        try:
+            sp.validate_updated_cells([(cell_name, 1)])
+            self.assertFalse("Expected a BadGuessError")
+        except BadGuessError as bge:
+            self.assertEqual(bge.cell_name, cell_name)
+            self.assertEqual(bge.val, 1)
+            self.assertEqual(bge.message, "Can't place val in row")
 
     def test_validate_updated_cells_empty_possibilities(self):
         sp = SudokuPuzzle(self.get_board_copy(self.empty_possibilities_validation_board))
@@ -1312,7 +1319,13 @@ class TestSudokuPuzzle(unittest.TestCase):
         # Can't remove the candidates from the cell or else possibilities would be empty
         sp.remove_possibility_from_puzzle_by_cell_name(cell_name, 8)
         sp.remove_possibility_from_puzzle_by_cell_name(cell_name, 9)
-        self.assertEqual(sp.validate_updated_cells([(cell_name, 8), (cell_name, 9)]), False)
+        try:
+            sp.validate_updated_cells([(cell_name, 8), (cell_name, 9)])
+            self.assertFalse("Expected a BadGuessError")
+        except BadGuessError as bge:
+            self.assertEqual(bge.cell_name, cell_name)
+            self.assertEqual(bge.val, 8)
+            self.assertEqual(bge.message, "No more possibilities for cell")
 
     # endregion
 

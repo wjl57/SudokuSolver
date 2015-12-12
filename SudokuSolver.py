@@ -49,6 +49,12 @@ class SudokuSolver(Machine):
     def print_state_then_return(self, updated_cells):
         if updated_cells:
             print(self.state + ': ' + str(updated_cells))
+            # TODO: Check if this actually works
+            try:
+                self.sudoku_puzzle.validate_updated_cells(updated_cells)
+            except BadGuessError as bge:
+                print(bge)
+                self.sudoku_puzzle.revert_guess()
             return False
         else:
             print(self.state + ': None found')
