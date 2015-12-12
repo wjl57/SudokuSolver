@@ -19,6 +19,20 @@ class TestSudokuPuzzle(unittest.TestCase):
     def get_board_copy(self, board):
         return copy.deepcopy(board)
 
+    # region Empty board
+    empty_board = [
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None]
+    ]
+    # endregion
+
     # region Test board
     test_board = [
         [4, None, 2, None, 3, 1, 7, 6, None],
@@ -33,7 +47,7 @@ class TestSudokuPuzzle(unittest.TestCase):
     ]
     # endregion
 
-    # region Guess board
+    # region Guess boards
     guess_board = [
         [1, 2, 3, None, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None],
@@ -46,19 +60,29 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, None, None, None, None, None, None, None]
     ]
 
-    # region Empty board
-    empty_board = [
+    missing_candidate_validation_board = [
+        [1, None, None, None, None, None, None, None, None],
+        [None, None, None, 1, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, 1, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, 1, None],
+        [None, None, None, None, None, None, None, None, None]
+    ]
+
+    empty_possibilities_validation_board = [
+        [None, None, None, None, None, None, None, None, 6],
+        [None, None, None, None, None, None, None, None, 7],
         [None, None, None, None, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None],
+        [1, 2, 3, 4, 5, None, None, None, None],
         [None, None, None, None, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None],
         [None, None, None, None, None, None, None, None, None]
     ]
-    # endregion
 
     # region Sole and unique candidate boards
     sole_candidate_board = [
@@ -1274,6 +1298,21 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assertTrue(7 in p[0][5])
         self.assertTrue(5 in p[0][4])
         self.assertTrue(4 not in p[0][3])
+
+    def test_validate_updated_cells_missing_candidate(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.missing_candidate_validation_board))
+        cell_name = sp.board[2][8]
+        # Can't remove the candidate or else we can't place it in the row
+        sp.remove_possibility_from_puzzle_by_cell_name(cell_name, 1)
+        self.assertEqual(sp.validate_updated_cells([(cell_name, 1)]), False)
+
+    def test_validate_updated_cells_empty_possibilities(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.empty_possibilities_validation_board))
+        cell_name = sp.board[5][8]
+        # Can't remove the candidates from the cell or else possibilities would be empty
+        sp.remove_possibility_from_puzzle_by_cell_name(cell_name, 8)
+        sp.remove_possibility_from_puzzle_by_cell_name(cell_name, 9)
+        self.assertEqual(sp.validate_updated_cells([(cell_name, 8), (cell_name, 9)]), False)
 
     # endregion
 

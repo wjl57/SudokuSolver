@@ -30,11 +30,11 @@ class SudokuPuzzle:
         self.remaining_in_x = [copy.deepcopy(all_possibilities) for _ in all_locs]
         # remaining_in_blocks[n] contains the remaining values in block n
         self.remaining_in_blocks = [copy.deepcopy(all_possibilities) for _ in all_locs]
-        # locs_left_by_y[y][val] contains a set with all the locations of val in row y
+        # locs_left_by_y[y][val] contains a set with all the possible x-offsets of val in row y
         self.locs_left_by_y = [defaultdict(set) for y in all_locs]
-        # locs_left_by_x[x][val] contains a set with all the locations of val in col x
+        # locs_left_by_x[x][val] contains a set with all the possible y-offsets of val in col x
         self.locs_left_by_x = [defaultdict(set) for x in all_locs]
-        # locs_left_by_block[b][val] contains a set with all the block cell nums of val in block b
+        # locs_left_by_block[b][val] contains a set with all the possible block cell nums of val in block b
         self.locs_left_by_block = [defaultdict(set) for block_num in all_locs]
         # guess contains a None or a SudokuGuess object
         self.guess = None
@@ -61,6 +61,24 @@ class SudokuPuzzle:
             self.remove_possibility_from_puzzle_by_cell_name(self.guess.guess_cell_name, self.guess.guess_candidate)
             self.guess = self.guess.previous_guess
             self.recalculate_fields()
+
+    def validate_updated_cells(self, updated_cells):
+        """
+        :param updated_cells: A list of (cell_name, val) tuples set by this method
+        :return: True if removing the possibilities did not cause the Sudoku Puzzle to break any rules
+        i.e. Every number can still be placed in every row/col/block and no cell has an empty set for possibilities
+        """
+        for (cell_name, val) in updated_cells:
+            cell = self.cells_dict[cell_name]
+            if cell.possibilities is None or len(cell.possibilities) == 0:
+                return False
+            if self.locs_left_by_y[cell.y][val] is None or len(self.locs_left_by_y[cell.y][val]) == 0:
+                return False
+            if self.locs_left_by_x[cell.x][val] is None or len(self.locs_left_by_x[cell.x][val]) == 0:
+                return False
+            if self.locs_left_by_block[cell.block][val] is None or len(self.locs_left_by_block[cell.block][val]) == 0:
+                return False
+        return True
 
     def initialize_new_puzzle(self, board):
         """
@@ -162,7 +180,7 @@ class SudokuPuzzle:
         Also removes the val from the locs_left_by dicts
         :param cell_name: The name of the cell
         :param val: The value to remove. Precondition: 1 <= val <= 9
-        :return True if the possibility was removed. False otherwise
+        :return True if the possibility was actually removed. False otherwise
         """
         cell = self.cells_dict[cell_name]
         val_removed = False
