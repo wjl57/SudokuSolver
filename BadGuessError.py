@@ -9,4 +9,5 @@ class BadGuessError(Exception):
         self.message = message
 
     def __str__(self):
-        return repr(self.cell_name + " " + str(self.val) + " " + self.message)
+        return "Bad Guess Because...\nCell: " + self.cell_name + "\nCandidate: " + str(self.val) + "\nReason: " + \
+               self.message

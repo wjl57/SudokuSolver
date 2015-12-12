@@ -50,11 +50,12 @@ class SudokuSolver(Machine):
         if updated_cells:
             print(self.state + ': ' + str(updated_cells))
             # TODO: Check if this actually works
-            try:
-                self.sudoku_puzzle.validate_updated_cells(updated_cells)
-            except BadGuessError as bge:
-                print(bge)
-                self.sudoku_puzzle.revert_guess()
+            if self.sudoku_puzzle.guess is not None:
+                try:
+                    self.sudoku_puzzle.validate_updated_cells(updated_cells)
+                except BadGuessError as bge:
+                    print(bge)
+                    self.sudoku_puzzle.revert_guess()
             return False
         else:
             print(self.state + ': None found')
