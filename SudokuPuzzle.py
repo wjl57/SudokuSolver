@@ -392,7 +392,7 @@ class SudokuPuzzle:
         filled_cells = []
         for cell_name in self.cells_dict.keys():
             cell = self.cells_dict[cell_name]
-            if len(cell.possibilities) == 1:
+            if cell.val is None and len(cell.possibilities) == 1:
                 val = next(iter(cell.possibilities))
                 self.set_val_in_puzzle_by_cell_name(cell_name, val)
                 filled_cells.append((cell_name, val))

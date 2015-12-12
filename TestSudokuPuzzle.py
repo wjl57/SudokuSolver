@@ -386,15 +386,15 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assertListEqual(board, self.get_board_copy(self.test_board))
 
         expected_possibilities = [
-            [set(), {8, 5}, set(), {9, 5}, set(), set(), set(), set(), {8, 9}],
-            [{9, 5}, set(), {1, 3}, {9, 2, 5}, set(), set(), {9, 2, 5}, {9, 2, 3, 4}, {9, 2, 4}],
-            [{9, 5, 7}, {8, 3, 5, 7}, {3, 7}, {9, 2, 5, 6}, set(), {9, 5, 6}, set(), {9, 2, 3}, {8, 9, 2}],
-            [set(), set(), {4, 7}, {1, 5}, {1, 7}, set(), set(), {7}, set()],
-            [set(), {2, 7}, set(), {8, 9, 6}, {6, 7}, {8, 9, 6}, set(), {9, 2, 7}, set()],
-            [set(), {2, 7}, set(), set(), {7}, {9, 4}, {9, 2}, set(), set()],
-            [{2, 5, 6, 7}, {1, 2, 3, 5, 7}, set(), {1, 6}, set(), {3, 6}, {2}, {1, 2, 4, 7}, {2, 4, 7}],
-            [{6, 7}, {1, 3, 7}, {1, 3, 7}, set(), set(), {8, 3, 6}, {8, 9}, set(), {8, 9, 7}],
-            [{2}, set(), set(), set(), set(), {8}, set(), {1, 2}, set()]
+            [{4}, {8, 5}, {2}, {9, 5}, {3}, {1}, {7}, {6}, {8, 9}],
+            [{9, 5}, {6}, {1, 3}, {9, 2, 5}, {8}, {7}, {9, 2, 5}, {9, 2, 3, 4}, {9, 2, 4}],
+            [{9, 5, 7}, {8, 3, 5, 7}, {3, 7}, {9, 2, 5, 6}, {4}, {9, 5, 6}, {1}, {9, 2, 3}, {8, 9, 2}],
+            [{8}, {9}, {4, 7}, {1, 5}, {1, 7}, {2}, {6}, {7}, {3}],
+            [{3}, {2, 7}, {5}, {8, 9, 6}, {6, 7}, {8, 9, 6}, {4}, {9, 2, 7}, {1}],
+            [{1}, {2, 7}, {6}, {3}, {7}, {9, 4}, {9, 2}, {8}, {5}],
+            [{2, 5, 6, 7}, {1, 2, 3, 5, 7}, {8}, {1, 6}, {9}, {3, 6}, {2}, {1, 2, 4, 7}, {2, 4, 7}],
+            [{6, 7}, {1, 3, 7}, {1, 3, 7}, {4}, {2}, {8, 3, 6}, {8, 9}, {5}, {8, 9, 7}],
+            [{2}, {4}, {9}, {7}, {5}, {8}, {3}, {1, 2}, {6}]
         ]
         p = sp.get_possibilities()
         self.assertListEqual(p, expected_possibilities)
@@ -425,38 +425,38 @@ class TestSudokuPuzzle(unittest.TestCase):
     def test_init_locs_left_by(self):
         sp = SudokuPuzzle(self.get_board_copy(self.test_board))
         expected_possibilities = [
-            [set(), {8, 5}, set(), {9, 5}, set(), set(), set(), set(), {8, 9}],
-            [{9, 5}, set(), {1, 3}, {9, 2, 5}, set(), set(), {9, 2, 5}, {9, 2, 3, 4}, {9, 2, 4}],
-            [{9, 5, 7}, {8, 3, 5, 7}, {3, 7}, {9, 2, 5, 6}, set(), {9, 5, 6}, set(), {9, 2, 3}, {8, 9, 2}],
-            [set(), set(), {4, 7}, {1, 5}, {1, 7}, set(), set(), {7}, set()],
-            [set(), {2, 7}, set(), {8, 9, 6}, {6, 7}, {8, 9, 6}, set(), {9, 2, 7}, set()],
-            [set(), {2, 7}, set(), set(), {7}, {9, 4}, {9, 2}, set(), set()],
-            [{2, 5, 6, 7}, {1, 2, 3, 5, 7}, set(), {1, 6}, set(), {3, 6}, {2}, {1, 2, 4, 7}, {2, 4, 7}],
-            [{6, 7}, {1, 3, 7}, {1, 3, 7}, set(), set(), {8, 3, 6}, {8, 9}, set(), {8, 9, 7}],
-            [{2}, set(), set(), set(), set(), {8}, set(), {1, 2}, set()]
+            [{4}, {8, 5}, {2}, {9, 5}, {3}, {1}, {7}, {6}, {8, 9}],
+            [{9, 5}, {6}, {1, 3}, {9, 2, 5}, {8}, {7}, {9, 2, 5}, {9, 2, 3, 4}, {9, 2, 4}],
+            [{9, 5, 7}, {8, 3, 5, 7}, {3, 7}, {9, 2, 5, 6}, {4}, {9, 5, 6}, {1}, {9, 2, 3}, {8, 9, 2}],
+            [{8}, {9}, {4, 7}, {1, 5}, {1, 7}, {2}, {6}, {7}, {3}],
+            [{3}, {2, 7}, {5}, {8, 9, 6}, {6, 7}, {8, 9, 6}, {4}, {9, 2, 7}, {1}],
+            [{1}, {2, 7}, {6}, {3}, {7}, {9, 4}, {9, 2}, {8}, {5}],
+            [{2, 5, 6, 7}, {1, 2, 3, 5, 7}, {8}, {1, 6}, {9}, {3, 6}, {2}, {1, 2, 4, 7}, {2, 4, 7}],
+            [{6, 7}, {1, 3, 7}, {1, 3, 7}, {4}, {2}, {8, 3, 6}, {8, 9}, {5}, {8, 9, 7}],
+            [{2}, {4}, {9}, {7}, {5}, {8}, {3}, {1, 2}, {6}]
         ]
         p = sp.get_possibilities()
 
         self.assertListEqual(p, expected_possibilities)
 
-        expected_locs_left_by_y_0 = {1: set(), 2: set(), 3: set(), 4: set(), 5: {1, 3},
-                                     6: set(), 7: set(), 8: {1, 8}, 9: {3, 8}}
+        expected_locs_left_by_y_0 = {1: {5}, 2: {2}, 3: {4}, 4: {0}, 5: {1, 3},
+                                     6: {7}, 7: {6}, 8: {1, 8}, 9: {3, 8}}
         expected_locs_left_by_y_1 = {1: {2}, 2: {3, 6, 7, 8}, 3: {2, 7}, 4: {7, 8}, 5: {0, 3, 6},
-                                     6: set(), 7: set(), 8: set(), 9: {0, 3, 6, 7, 8}}
+                                     6: {1}, 7: {5}, 8: {4}, 9: {0, 3, 6, 7, 8}}
         self.assertDictEqual(sp.locs_left_by_y[0], expected_locs_left_by_y_0)
         self.assertDictEqual(sp.locs_left_by_y[1], expected_locs_left_by_y_1)
 
-        expected_locs_left_by_x_0 = {1: set(), 2: {6, 8}, 3: set(), 4: set(), 5: {1, 2, 6},
-                                     6: {6, 7}, 7: {2, 6, 7}, 8: set(), 9: {1, 2}}
-        expected_locs_left_by_x_1 = {1: {6, 7}, 2: {4, 5, 6}, 3: {2, 6, 7}, 4: set(), 5: {0, 2, 6},
-                                     6: set(), 7: {2, 4, 5, 6, 7}, 8: {0, 2}, 9: set()}
+        expected_locs_left_by_x_0 = {1: {5}, 2: {6, 8}, 3: {4}, 4: {0}, 5: {1, 2, 6},
+                                     6: {6, 7}, 7: {2, 6, 7}, 8: {3}, 9: {1, 2}}
+        expected_locs_left_by_x_1 = {1: {6, 7}, 2: {4, 5, 6}, 3: {2, 6, 7}, 4: {8}, 5: {0, 2, 6},
+                                     6: {1}, 7: {2, 4, 5, 6, 7}, 8: {0, 2}, 9: {3}}
         self.assertDictEqual(sp.locs_left_by_x[0], expected_locs_left_by_x_0)
         self.assertDictEqual(sp.locs_left_by_x[1], expected_locs_left_by_x_1)
 
-        expected_locs_left_by_block_0 = {1: {5}, 2: set(), 3: {5, 7, 8}, 4: set(), 5: {1, 3, 6, 7},
-                                         6: set(), 7: {6, 7, 8}, 8: {1, 7}, 9: {3, 6}}
-        expected_locs_left_by_block_7 = {1: {0}, 2: set(), 3: {2, 5}, 4: set(), 5: set(),
-                                         6: {0, 2, 5}, 7: set(), 8: {5, 8}, 9: set()}
+        expected_locs_left_by_block_0 = {1: {5}, 2: {2}, 3: {5, 7, 8}, 4: {0}, 5: {1, 3, 6, 7},
+                                         6: {4}, 7: {6, 7, 8}, 8: {1, 7}, 9: {3, 6}}
+        expected_locs_left_by_block_7 = {1: {0}, 2: {4}, 3: {2, 5}, 4: {3}, 5: {7},
+                                         6: {0, 2, 5}, 7: {6}, 8: {5, 8}, 9: {1}}
 
         self.assertDictEqual(sp.locs_left_by_block[0], expected_locs_left_by_block_0)
         self.assertDictEqual(sp.locs_left_by_block[7], expected_locs_left_by_block_7)
@@ -471,29 +471,29 @@ class TestSudokuPuzzle(unittest.TestCase):
         sp = SudokuPuzzle(self.get_board_copy(self.test_board))
         row_1_possibilities = sp.enumerate_row_possibilities(1)
         self.assertListEqual(row_1_possibilities,
-                             [{9, 5}, set(), {1, 3}, {9, 2, 5}, set(), set(), {9, 2, 5}, {9, 2, 3, 4}, {9, 2, 4}])
+                             [{9, 5}, {6}, {1, 3}, {9, 2, 5}, {8}, {7}, {9, 2, 5}, {9, 2, 3, 4}, {9, 2, 4}])
         row_6_possibilities = sp.enumerate_row_possibilities(6)
         self.assertListEqual(row_6_possibilities,
-                             [{2, 5, 6, 7}, {1, 2, 3, 5, 7}, set(), {1, 6}, set(), {3, 6}, {2}, {1, 2, 4, 7},
+                             [{2, 5, 6, 7}, {1, 2, 3, 5, 7}, {8}, {1, 6}, {9}, {3, 6}, {2}, {1, 2, 4, 7},
                               {2, 4, 7}])
 
     def test_enumerate_possibilities_by_col(self):
         sp = SudokuPuzzle(self.get_board_copy(self.test_board))
         col_1_possibilities = sp.enumerate_col_possibilities(1)
-        self.assertListEqual(col_1_possibilities, [{8, 5}, set(), {8, 3, 5, 7}, set(), {2, 7},
-                                                   {2, 7}, {1, 2, 3, 5, 7}, {1, 3, 7}, set()])
+        self.assertListEqual(col_1_possibilities, [{8, 5}, {6}, {8, 3, 5, 7}, {9}, {2, 7},
+                                                   {2, 7}, {1, 2, 3, 5, 7}, {1, 3, 7}, {4}])
         col_6_possibilities = sp.enumerate_col_possibilities(6)
-        self.assertListEqual(col_6_possibilities, [set(), {9, 2, 5}, set(), set(), set(),
-                                                   {9, 2}, {2}, {8, 9}, set()])
+        self.assertListEqual(col_6_possibilities, [{7}, {9, 2, 5}, {1}, {6}, {4},
+                                                   {9, 2}, {2}, {8, 9}, {3}])
 
     def test_enumerate_possibilities_by_block(self):
         sp = SudokuPuzzle(self.get_board_copy(self.test_board))
         block_1_possibilities = sp.enumerate_block_possibilities(1)
         self.assertListEqual(block_1_possibilities,
-                             [{9, 5}, set(), set(), {9, 2, 5}, set(), set(), {9, 2, 5, 6}, set(), {9, 5, 6}])
+                             [{9, 5}, {3}, {1}, {9, 2, 5}, {8}, {7}, {9, 2, 5, 6}, {4}, {9, 5, 6}])
         block_6_possibilities = sp.enumerate_block_possibilities(6)
-        self.assertListEqual(block_6_possibilities, [{2, 5, 6, 7}, {1, 2, 3, 5, 7}, set(), {6, 7},
-                                                     {1, 3, 7}, {1, 3, 7}, {2}, set(), set()])
+        self.assertListEqual(block_6_possibilities, [{2, 5, 6, 7}, {1, 2, 3, 5, 7}, {8}, {6, 7},
+                                                     {1, 3, 7}, {1, 3, 7}, {2}, {4}, {9}])
     # endregion
     ###############################################################################################################
     # Sole candidate tests
@@ -503,18 +503,14 @@ class TestSudokuPuzzle(unittest.TestCase):
 
     def test_fill_sole_candidates(self):
         sp = SudokuPuzzle(self.get_board_copy(self.sole_candidate_board))
-        (cell_y, cell_x) = (5, 5)
-        p = sp.get_possibilities()
-        for y in all_locs:
-            self.assertTrue(5 in p[y][5] or len(p[y][cell_x]) == 0)
-        for x in all_locs:
-            self.assertTrue(5 in p[5][x] or len(p[cell_y][x]) == 0)
+        (y, x) = (5, 5)
+        cell = sp.cells_dict[sp.board[y][x]]
+        self.assertEqual(cell.val, None)
         sp.fill_sole_candidates()
-        new_p = sp.get_possibilities()
-        for y in all_locs:
-            self.assertTrue(5 not in new_p[y][cell_x])
-        for x in all_locs:
-            self.assertTrue(5 not in new_p[cell_y][x])
+        cell = sp.cells_dict[sp.board[y][x]]
+        self.assertEqual(cell.val, 5)
+        self.assertSetEqual(sp.get_possibilities()[y][x], {5})
+
     # endregion
     ###############################################################################################################
     # Unique candidate tests
@@ -841,11 +837,11 @@ class TestSudokuPuzzle(unittest.TestCase):
         vals = {1, 9}
         y = 8
         excluded_vals = all_possibilities.difference(vals)
-        should_contain_before = [3, 2, 0, 2, 1, 0, 0, 0, 3]
+        should_contain_before = [3, 2, 1, 2, 1, 1, 0, 1, 3]
         row_possibilities = sp.enumerate_row_possibilities(y)
         self.assert_should_contain_count(should_contain_before, row_possibilities, excluded_vals)
         sp.hidden_subset_row(y, 2)
-        should_contain_after = [3, 2, 0, 2, 0, 0, 0, 0, 3]
+        should_contain_after = [3, 2, 1, 2, 0, 1, 0, 1, 3]
         row_possibilities = sp.enumerate_row_possibilities(y)
         self.assert_should_contain_count(should_contain_after, row_possibilities, excluded_vals)
 
@@ -854,11 +850,11 @@ class TestSudokuPuzzle(unittest.TestCase):
         vals = {1, 9}
         x = 8
         excluded_vals = all_possibilities.difference(vals)
-        should_contain_before = [3, 2, 0, 2, 1, 0, 0, 0, 3]
+        should_contain_before = [3, 2, 1, 2, 1, 1, 0, 1, 3]
         col_possibilities = sp.enumerate_col_possibilities(x)
         self.assert_should_contain_count(should_contain_before, col_possibilities, excluded_vals)
         sp.hidden_subset_col(x, 2)
-        should_contain_after = [3, 2, 0, 2, 0, 0, 0, 0, 3]
+        should_contain_after = [3, 2, 1, 2, 0, 1, 0, 1, 3]
         col_possibilities = sp.enumerate_col_possibilities(x)
         self.assert_should_contain_count(should_contain_after, col_possibilities, excluded_vals)
 
@@ -867,11 +863,11 @@ class TestSudokuPuzzle(unittest.TestCase):
         vals = {4, 7}
         block_num = 0
         excluded_vals = all_possibilities.difference(vals)
-        should_contain_before = [5, 5, 5, 3, 3, 3, 4, 4, 0]
+        should_contain_before = [5, 5, 5, 3, 3, 3, 4, 4, 1]
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain_count(should_contain_before, block_possibilities, excluded_vals)
         sp.hidden_subset_block(block_num, 2)
-        should_contain_after = [0, 0, 5, 3, 3, 3, 4, 4, 0]
+        should_contain_after = [0, 0, 5, 3, 3, 3, 4, 4, 1]
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain_count(should_contain_after, block_possibilities, excluded_vals)
 
@@ -880,11 +876,11 @@ class TestSudokuPuzzle(unittest.TestCase):
         vals = {2, 5, 6}
         y = 5
         excluded_vals = all_possibilities.difference(vals)
-        should_contain_before = [2, 3, 4, 4, 5, 3, 0, 4, 3]
+        should_contain_before = [2, 3, 4, 4, 5, 3, 1, 4, 3]
         row_possibilities = sp.enumerate_row_possibilities(y)
         self.assert_should_contain_count(should_contain_before, row_possibilities, excluded_vals)
         sp.hidden_subset_row(y, 3)
-        should_contain_after = [2, 3, 4, 0, 5, 0, 0, 0, 3]
+        should_contain_after = [2, 3, 4, 0, 5, 0, 1, 0, 3]
         row_possibilities = sp.enumerate_row_possibilities(y)
         self.assert_should_contain_count(should_contain_after, row_possibilities, excluded_vals)
 
@@ -893,11 +889,11 @@ class TestSudokuPuzzle(unittest.TestCase):
         vals = {2, 5, 6}
         x = 5
         excluded_vals = all_possibilities.difference(vals)
-        should_contain_before = [2, 3, 4, 4, 5, 3, 0, 4, 3]
+        should_contain_before = [2, 3, 4, 4, 5, 3, 1, 4, 3]
         col_possibilities = sp.enumerate_col_possibilities(x)
         self.assert_should_contain_count(should_contain_before, col_possibilities, excluded_vals)
         sp.hidden_subset_col(x, 3)
-        should_contain_after = [2, 3, 4, 0, 5, 0, 0, 0, 3]
+        should_contain_after = [2, 3, 4, 0, 5, 0, 1, 0, 3]
         col_possibilities = sp.enumerate_col_possibilities(x)
         self.assert_should_contain_count(should_contain_after, col_possibilities, excluded_vals)
 
@@ -906,11 +902,11 @@ class TestSudokuPuzzle(unittest.TestCase):
         vals = {2, 4, 5}
         block_num = 6
         excluded_vals = all_possibilities.difference(vals)
-        should_contain_before = [3, 0, 2, 2, 0, 0, 2, 1, 1]
+        should_contain_before = [3, 1, 2, 2, 0, 1, 2, 1, 1]
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain_count(should_contain_before, block_possibilities, excluded_vals)
         sp.hidden_subset_block(block_num, 3)
-        should_contain_after = [3, 0, 2, 2, 0, 0, 2, 0, 0]
+        should_contain_after = [3, 1, 2, 2, 0, 1, 2, 0, 0]
         block_possibilities = sp.enumerate_block_possibilities(block_num)
         self.assert_should_contain_count(should_contain_after, block_possibilities, excluded_vals)
 
@@ -1208,19 +1204,25 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assert_missing_row_possibilities(sp, 8, [{1, 2}, {2, 3}, {3}, {4}, {5}, {6}, None, {8}, {9}])
         p = sp.get_possibilities()
         # Guesses 1.0, 2.0, 3.0 still apply
-        self.assertTrue(6 not in p[0][5])
-        self.assertTrue(5 not in p[0][4])
-        self.assertTrue(4 not in p[0][3])
+        self.assertTrue(p[0][5] == {6})
+        self.assertTrue(p[0][4] == {5})
+        self.assertTrue(p[0][3] == {4})
+        self.assertTrue(sp.cells_dict[sp.board[0][5]].val == 6)
+        self.assertTrue(sp.cells_dict[sp.board[0][4]].val == 5)
+        self.assertTrue(sp.cells_dict[sp.board[0][3]].val == 4)
         # Revert Guess 3.0
         sp.revert_guess()
         self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, 5, None, None, None, 9])
         self.assert_missing_row_possibilities(sp, 8, [{1, 2}, {2}, {3}, {4}, {5}, None, None, None, {9}])
         p = sp.get_possibilities()
-        # The guess from 3.0 should still apply.
-        # So should guesses 1.0, 2.0
+        # The guess from 3.0 should still apply (the candidate should be removed.
+        # However, the val should no longer be set. Guesses 1.0, 2.0 still apply.
         self.assertTrue(6 not in p[0][5])
-        self.assertTrue(5 not in p[0][4])
-        self.assertTrue(4 not in p[0][3])
+        self.assertTrue(p[0][4] == {5})
+        self.assertTrue(p[0][3] == {4})
+        self.assertTrue(sp.cells_dict[sp.board[0][5]].val is None)
+        self.assertTrue(sp.cells_dict[sp.board[0][4]].val == 5)
+        self.assertTrue(sp.cells_dict[sp.board[0][3]].val == 4)
         # Guess 3.1
         sp.make_guess(7, sp.board[0][5])
         self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, 5, 7, None, None, 9])
@@ -1228,10 +1230,13 @@ class TestSudokuPuzzle(unittest.TestCase):
         p = sp.get_possibilities()
         # We made another guess (3.1) after rolling back 3.0 so the removed possibilities from 3.0 still apply
         # So should guesses 1.0, 2.0, 3.1
+        self.assertTrue(p[0][5] == {7})
         self.assertTrue(6 not in p[0][5])
-        self.assertTrue(7 not in p[0][5])
-        self.assertTrue(5 not in p[0][4])
-        self.assertTrue(4 not in p[0][3])
+        self.assertTrue(p[0][4] == {5})
+        self.assertTrue(p[0][3] == {4})
+        self.assertTrue(sp.cells_dict[sp.board[0][5]].val == 7)
+        self.assertTrue(sp.cells_dict[sp.board[0][4]].val == 5)
+        self.assertTrue(sp.cells_dict[sp.board[0][3]].val == 4)
         # Revert Guess 3.1
         sp.revert_guess()
         self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, 5, None, None, None, 9])
@@ -1241,19 +1246,23 @@ class TestSudokuPuzzle(unittest.TestCase):
         # So should guesses 1.0, 2.0
         self.assertTrue(6 not in p[0][5])
         self.assertTrue(7 not in p[0][5])
-        self.assertTrue(5 not in p[0][4])
-        self.assertTrue(4 not in p[0][3])
+        self.assertTrue(p[0][4] == {5})
+        self.assertTrue(p[0][3] == {4})
+        self.assertTrue(sp.cells_dict[sp.board[0][4]].val == 5)
+        self.assertTrue(sp.cells_dict[sp.board[0][3]].val == 4)
         # Revert Guess 2.0
         sp.revert_guess()
         self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, None, None, None, None, None])
         self.assert_missing_row_possibilities(sp, 8, [{1}, {2}, {3}, {4}, None, None, None, None, None])
         p = sp.get_possibilities()
         # The removed guesses from 3.1, 3.2 no longer apply since we rolled back twice
-        # Now only guesses 1.0, 2.0 apply
+        # THe possibility from 2.0 should still be removed. However, the val should no longer be set.
+        # Now only guess 1.0 applies.
         self.assertTrue(6 in p[0][5])
         self.assertTrue(7 in p[0][5])
         self.assertTrue(5 not in p[0][4])
-        self.assertTrue(4 not in p[0][3])
+        self.assertTrue(p[0][3] == {4})
+        self.assertTrue(sp.cells_dict[sp.board[0][3]].val == 4)
         # Revert Guess 1
         sp.revert_guess()
         self.assert_row_contains_candidates(sp, 0, [1, 2, 3, None, None, None, None, None, None])

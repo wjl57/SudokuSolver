@@ -18,7 +18,7 @@ class SudokuCell:
 
     def set_val(self, val):
         self.val = val
-        self.possibilities = set()
+        self.possibilities = {val}
 
     def remove_possibility(self, possibility):
         if possibility in self.possibilities:
