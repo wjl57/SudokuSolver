@@ -39,9 +39,21 @@ class SudokuPuzzle:
         self.locs_left_by_block = [defaultdict(set) for block_num in all_locs]
         # guess contains a None or a SudokuGuess object
         self.guess = None
+        # The number of cells with filled in values
+        self.num_filled = 0
 
         if board is not None:
             self.initialize_new_puzzle(board)
+
+    def determine_next_guess(self):
+        """
+        Finds a reasonable next guess
+        :return: (candidate, cell_name) corresponding to a reasonable next guess
+        """
+        for n in range(2, 9):
+            for (cell_name, cell) in self.cells_dict.items():
+                if len(cell.possibilities) == n:
+                    return next(iter(cell.possibilities)), cell_name
 
     def make_guess(self, candidate, cell_name):
         """
@@ -49,7 +61,7 @@ class SudokuPuzzle:
         :param cell_name: The cell name which is thought to contain the candidate
         Sets self.guess according to the candidate and cell_name of the next guess
         """
-        self.guess = SudokuGuess(candidate, cell_name, self.cells_dict, self.guess)
+        self.guess = SudokuGuess(candidate, cell_name, self.cells_dict, self.guess, self.num_filled)
         cell = self.cells_dict[cell_name]
         self.set_val_in_puzzle_by_cell_name(cell.name, candidate)
 
@@ -60,8 +72,31 @@ class SudokuPuzzle:
         if self.guess:
             self.cells_dict = self.guess.previous_cells_dict
             self.remove_possibility_from_puzzle_by_cell_name(self.guess.guess_cell_name, self.guess.guess_candidate)
+            self.num_filled = self.guess.num_filled
             self.guess = self.guess.previous_guess
             self.recalculate_fields()
+
+    def validate_updated_cells_ignoring_newly_set_val(self, updated_cells, cell_name):
+        """
+        :param updated_cells: A list of (other_name, val) tuples set by the previous method
+        Raises a BadGuessError if removing the possibilities causes the Sudoku Puzzle to break any rules.
+        However, it ignores any errors coming from the cell which was just set (cell_name)
+        i.e. A candidate can no longer be placed in every row/col/block or a cell has an empty set for possibilities
+        """
+        cell = self.cells_dict[cell_name]
+        for (other_name, val) in updated_cells:
+            other_cell = self.cells_dict[other_name]
+            if other_cell.possibilities is None or len(other_cell.possibilities) == 0:
+                raise BadGuessError(other_name, val, "No more possibilities for cell " + other_name)
+            if cell.y != other_cell.y and (self.locs_left_by_y[other_cell.y][val] is None or len(
+                    self.locs_left_by_y[other_cell.y][val]) == 0):
+                raise BadGuessError(other_name, val, "Can't place " + str(val) + " in row " + str(other_cell.y))
+            if cell.x != other_cell.x and (self.locs_left_by_x[other_cell.x][val] is None or len(
+                    self.locs_left_by_x[other_cell.x][val]) == 0):
+                raise BadGuessError(other_name, val, "Can't place " + str(val) + " in col " + str(other_cell.x))
+            if cell.block != other_cell.block and (self.locs_left_by_block[other_cell.block][val] is None or len(
+                    self.locs_left_by_block[other_cell.block][val]) == 0):
+                raise BadGuessError(other_name, val, "Can't place " + str(val) + " in block " + str(other_cell.block))
 
     def validate_updated_cells(self, updated_cells):
         """
@@ -72,13 +107,13 @@ class SudokuPuzzle:
         for (cell_name, val) in updated_cells:
             cell = self.cells_dict[cell_name]
             if cell.possibilities is None or len(cell.possibilities) == 0:
-                raise BadGuessError(cell_name, val, "No more possibilities for cell")
+                raise BadGuessError(cell_name, val, "No more possibilities for cell " + cell_name)
             if self.locs_left_by_y[cell.y][val] is None or len(self.locs_left_by_y[cell.y][val]) == 0:
-                raise BadGuessError(cell_name, val, "Can't place val in row")
+                raise BadGuessError(cell_name, val, "Can't place " + str(val) + " in row " + str(cell.y))
             if self.locs_left_by_x[cell.x][val] is None or len(self.locs_left_by_x[cell.x][val]) == 0:
-                raise BadGuessError(cell_name, val, "Can't place val in col")
+                raise BadGuessError(cell_name, val, "Can't place " + str(val) + " in col " + str(cell.x))
             if self.locs_left_by_block[cell.block][val] is None or len(self.locs_left_by_block[cell.block][val]) == 0:
-                raise BadGuessError(cell_name, val, "Can't place val in block")
+                raise BadGuessError(cell_name, val, "Can't place " + str(val) + " in block " + str(cell.block))
 
     def initialize_new_puzzle(self, board):
         """
@@ -132,9 +167,10 @@ class SudokuPuzzle:
         :param y: The y location of the cell. Precondition: 0 <= y < 9
         :param x: The x location of the cell. Precondition: 0 <= x < 9
         :param val: The value to set. Precondition: 1 <= val <= 9
+        :return: A set of (cell name, removed possibility) tuples for the cells with possibilities removed
         """
         cell_name = self.board[y][x]
-        self.set_val_in_puzzle_by_cell_name(cell_name, val)
+        return self.set_val_in_puzzle_by_cell_name(cell_name, val)
 
     def set_val_in_puzzle_by_cell_name(self, cell_name, val):
         """
@@ -142,7 +178,9 @@ class SudokuPuzzle:
         Removes possibilities from remaining_in and locs_left_by fields
         :param cell_name: The cell_name of the cell.
         :param val: The value to set. Precondition: 1 <= val <= 9
+        :return: A set of (cell name, removed possibility) tuples for the cells with possibilities removed
         """
+        updated_cells = set()
         c = self.cells_dict[cell_name]
         self.remaining_in_y[c.y].discard(val)
         self.remaining_in_x[c.x].discard(val)
@@ -151,14 +189,19 @@ class SudokuPuzzle:
         self.locs_left_by_y[c.x][val].discard(c.y)
         self.locs_left_by_y[c.block][val].discard(c.block_cell_num)
         c.set_val(val)
+        self.num_filled += 1
 
         # Remove possibilities from row, col, block
         for other_name in self.y_cell_list[c.y]:
-            self.remove_possibility_from_puzzle_by_cell_name(other_name, val)
+            if self.remove_possibility_from_puzzle_by_cell_name(other_name, val):
+                updated_cells.add((other_name, val))
         for other_name in self.x_cell_list[c.x]:
-            self.remove_possibility_from_puzzle_by_cell_name(other_name, val)
+            if self.remove_possibility_from_puzzle_by_cell_name(other_name, val):
+                updated_cells.add((other_name, val))
         for other_name in self.block_cell_list[c.block]:
-            self.remove_possibility_from_puzzle_by_cell_name(other_name, val)
+            if self.remove_possibility_from_puzzle_by_cell_name(other_name, val):
+                updated_cells.add((other_name, val))
+        return updated_cells
 
     # region Remove Possibilities
     # region Remove Single Possibility from puzzle
@@ -401,65 +444,69 @@ class SudokuPuzzle:
         return [[self.cells_dict[self.board[y][x]].val for x in all_locs] for y in all_locs]
 
     # region Sole Candidates
-    def fill_sole_candidates(self):
+    def fill_sole_candidate(self):
         """
-        Fills in sole candidates
+        Fills in a sole candidate
         i.e. when a specific cell can only contain a single number
-        :return A list of (cell_name, val) tuples set by this method
+        :return A (cell_name, val) tuple set by this method
+        :return: A set of (cell name, removed possibility) tuples for the cells with possibilities removed
         """
-        filled_cells = []
+        updated_cells = set()
         for cell_name in self.cells_dict.keys():
             cell = self.cells_dict[cell_name]
             if cell.val is None and len(cell.possibilities) == 1:
                 val = next(iter(cell.possibilities))
-                self.set_val_in_puzzle_by_cell_name(cell_name, val)
-                filled_cells.append((cell_name, val))
-        return filled_cells
+                updated_cells = (self.set_val_in_puzzle_by_cell_name(cell_name, val))
+                return (cell_name, val), updated_cells
+        return None, updated_cells
     # endregion
 
     # region Unique Candidates
-    def fill_unique_candidates_y(self, y):
+    def fill_unique_candidate_y(self, y):
         """
-        Fills in unique candidates by row
+        Fills in a unique candidates by row
         i.e. when a number can only go in one spot in row y
         :param y: The row number. Precondition: 0 <= y < 9
-        :return A list of (cell_name, val) tuples set by this method
+        :return A (cell_name, val) tuple set by this method
+        :return: A set of (cell name, removed possibility) tuples for the cells with possibilities removed
         """
-        filled_cells = []
+        updated_cells = set()
         y_locs_left = self.locs_left_by_y[y]
         y_possibilities = self.remaining_in_y[y]
         for val in copy.deepcopy(y_possibilities):
             if len(y_locs_left[val]) == 1:
                 cell_name = self.board[y][next(iter(y_locs_left[val]))]
-                self.set_val_in_puzzle_by_cell_name(cell_name, val)
-                filled_cells.append((cell_name, val))
-        return filled_cells
+                updated_cells = self.set_val_in_puzzle_by_cell_name(cell_name, val)
+                return (cell_name, val), updated_cells
+        return None, updated_cells
 
-    def fill_unique_candidates_x(self, x):
+    def fill_unique_candidate_x(self, x):
         """
         Fills in unique candidates by col
         i.e. when a number can only go in one spot in col x
         :param x: The col number. Precondition: 0 <= y < 9
-        :return A list of (cell_name, val) tuples set by this method
+        :return A (cell_name, val) tuple set by this method
+        :return: A set of (cell name, removed possibility) tuples for the cells with possibilities removed
         """
-        filled_cells = []
+        updated_cells = set()
         x_locs_left = self.locs_left_by_x[x]
         x_possibilities = self.remaining_in_x[x]
         for val in copy.deepcopy(x_possibilities):
             if len(x_locs_left[val]) == 1:
                 cell_name = self.board[next(iter(x_locs_left[val]))][x]
-                self.set_val_in_puzzle_by_cell_name(cell_name, val)
-                filled_cells.append((cell_name, val))
-        return filled_cells
+                updated_cells = self.set_val_in_puzzle_by_cell_name(cell_name, val)
+                return (cell_name, val), updated_cells
+        return None, updated_cells
 
-    def fill_unique_candidates_block(self, block_num):
+    def fill_unique_candidate_block(self, block_num):
         """
         Fills in unique candidates by block
         i.e. when a number can only go in one spot in block block_number
         :param block_num: The block number. Precondition: 0 <= y < 9
-        :return A list of (cell_name, val) tuples set by this method
+        :return A (cell_name, val) tuple set by this method
+        :return: A set of (cell name, removed possibility) tuples for the cells with possibilities removed
         """
-        filled_cells = []
+        updated_cells = set()
         block_locs_left = self.locs_left_by_block[block_num]
         block_possibilities = self.remaining_in_blocks[block_num]
         for val in copy.deepcopy(block_possibilities):
@@ -467,24 +514,30 @@ class SudokuPuzzle:
                 (y, x) = SudokuHelper.block_num_and_cell_num_to_offsets(
                     block_num, next(iter(block_locs_left[val])))
                 cell_name = self.board[y][x]
-                self.set_val_in_puzzle_by_cell_name(cell_name, val)
-                filled_cells.append((cell_name, val))
-        return filled_cells
+                updated_cells = self.set_val_in_puzzle_by_cell_name(cell_name, val)
+                return (cell_name, val), updated_cells
+        return None, updated_cells
 
-    def fill_unique_candidates(self):
+    def fill_unique_candidate(self):
         """
-        Fills in unique candidates
+        Fills in a unique candidates
         i.e. when a number can only go in one spot in a row/col/block
-        :return A list of (cell_name, val) tuples set by this method
+        :return A (cell_name, val) tuple set by this method
+        :return: A set of (cell name, removed possibility) tuples for the cells with possibilities removed
         """
-        filled_cells = []
         for y in all_locs:
-            filled_cells += self.fill_unique_candidates_y(y)
+            (filled_cell, updated_cells) = self.fill_unique_candidate_y(y)
+            if filled_cell:
+                return filled_cell, updated_cells
         for x in all_locs:
-            filled_cells += self.fill_unique_candidates_x(x)
+            (filled_cell, updated_cells) = self.fill_unique_candidate_x(x)
+            if filled_cell:
+                return filled_cell, updated_cells
         for block_num in all_locs:
-            filled_cells += self.fill_unique_candidates_block(block_num)
-        return filled_cells
+            (filled_cell, updated_cells) = self.fill_unique_candidate_block(block_num)
+            if filled_cell:
+                return filled_cell, updated_cells
+        return None, set()
     # endregion
 
     @staticmethod

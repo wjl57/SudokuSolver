@@ -531,7 +531,7 @@ class TestSudokuPuzzle(unittest.TestCase):
         (y, x) = (5, 5)
         cell = sp.cells_dict[sp.board[y][x]]
         self.assertEqual(cell.val, None)
-        sp.fill_sole_candidates()
+        sp.fill_sole_candidate()
         cell = sp.cells_dict[sp.board[y][x]]
         self.assertEqual(cell.val, 5)
         self.assertSetEqual(sp.get_possibilities()[y][x], {5})
@@ -548,21 +548,21 @@ class TestSudokuPuzzle(unittest.TestCase):
         (cell_y, cell_x) = (0, 7)
         cell = sp.cells_dict[sp.board[cell_y][cell_x]]
         self.assertEqual(cell.val, None)
-        sp.fill_unique_candidates_y(0)
+        sp.fill_unique_candidate_y(0)
         self.assertEqual(cell.val, 4)
 
         sp = SudokuPuzzle(SudokuPuzzle.reflect_board_over_xy(self.get_board_copy(self.unique_candidate_board)))
         (cell_y, cell_x) = (7, 0)
         cell = sp.cells_dict[sp.board[cell_y][cell_x]]
         self.assertEqual(cell.val, None)
-        sp.fill_unique_candidates_x(0)
+        sp.fill_unique_candidate_x(0)
         self.assertEqual(cell.val, 4)
 
         sp = SudokuPuzzle(self.get_board_copy(self.unique_candidate_block_board))
         (cell_y, cell_x) = (0, 5)
         cell = sp.cells_dict[sp.board[cell_y][cell_x]]
         self.assertEqual(cell.val, None)
-        sp.fill_unique_candidates()
+        sp.fill_unique_candidate()
         self.assertEqual(cell.val, 4)
 
     # endregion
@@ -1137,7 +1137,7 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assert_should_contain(should_contain_after_x3, x3_possibilities, {val})
         self.assert_should_contain(should_contain_after_x4, x4_possibilities, {val})
 
-    #endregion
+    # endregion
     ###############################################################################################################
     # Single Digit Patterns
     # http://hodoku.sourceforge.net/en/tech_sdp.php
@@ -1311,7 +1311,7 @@ class TestSudokuPuzzle(unittest.TestCase):
         except BadGuessError as bge:
             self.assertEqual(bge.cell_name, cell_name)
             self.assertEqual(bge.val, 1)
-            self.assertEqual(bge.message, "Can't place val in row")
+            self.assertEqual(bge.message, "Can't place 1 in row 2")
 
     def test_validate_updated_cells_empty_possibilities(self):
         sp = SudokuPuzzle(self.get_board_copy(self.empty_possibilities_validation_board))
@@ -1325,7 +1325,7 @@ class TestSudokuPuzzle(unittest.TestCase):
         except BadGuessError as bge:
             self.assertEqual(bge.cell_name, cell_name)
             self.assertEqual(bge.val, 8)
-            self.assertEqual(bge.message, "No more possibilities for cell")
+            self.assertEqual(bge.message, "No more possibilities for cell c585")
 
     # endregion
 
