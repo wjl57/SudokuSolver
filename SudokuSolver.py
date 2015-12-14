@@ -49,10 +49,15 @@ class SudokuSolver(Machine):
                     self.sudoku_puzzle.validate_updated_cells_ignoring_newly_set_val(updated_cells, cell_name)
                 except BadGuessError as bge:
                     print(bge)
-                    print("REVERTING GUESS!!!!!!!!!!!!!!!!!!!!!!!!!")
+                    print("REVERTING GUESS!!!!!!!!!!!!!!!!!!!!!!!!! to " + str(self.sudoku_puzzle.guess.previous_guess))
                     self.sudoku_puzzle.revert_guess()
+                    self.sudoku_puzzle.print_board()
+                    self.sudoku_puzzle.print_possibilities()
+                    self.assert_possibilities_are_non_empty()
+                    print(self.sudoku_puzzle.num_filled)
             else:
                 self.sudoku_puzzle.print_board()
+                self.sudoku_puzzle.print_possibilities()
             return False
         else:
             print(self.state + ": None found")
@@ -61,6 +66,7 @@ class SudokuSolver(Machine):
     def print_state_then_return(self, updated_cells):
         if updated_cells:
             print(self.state + ": " + str(updated_cells))
+            self.sudoku_puzzle.print_possibilities()
             # TODO: Check if this actually works
             if self.sudoku_puzzle.guess is not None:
                 try:
@@ -69,6 +75,10 @@ class SudokuSolver(Machine):
                     print(bge)
                     print("REVERTING GUESS!!!!!!!!!!!!!!!!!!!!!!!!!")
                     self.sudoku_puzzle.revert_guess()
+                    self.sudoku_puzzle.print_board()
+                    self.sudoku_puzzle.print_possibilities()
+                    self.assert_possibilities_are_non_empty()
+                    print(self.sudoku_puzzle.num_filled)
             return False
         else:
             print(self.state + ": None found")
@@ -96,15 +106,33 @@ class SudokuSolver(Machine):
 
     def make_guess(self):
         (candidate, cell_name) = self.sudoku_puzzle.determine_next_guess()
-        self.sudoku_puzzle.make_guess(candidate, cell_name)
+        if candidate is None or cell_name is None:
+            self.sudoku_puzzle.print_board()
+            self.sudoku_puzzle.print_possibilities()
+            self.sudoku_puzzle.revert_guess()
+            return
+
         print("Guess " + str(candidate) + " into " + cell_name)
         self.sudoku_puzzle.print_board()
+        self.sudoku_puzzle.print_possibilities()
+        print(self.sudoku_puzzle.num_filled)
+        self.sudoku_puzzle.make_guess(candidate, cell_name)
+        self.sudoku_puzzle.print_board()
+        self.sudoku_puzzle.print_possibilities()
+
 
     def do_work(self):
         print(self.state)
         self.sudoku_puzzle.print_board()
-        while not self.sudoku_puzzle.num_filled == 81:
+        while not self.sudoku_puzzle.num_filled >= 81:
             self.perform_step()
+            self.assert_possibilities_are_non_empty()
             print("num filled: " + str(self.sudoku_puzzle.num_filled))
         self.sudoku_puzzle.print_board()
         print("num filled at end: " + str(self.sudoku_puzzle.num_filled))
+
+    def assert_possibilities_are_non_empty(self):
+        for (cell_name, cell) in self.sudoku_puzzle.cells_dict.items():
+            if len(cell.possibilities) < 1:
+                print(cell_name, cell.possibilities)
+                break

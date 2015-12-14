@@ -19,3 +19,6 @@ class SudokuGuess:
         self.previous_guess = previous_guess
         # The number of cells filled before the guess
         self.num_filled = num_filled
+
+    def __str__(self):
+        return "(" + self.guess_cell_name + ": " + str(self.guess_candidate) + ")" + "," + str(self.previous_guess)

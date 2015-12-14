@@ -54,6 +54,8 @@ class SudokuPuzzle:
             for (cell_name, cell) in self.cells_dict.items():
                 if len(cell.possibilities) == n:
                     return next(iter(cell.possibilities)), cell_name
+        self.print_possibilities()
+        return None, None
 
     def make_guess(self, candidate, cell_name):
         """
@@ -186,8 +188,8 @@ class SudokuPuzzle:
         self.remaining_in_x[c.x].discard(val)
         self.remaining_in_blocks[c.block].discard(val)
         self.locs_left_by_y[c.y][val].discard(c.x)
-        self.locs_left_by_y[c.x][val].discard(c.y)
-        self.locs_left_by_y[c.block][val].discard(c.block_cell_num)
+        self.locs_left_by_x[c.x][val].discard(c.y)
+        self.locs_left_by_block[c.block][val].discard(c.block_cell_num)
         c.set_val(val)
         self.num_filled += 1
 
@@ -232,6 +234,9 @@ class SudokuPuzzle:
             self.locs_left_by_y[cell.y][val].discard(cell.x)
             self.locs_left_by_x[cell.x][val].discard(cell.y)
             self.locs_left_by_block[cell.block][val].discard(cell.block_cell_num)
+
+        if not cell.possibilities and self.guess is None:
+            print("Something is wrong")
         return val_removed
         # TODO: Verify removing the possibility is legal if there was a guess
     # endregion
@@ -528,14 +533,17 @@ class SudokuPuzzle:
         for y in all_locs:
             (filled_cell, updated_cells) = self.fill_unique_candidate_y(y)
             if filled_cell:
+                print("Because of y")
                 return filled_cell, updated_cells
         for x in all_locs:
             (filled_cell, updated_cells) = self.fill_unique_candidate_x(x)
             if filled_cell:
+                print("Because of x")
                 return filled_cell, updated_cells
         for block_num in all_locs:
             (filled_cell, updated_cells) = self.fill_unique_candidate_block(block_num)
             if filled_cell:
+                print("Because of block")
                 return filled_cell, updated_cells
         return None, set()
     # endregion
