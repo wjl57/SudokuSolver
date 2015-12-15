@@ -112,7 +112,8 @@ class SudokuSolver(Machine):
             self.sudoku_puzzle.revert_guess()
             return
 
-        print("Guess " + str(candidate) + " into " + cell_name)
+        print("Guess " + str(candidate) + " into " + cell_name + ". Now guesses are "
+              + str(self.sudoku_puzzle.guess))
         self.sudoku_puzzle.print_board()
         self.sudoku_puzzle.print_possibilities()
         print(self.sudoku_puzzle.num_filled)
@@ -120,11 +121,10 @@ class SudokuSolver(Machine):
         self.sudoku_puzzle.print_board()
         self.sudoku_puzzle.print_possibilities()
 
-
     def do_work(self):
         print(self.state)
         self.sudoku_puzzle.print_board()
-        while not self.sudoku_puzzle.num_filled >= 81:
+        while not self.sudoku_puzzle.num_filled == 81:
             self.perform_step()
             self.assert_possibilities_are_non_empty()
             print("num filled: " + str(self.sudoku_puzzle.num_filled))
