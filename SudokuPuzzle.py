@@ -62,10 +62,12 @@ class SudokuPuzzle:
         :param candidate: The candidate which is thought to be in the location of cell_name
         :param cell_name: The cell name which is thought to contain the candidate
         Sets self.guess according to the candidate and cell_name of the next guess
+        :return A (cell_name, val) tuple set by this method
+        :return: A set of (cell name, removed possibility) tuples for the cells with possibilities removed
         """
         self.guess = SudokuGuess(candidate, cell_name, self.cells_dict, self.guess, self.num_filled)
-        cell = self.cells_dict[cell_name]
-        self.set_val_in_puzzle_by_cell_name(cell.name, candidate)
+        updated_cells = self.set_val_in_puzzle_by_cell_name(cell_name, candidate)
+        return (cell_name, candidate), updated_cells
 
     def revert_guess(self):
         """
@@ -1141,7 +1143,8 @@ class SudokuPuzzle:
     # endregion
 
     # region Pretty Print
-    def print_board(self):
+    @staticmethod
+    def print_board(board):
         """
         Pretty prints the filled in values for the board
         """
@@ -1153,7 +1156,7 @@ class SudokuPuzzle:
                 print('+-----------------------------+')
             row_count += 1
             for x in all_locs:
-                val = self.cells_dict[self.board[y][x]].val
+                val = board[y][x]
                 if col_count % 3 == 0:
                     col_count = 0
                     print('|', end='')
@@ -1164,6 +1167,58 @@ class SudokuPuzzle:
                     print(' ' + str(val) + ' ', end='')
             print('|\n')
         print('+-----------------------------+')
+
+    @staticmethod
+    def get_pretty_board_string(board):
+        """
+        Returns the filled values in the board as a prettified string
+        """
+        s = ""
+        row_count = 0
+        col_count = 0
+        for y in all_locs:
+            if row_count % 3 == 0:
+                row_count = 0
+                s += '+-----------------------------+\n'
+            row_count += 1
+            for x in all_locs:
+                val = board[y][x]
+                if col_count % 3 == 0:
+                    col_count = 0
+                    s += '|'
+                col_count += 1
+                if val is None:
+                    s += '   '
+                else:
+                    s += ' ' + str(val) + ' '
+            s += '|\n'
+        s += '+-----------------------------+'
+        return s
+
+    #
+    # def print_board(self):
+    #     """
+    #     Pretty prints the filled in values for the board
+    #     """
+    #     row_count = 0
+    #     col_count = 0
+    #     for y in all_locs:
+    #         if row_count % 3 == 0:
+    #             row_count = 0
+    #             print('+-----------------------------+')
+    #         row_count += 1
+    #         for x in all_locs:
+    #             val = self.cells_dict[self.board[y][x]].val
+    #             if col_count % 3 == 0:
+    #                 col_count = 0
+    #                 print('|', end='')
+    #             col_count += 1
+    #             if val is None:
+    #                 print('   ', end='')
+    #             else:
+    #                 print(' ' + str(val) + ' ', end='')
+    #         print('|\n')
+    #     print('+-----------------------------+')
 
     def print_possibilities(self):
         """

@@ -1,5 +1,7 @@
 from transitions import Machine
 from BadGuessError import BadGuessError
+from SudokuLogger import SudokuLogger, SudokuStepLog
+from SudokuPuzzle import SudokuPuzzle
 
 __author__ = 'william'
 
@@ -8,6 +10,7 @@ class SudokuSolver(Machine):
 
     def __init__(self, sp):
         self.sudoku_puzzle = sp
+        self.sudoku_logger = SudokuLogger()
 
         states = ['Ready', 'Sole_Candidate', 'Unique_Candidate', 'Block_RC_Interactions', 'Block_Block_Interactions',
                   'Naked_Pairs', 'Make_Guess', 'Done']
@@ -51,12 +54,12 @@ class SudokuSolver(Machine):
                     print(bge)
                     print("REVERTING GUESS!!!!!!!!!!!!!!!!!!!!!!!!! to " + str(self.sudoku_puzzle.guess.previous_guess))
                     self.sudoku_puzzle.revert_guess()
-                    self.sudoku_puzzle.print_board()
+                    SudokuPuzzle.print_board(self.sudoku_puzzle.get_board())
                     self.sudoku_puzzle.print_possibilities()
                     self.assert_possibilities_are_non_empty()
                     print(self.sudoku_puzzle.num_filled)
             else:
-                self.sudoku_puzzle.print_board()
+                SudokuPuzzle.print_board(self.sudoku_puzzle.get_board())
                 self.sudoku_puzzle.print_possibilities()
             return False
         else:
@@ -75,8 +78,7 @@ class SudokuSolver(Machine):
                     print(bge)
                     print("REVERTING GUESS!!!!!!!!!!!!!!!!!!!!!!!!!")
                     self.sudoku_puzzle.revert_guess()
-                    self.sudoku_puzzle.print_board()
-                    self.sudoku_puzzle.print_possibilities()
+                    SudokuPuzzle.print_board(self.sudoku_puzzle.get_board())
                     self.assert_possibilities_are_non_empty()
                     print(self.sudoku_puzzle.num_filled)
             return False
@@ -85,12 +87,16 @@ class SudokuSolver(Machine):
             return True
 
     def fill_sole_candidate(self):
-        (filled_cells, updated_cells) = self.sudoku_puzzle.fill_sole_candidate()
-        return self.print_state_and_board_then_return(filled_cells, updated_cells)
+        (filled_cell, updated_cells) = self.sudoku_puzzle.fill_sole_candidate()
+        self.sudoku_logger.log_step("Sole candidate", filled_cell, updated_cells,
+                                    self.sudoku_puzzle.get_board(), self.sudoku_puzzle.get_possibilities())
+        return self.print_state_and_board_then_return(filled_cell, updated_cells)
 
     def fill_unique_candidate(self):
-        (filled_cells, updated_cells) = self.sudoku_puzzle.fill_unique_candidate()
-        return self.print_state_and_board_then_return(filled_cells, updated_cells)
+        (filled_cell, updated_cells) = self.sudoku_puzzle.fill_unique_candidate()
+        self.sudoku_logger.log_step("Unique candidate", filled_cell, updated_cells,
+                                    self.sudoku_puzzle.get_board(), self.sudoku_puzzle.get_possibilities())
+        return self.print_state_and_board_then_return(filled_cell, updated_cells)
 
     def naked_pairs(self):
         updated_cells = self.sudoku_puzzle.all_naked_pairs()
@@ -107,29 +113,25 @@ class SudokuSolver(Machine):
     def make_guess(self):
         (candidate, cell_name) = self.sudoku_puzzle.determine_next_guess()
         if candidate is None or cell_name is None:
-            self.sudoku_puzzle.print_board()
-            self.sudoku_puzzle.print_possibilities()
             self.sudoku_puzzle.revert_guess()
             return
-
-        print("Guess " + str(candidate) + " into " + cell_name + ". Now guesses are "
-              + str(self.sudoku_puzzle.guess))
-        self.sudoku_puzzle.print_board()
-        self.sudoku_puzzle.print_possibilities()
         print(self.sudoku_puzzle.num_filled)
-        self.sudoku_puzzle.make_guess(candidate, cell_name)
-        self.sudoku_puzzle.print_board()
-        self.sudoku_puzzle.print_possibilities()
+        (filled_cell, updated_cells) = self.sudoku_puzzle.make_guess(candidate, cell_name)
+        additional = "All guesses so far: " + str(self.sudoku_puzzle.guess)
+        self.sudoku_logger.log_step("Guessing: ", filled_cell, updated_cells,
+                                    self.sudoku_puzzle.get_board(), self.sudoku_puzzle.get_possibilities(), additional)
 
     def do_work(self):
         print(self.state)
-        self.sudoku_puzzle.print_board()
+        SudokuPuzzle.print_board(self.sudoku_puzzle.get_board())
         while not self.sudoku_puzzle.num_filled == 81:
             self.perform_step()
             self.assert_possibilities_are_non_empty()
             print("num filled: " + str(self.sudoku_puzzle.num_filled))
-        self.sudoku_puzzle.print_board()
+        # SudokuPuzzle.print_board(self.sudoku_puzzle.get_board())
         print("num filled at end: " + str(self.sudoku_puzzle.num_filled))
+        print('#########################################################################################')
+        self.sudoku_logger.print_log()
 
     def assert_possibilities_are_non_empty(self):
         for (cell_name, cell) in self.sudoku_puzzle.cells_dict.items():

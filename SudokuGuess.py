@@ -21,4 +21,6 @@ class SudokuGuess:
         self.num_filled = num_filled
 
     def __str__(self):
+        if self.previous_guess is None:
+            return "(" + self.guess_cell_name + ": " + str(self.guess_candidate) + ")"
         return "(" + self.guess_cell_name + ": " + str(self.guess_candidate) + ")" + ", " + str(self.previous_guess)
