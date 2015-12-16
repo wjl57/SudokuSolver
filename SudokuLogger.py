@@ -9,7 +9,7 @@ class SudokuLogger:
         self.sudoku_log = []
 
     def log_step(self, description, filled_cell, updated_cells, board, possibilities, additional=None):
-        if filled_cell or updated_cells:
+        if filled_cell or updated_cells or additional:
             self.sudoku_log.append(SudokuStepLog(description, filled_cell, updated_cells,
                                                  board, possibilities, additional))
 
@@ -36,6 +36,6 @@ class SudokuStepLog:
             s += "\nRemoved possibilities: " + str(self.updated_cells)
         if self.additional:
             s += "\n" + str(self.additional)
-        if self.filled_cell:
-            s += "\n" + SudokuPuzzle.get_pretty_board_string(self.board)
+        if self.board:
+            s += "\n" + SudokuPuzzle.get_pretty_matrix_string(self.board)
         return s

@@ -48,13 +48,12 @@ class SudokuPuzzle:
     def determine_next_guess(self):
         """
         Finds a reasonable next guess
-        :return: (candidate, cell_name) corresponding to a reasonable next guess
+        :return: (cell_name, candidate) corresponding to a reasonable next guess
         """
         for n in range(2, 9):
             for (cell_name, cell) in self.cells_dict.items():
                 if len(cell.possibilities) == n:
-                    return next(iter(cell.possibilities)), cell_name
-        self.print_possibilities()
+                    return cell_name, next(iter(cell.possibilities))
         return None, None
 
     def make_guess(self, candidate, cell_name):
@@ -72,13 +71,17 @@ class SudokuPuzzle:
     def revert_guess(self):
         """
         Reverts the SudokuPuzzle to the previous state before the current guess
+        :return: (cell name, removed possibility) corresponding to the reverted guess
         """
         if self.guess:
             self.cells_dict = self.guess.previous_cells_dict
-            self.remove_possibility_from_puzzle_by_cell_name(self.guess.guess_cell_name, self.guess.guess_candidate)
+            cell_name = self.guess.guess_cell_name
+            candidate = self.guess.guess_candidate
+            self.remove_possibility_from_puzzle_by_cell_name(cell_name, candidate)
             self.num_filled = self.guess.num_filled
             self.guess = self.guess.previous_guess
             self.recalculate_fields()
+            return cell_name, candidate
 
     def validate_updated_cells_ignoring_newly_set_val(self, updated_cells, cell_name):
         """
@@ -236,11 +239,7 @@ class SudokuPuzzle:
             self.locs_left_by_y[cell.y][val].discard(cell.x)
             self.locs_left_by_x[cell.x][val].discard(cell.y)
             self.locs_left_by_block[cell.block][val].discard(cell.block_cell_num)
-
-        if not cell.possibilities and self.guess is None:
-            print("Something is wrong")
         return val_removed
-        # TODO: Verify removing the possibility is legal if there was a guess
     # endregion
 
     # region Eliminate Possibilities from Row/Col/Block (except excluded)
@@ -535,17 +534,14 @@ class SudokuPuzzle:
         for y in all_locs:
             (filled_cell, updated_cells) = self.fill_unique_candidate_y(y)
             if filled_cell:
-                print("Because of y")
                 return filled_cell, updated_cells
         for x in all_locs:
             (filled_cell, updated_cells) = self.fill_unique_candidate_x(x)
             if filled_cell:
-                print("Because of x")
                 return filled_cell, updated_cells
         for block_num in all_locs:
             (filled_cell, updated_cells) = self.fill_unique_candidate_block(block_num)
             if filled_cell:
-                print("Because of block")
                 return filled_cell, updated_cells
         return None, set()
     # endregion
@@ -1144,9 +1140,10 @@ class SudokuPuzzle:
 
     # region Pretty Print
     @staticmethod
-    def print_board(board):
+    def print_matrix(matrix):
         """
-        Pretty prints the filled in values for the board
+        :param matrix: A 9x9 2D-matrix with contents to pretty print
+        Pretty prints the values in the matrix
         """
         row_count = 0
         col_count = 0
@@ -1156,7 +1153,7 @@ class SudokuPuzzle:
                 print('+-----------------------------+')
             row_count += 1
             for x in all_locs:
-                val = board[y][x]
+                val = matrix[y][x]
                 if col_count % 3 == 0:
                     col_count = 0
                     print('|', end='')
@@ -1169,9 +1166,10 @@ class SudokuPuzzle:
         print('+-----------------------------+')
 
     @staticmethod
-    def get_pretty_board_string(board):
+    def get_pretty_matrix_string(matrix):
         """
-        Returns the filled values in the board as a prettified string
+        :param: A 9x9 2D-matrix with contents
+        :return Returns the contents of the matrix as a prettified string
         """
         s = ""
         row_count = 0
@@ -1182,7 +1180,7 @@ class SudokuPuzzle:
                 s += '+-----------------------------+\n'
             row_count += 1
             for x in all_locs:
-                val = board[y][x]
+                val = matrix[y][x]
                 if col_count % 3 == 0:
                     col_count = 0
                     s += '|'
@@ -1195,52 +1193,17 @@ class SudokuPuzzle:
         s += '+-----------------------------+'
         return s
 
-    #
-    # def print_board(self):
-    #     """
-    #     Pretty prints the filled in values for the board
-    #     """
-    #     row_count = 0
-    #     col_count = 0
-    #     for y in all_locs:
-    #         if row_count % 3 == 0:
-    #             row_count = 0
-    #             print('+-----------------------------+')
-    #         row_count += 1
-    #         for x in all_locs:
-    #             val = self.cells_dict[self.board[y][x]].val
-    #             if col_count % 3 == 0:
-    #                 col_count = 0
-    #                 print('|', end='')
-    #             col_count += 1
-    #             if val is None:
-    #                 print('   ', end='')
-    #             else:
-    #                 print(' ' + str(val) + ' ', end='')
-    #         print('|\n')
-    #     print('+-----------------------------+')
-
     def print_possibilities(self):
-        """
-        Pretty prints the board possibilities
-        """
-        row_count = 0
-        col_count = 0
-        for y in all_locs:
-            if row_count % 3 == 0:
-                row_count = 0
-                print('+-------------------------------------------------------------------+')
-            row_count += 1
-            for x in all_locs:
-                possibilities = self.cells_dict[self.board[y][x]].possibilities
-                if col_count % 3 == 0:
-                    col_count = 0
-                    print('|', end='')
-                col_count += 1
-                print(' ' + str(possibilities) + ' ', end='')
-            print('|\n')
-        print('+-------------------------------------------------------------------+')
-    # endregion
+        SudokuPuzzle.print_matrix(self.get_possibilities())
+
+    def print_board(self):
+        SudokuPuzzle.print_matrix(self.get_board())
+
+    def get_pretty_possibilities_string(self):
+        SudokuPuzzle.get_pretty_matrix_string(self.get_possibilities())
+
+    def get_pretty_board_string(self):
+        SudokuPuzzle.get_pretty_matrix_string(self.get_board())
 
     # region Rotate/Reflect Board
     @staticmethod
