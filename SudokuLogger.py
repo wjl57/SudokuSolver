@@ -29,11 +29,11 @@ class SudokuStepLog:
         self.additional = additional
 
     def __str__(self):
-        s = self.description + ": "
+        s = self.description + ""
         if self.filled_cell:
-            s += str(self.filled_cell)
+            s += "\nUpdated cell: " + str(self.filled_cell)
         if self.updated_cells:
-            s += "\nRemoved possibilities: " + str(self.updated_cells)
+            s += "\nRemoved candidates: " + str(self.updated_cells)
         if self.additional:
             s += "\n" + str(self.additional)
         if self.board:

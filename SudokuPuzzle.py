@@ -7,6 +7,7 @@ from SudokuGuess import SudokuGuess
 from SudokuHelper import all_locs
 from SudokuHelper import cell_locs
 from SudokuHelper import all_possibilities
+from SudokuStep import SudokuStep
 import SudokuHelper
 
 __author__ = 'william'
@@ -49,29 +50,32 @@ class SudokuPuzzle:
         """
         Finds a reasonable next guess
         :return: (cell_name, candidate) corresponding to a reasonable next guess
+        If a reasonable guess cannot be found, return None
         """
         for n in range(2, 9):
             for (cell_name, cell) in self.cells_dict.items():
                 if len(cell.possibilities) == n:
-                    return cell_name, next(iter(cell.possibilities))
+                    candidate = next(iter(cell.possibilities))
+                    return cell_name, candidate
         return None, None
 
-    def make_guess(self, candidate, cell_name):
+    def make_guess(self, cell_name, candidate):
         """
         :param candidate: The candidate which is thought to be in the location of cell_name
         :param cell_name: The cell name which is thought to contain the candidate
         Sets self.guess according to the candidate and cell_name of the next guess
-        :return A (cell_name, val) tuple set by this method
-        :return: A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * filled_cell = (cell_name, candidate) of the guess
         """
         self.guess = SudokuGuess(candidate, cell_name, self.cells_dict, self.guess, self.num_filled)
         updated_cells = self.set_val_in_puzzle_by_cell_name(cell_name, candidate)
-        return (cell_name, candidate), updated_cells
+        return SudokuStep((cell_name, candidate), updated_cells, "Guessing " + str(candidate) + " into " + cell_name)
 
     def revert_guess(self):
         """
         Reverts the SudokuPuzzle to the previous state before the current guess
-        :return: (cell name, removed possibility) corresponding to the reverted guess
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = {(cell name, removed possibility)} corresponding to the reverted guess
         """
         if self.guess:
             self.cells_dict = self.guess.previous_cells_dict
@@ -81,7 +85,8 @@ class SudokuPuzzle:
             self.num_filled = self.guess.num_filled
             self.guess = self.guess.previous_guess
             self.recalculate_fields()
-            return cell_name, candidate
+            return SudokuStep(None, {(cell_name, candidate)},
+                              "Reverting Guess of " + str(candidate) + " into " + cell_name)
 
     def validate_updated_cells_ignoring_newly_set_val(self, updated_cells, cell_name):
         """
@@ -454,17 +459,18 @@ class SudokuPuzzle:
         """
         Fills in a sole candidate
         i.e. when a specific cell can only contain a single number
-        :return A (cell_name, val) tuple set by this method
-        :return: A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * filled_cell = (cell_name, candidate) tuple set by this method
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         for cell_name in self.cells_dict.keys():
             cell = self.cells_dict[cell_name]
             if cell.val is None and len(cell.possibilities) == 1:
                 val = next(iter(cell.possibilities))
                 updated_cells = (self.set_val_in_puzzle_by_cell_name(cell_name, val))
-                return (cell_name, val), updated_cells
-        return None, updated_cells
+                description = "Sole Candidate: " + str(val) + " is the last candidate for " + str(cell_name)
+                return SudokuStep((cell_name, val), updated_cells, description)
+        return None
     # endregion
 
     # region Unique Candidates
@@ -473,46 +479,50 @@ class SudokuPuzzle:
         Fills in a unique candidates by row
         i.e. when a number can only go in one spot in row y
         :param y: The row number. Precondition: 0 <= y < 9
-        :return A (cell_name, val) tuple set by this method
-        :return: A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * filled_cell = (cell_name, candidate) tuple set by this method
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         y_locs_left = self.locs_left_by_y[y]
         y_possibilities = self.remaining_in_y[y]
         for val in copy.deepcopy(y_possibilities):
             if len(y_locs_left[val]) == 1:
                 cell_name = self.board[y][next(iter(y_locs_left[val]))]
                 updated_cells = self.set_val_in_puzzle_by_cell_name(cell_name, val)
-                return (cell_name, val), updated_cells
-        return None, updated_cells
+                description = "Unique Candidate: " + cell_name + " is the only remaining location for " + str(val) +\
+                              " in row " + str(y)
+                return SudokuStep((cell_name, val), updated_cells, description)
+        return None
 
     def fill_unique_candidate_x(self, x):
         """
         Fills in unique candidates by col
         i.e. when a number can only go in one spot in col x
         :param x: The col number. Precondition: 0 <= y < 9
-        :return A (cell_name, val) tuple set by this method
-        :return: A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * filled_cell = (cell_name, candidate) tuple set by this method
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         x_locs_left = self.locs_left_by_x[x]
         x_possibilities = self.remaining_in_x[x]
         for val in copy.deepcopy(x_possibilities):
             if len(x_locs_left[val]) == 1:
                 cell_name = self.board[next(iter(x_locs_left[val]))][x]
                 updated_cells = self.set_val_in_puzzle_by_cell_name(cell_name, val)
-                return (cell_name, val), updated_cells
-        return None, updated_cells
+                description = "Unique Candidate: " + cell_name + " was the only remaining location for " + str(val) +\
+                              " in col " + str(x)
+                return SudokuStep((cell_name, val), updated_cells, description)
+        return None
 
     def fill_unique_candidate_block(self, block_num):
         """
         Fills in unique candidates by block
         i.e. when a number can only go in one spot in block block_number
         :param block_num: The block number. Precondition: 0 <= y < 9
-        :return A (cell_name, val) tuple set by this method
-        :return: A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * filled_cell = (cell_name, candidate) tuple set by this method
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         block_locs_left = self.locs_left_by_block[block_num]
         block_possibilities = self.remaining_in_blocks[block_num]
         for val in copy.deepcopy(block_possibilities):
@@ -521,29 +531,32 @@ class SudokuPuzzle:
                     block_num, next(iter(block_locs_left[val])))
                 cell_name = self.board[y][x]
                 updated_cells = self.set_val_in_puzzle_by_cell_name(cell_name, val)
-                return (cell_name, val), updated_cells
-        return None, updated_cells
+                description = "Unique Candidate: " + cell_name + " was the only remaining location for " + str(val) +\
+                              " in block " + str(block_num)
+                return SudokuStep((cell_name, val), updated_cells, description)
+        return None
 
     def fill_unique_candidate(self):
         """
         Fills in a unique candidates
         i.e. when a number can only go in one spot in a row/col/block
-        :return A (cell_name, val) tuple set by this method
-        :return: A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * filled_cell = (cell_name, candidate) tuple set by this method
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
         for y in all_locs:
-            (filled_cell, updated_cells) = self.fill_unique_candidate_y(y)
-            if filled_cell:
-                return filled_cell, updated_cells
+            ss = self.fill_unique_candidate_y(y)
+            if ss:
+                return ss
         for x in all_locs:
-            (filled_cell, updated_cells) = self.fill_unique_candidate_x(x)
-            if filled_cell:
-                return filled_cell, updated_cells
+            ss = self.fill_unique_candidate_x(x)
+            if ss:
+                return ss
         for block_num in all_locs:
-            (filled_cell, updated_cells) = self.fill_unique_candidate_block(block_num)
-            if filled_cell:
-                return filled_cell, updated_cells
-        return None, set()
+            ss = self.fill_unique_candidate_block(block_num)
+            if ss:
+                return ss
+        return None
     # endregion
 
     @staticmethod

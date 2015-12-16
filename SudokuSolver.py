@@ -69,16 +69,20 @@ class SudokuSolver(Machine):
             return True
 
     def fill_sole_candidate(self):
-        (filled_cell, updated_cells) = self.sudoku_puzzle.fill_sole_candidate()
-        self.sudoku_logger.log_step("Sole candidate", filled_cell, updated_cells,
+        ss = self.sudoku_puzzle.fill_sole_candidate()
+        if not ss:
+            return True
+        self.sudoku_logger.log_step(ss.reason, ss.filled_cell, ss.updated_cells,
                                     self.sudoku_puzzle.get_board(), self.sudoku_puzzle.get_possibilities())
-        return self.validate_filled_cell(filled_cell, updated_cells)
+        return self.validate_filled_cell(ss.filled_cell, ss.updated_cells)
 
     def fill_unique_candidate(self):
-        (filled_cell, updated_cells) = self.sudoku_puzzle.fill_unique_candidate()
-        self.sudoku_logger.log_step("Unique candidate", filled_cell, updated_cells,
-                                    self.sudoku_puzzle.get_board(), self.sudoku_puzzle.get_possibilities())
-        return self.validate_filled_cell(filled_cell, updated_cells)
+        ss = self.sudoku_puzzle.fill_unique_candidate()
+        if not ss:
+            return True
+        self.sudoku_logger.log_step(ss.reason, ss.filled_cell, ss.updated_cells,
+                                        self.sudoku_puzzle.get_board(), self.sudoku_puzzle.get_possibilities())
+        return self.validate_filled_cell(ss.filled_cell, ss.updated_cells)
 
     def naked_pairs(self):
         updated_cells = self.sudoku_puzzle.all_naked_pairs()
@@ -94,18 +98,19 @@ class SudokuSolver(Machine):
 
     def make_guess(self):
         (cell_name, candidate) = self.sudoku_puzzle.determine_next_guess()
-        if candidate is None or cell_name is None:
+        if cell_name is None or candidate is None:
             self.revert_guess()
             return
-        (filled_cell, updated_cells) = self.sudoku_puzzle.make_guess(candidate, cell_name)
+
+        ss = self.sudoku_puzzle.make_guess(cell_name, candidate)
         additional = "All guesses so far: " + str(self.sudoku_puzzle.guess)
-        self.sudoku_logger.log_step("Guessing", filled_cell, updated_cells,
+        self.sudoku_logger.log_step(ss.reason, ss.filled_cell, ss.updated_cells,
                                     self.sudoku_puzzle.get_board(), self.sudoku_puzzle.get_possibilities(), additional)
 
     def revert_guess(self):
-        (cell_name, candidate) = self.sudoku_puzzle.revert_guess()
+        ss = self.sudoku_puzzle.revert_guess()
         additional = "Guesses now: " + str(self.sudoku_puzzle.guess)
-        self.sudoku_logger.log_step("Reverting Guess", None, {(cell_name, candidate)}, self.sudoku_puzzle.get_board(),
+        self.sudoku_logger.log_step(ss.reason, ss.filled_cell, ss.updated_cells, self.sudoku_puzzle.get_board(),
                                     self.sudoku_puzzle.get_possibilities(), additional)
 
     def log_initial_puzzle(self):

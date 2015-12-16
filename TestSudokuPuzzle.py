@@ -1212,17 +1212,17 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assert_row_contains_candidates(sp, 0, [1, 2, 3, None, None, None, None, None, None])
         self.assert_missing_row_possibilities(sp, 8, [{1}, {2}, {3}, None, None, None, None, None, None])
         # Guess 1.0
-        sp.make_guess(4, sp.board[0][3])
+        sp.make_guess(sp.board[0][3], 4)
         self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, None, None, None, None, None])
         self.assert_missing_row_possibilities(sp, 8, [{1}, {2}, {3}, {4}, None, None, None, None, None])
         # Guess 2.0
-        sp.make_guess(5, sp.board[0][4])
+        sp.make_guess(sp.board[0][4], 5)
         sp.set_val_in_puzzle(0, 8, 9)
         sp.remove_possibility_from_puzzle_by_loc(8, 0, 2)
         self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, 5, None, None, None, 9])
         self.assert_missing_row_possibilities(sp, 8, [{1, 2}, {2}, {3}, {4}, {5}, None, None, None, {9}])
         # Guess 3.0
-        sp.make_guess(6, sp.board[0][5])
+        sp.make_guess(sp.board[0][5], 6)
         sp.set_val_in_puzzle(0, 7, 8)
         sp.remove_possibility_from_puzzle_by_loc(8, 1, 3)
         self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, 5, 6, None, 8, 9])
@@ -1249,7 +1249,7 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assertTrue(sp.cells_dict[sp.board[0][4]].val == 5)
         self.assertTrue(sp.cells_dict[sp.board[0][3]].val == 4)
         # Guess 3.1
-        sp.make_guess(7, sp.board[0][5])
+        sp.make_guess(sp.board[0][5], 7)
         self.assert_row_contains_candidates(sp, 0, [1, 2, 3, 4, 5, 7, None, None, 9])
         self.assert_missing_row_possibilities(sp, 8, [{1, 2}, {2}, {3}, {4}, {5}, {7}, None, None, {9}])
         p = sp.get_possibilities()
