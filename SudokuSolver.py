@@ -26,9 +26,6 @@ class SudokuSolver(Machine):
         self.add_transition(trigger='perform_step', source='Unique_Candidate', dest='Make_Guess',
                             conditions='fill_unique_candidate')
 
-        self.add_transition(trigger='perform_step', source='Make_Guess', dest='Sole_Candidate',
-                            before='make_guess')
-
         # self.add_transition(trigger='perform_step', source='Unique_Candidates', dest='Naked_Pairs',
         #                     conditions='fill_unique_candidates')
 
@@ -40,6 +37,9 @@ class SudokuSolver(Machine):
         #
         # self.add_transition(trigger='perform_step', source='Block_Block_Interactions', dest='Done',
         #                     conditions='block_block_interactions')
+
+        self.add_transition(trigger='perform_step', source='Make_Guess', dest='Sole_Candidate',
+                            before='make_guess')
 
         self.add_transition(trigger='perform_step', source='*', dest='Sole_Candidate')
 
@@ -85,16 +85,22 @@ class SudokuSolver(Machine):
         return self.validate_filled_cell(ss.filled_cell, ss.updated_cells)
 
     def naked_pairs(self):
-        updated_cells = self.sudoku_puzzle.all_naked_pairs()
-        return self.validate_updated_cells(updated_cells)
+        ss = self.sudoku_puzzle.perform_naked_pairs()
+        if not ss:
+            return True
+        return self.validate_updated_cells(ss.updated_cells)
 
     def block_rc_interactions(self):
-        updated_cells = self.sudoku_puzzle.all_block_rc_interactions()
-        return self.validate_updated_cells(updated_cells)
+        ss = self.sudoku_puzzle.perform_block_rc_interaction()
+        if not ss:
+            return True
+        return self.validate_updated_cells(ss.updated_cells)
 
     def block_block_interactions(self):
-        updated_cells = self.sudoku_puzzle.all_block_block_interactions()
-        return self.validate_updated_cells(updated_cells)
+        ss = self.sudoku_puzzle.perform_block_block_interaction()
+        if not ss:
+            return True
+        return self.validate_updated_cells(ss.updated_cells)
 
     def make_guess(self):
         (cell_name, candidate) = self.sudoku_puzzle.determine_next_guess()

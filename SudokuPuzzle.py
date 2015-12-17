@@ -538,7 +538,7 @@ class SudokuPuzzle:
 
     def fill_unique_candidate(self):
         """
-        Fills in a unique candidates
+        Fills in a unique candidate
         i.e. when a number can only go in one spot in a row/col/block
         :return A SudokuStep corresponding to the guess where:
                 * filled_cell = (cell_name, candidate) tuple set by this method
@@ -580,29 +580,38 @@ class SudokuPuzzle:
         """
         Perform all block and row/column interactions involving the block
         :param block_num: The block number. Precondition: 0 <= block_num < 9
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         for val in copy.deepcopy(self.remaining_in_blocks[block_num]):
+            (y_block, x_block) = SudokuHelper.block_num_to_block_offsets(block_num)
             cell_nums = self.locs_left_by_block[block_num][val]
             y_offsets, x_offsets = SudokuPuzzle.find_unique_offsets_for_cell_nums(cell_nums)
             if len(y_offsets) == 1:
                 y_offset = next(iter(y_offsets))
-                updated_cells.update(self.remove_possibility_not_in_block_with_y_offset(block_num, y_offset, val))
+                updated_cells = self.remove_possibility_not_in_block_with_y_offset(block_num, y_offset, val)
+                description = "Block-Row Interaction: Eliminated " + str(val) + " in row " + str((y_block + y_offset))\
+                              + " not in block " + str(block_num)
+                return SudokuStep(None, updated_cells, description)
             if len(x_offsets) == 1:
                 x_offset = next(iter(x_offsets))
-                updated_cells.update(self.remove_possibility_not_in_block_with_x_offset(block_num, x_offset, val))
-        return updated_cells
+                updated_cells = self.remove_possibility_not_in_block_with_x_offset(block_num, x_offset, val)
+                description = "Block-Col Interaction: Eliminated " + str(val) + " in col " + str((x_block + x_offset))\
+                              + " not in block " + str(block_num)
+                return SudokuStep(None, updated_cells, description)
+        return None
 
-    def all_block_rc_interactions(self):
+    def perform_block_rc_interaction(self):
         """
         Perform all block and row/column interactions
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         for block_num in all_locs:
-            updated_cells.update(self.block_rc_interaction(block_num))
-        return updated_cells
+            ss = self.block_rc_interaction(block_num)
+            if ss:
+                return ss
+        return None
     # endregion
 
     # region Block-Block Interactions
@@ -611,9 +620,9 @@ class SudokuPuzzle:
         Performs all block block interactions by row.
         i.e. eliminates possibilities from the excluded block based on the other two blocks in the row
         :param excluded_block_num: The block number to exclude. Precondition: 0 <= excluded_block_num < 9
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         excluded_block_possibilities = copy.deepcopy(self.remaining_in_blocks[excluded_block_num])
         y_block, x_block = SudokuHelper.block_num_to_block_offsets(excluded_block_num)
         for y_offset in cell_locs:
@@ -625,18 +634,22 @@ class SudokuPuzzle:
                 cell = self.cells_dict[cell_name]
                 if cell.block != excluded_block_num:
                     possibilities.difference_update(cell.possibilities)
-            # Remove the possibilities from the cells in the block which are not in the row
-            updated_cells.update(self.remove_possibilities_in_block_not_in_row(excluded_block_num, y, possibilities))
-        return updated_cells
+            if possibilities:
+                # Remove the possibilities from the cells in the block which are not in the row
+                updated_cells = self.remove_possibilities_in_block_not_in_row(excluded_block_num, y, possibilities)
+                description = "Block-Block Interaction Horizontal: Removed" + str(possibilities) + " in row " + str(y) \
+                              + "which were not in block " + str(excluded_block_num)
+                return SudokuStep(None, updated_cells, description)
+        return None
 
     def block_block_interaction_vertical(self, excluded_block_num):
         """
         Performs all block block interactions by col.
         i.e. eliminates possibilities from the excluded block based on the other two blocks in the col
         :param excluded_block_num: The block number to exclude. Precondition: 0 <= excluded_block_num < 9
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         excluded_block_possibilities = copy.deepcopy(self.remaining_in_blocks[excluded_block_num])
         y_block, x_block = SudokuHelper.block_num_to_block_offsets(excluded_block_num)
         for x_offset in cell_locs:
@@ -648,20 +661,28 @@ class SudokuPuzzle:
                 cell = self.cells_dict[cell_name]
                 if cell.block != excluded_block_num:
                     possibilities.difference_update(cell.possibilities)
-            # Remove the possibilities from the cells in the block which are not in the row
-            updated_cells.update(self.remove_possibilities_in_block_not_in_col(excluded_block_num, x, possibilities))
-        return updated_cells
+            if possibilities:
+                # Remove the possibilities from the cells in the block which are not in the row
+                updated_cells = self.remove_possibilities_in_block_not_in_col(excluded_block_num, x, possibilities)
+                description = "Block-Block Interaction Vertical: Removed" + str(possibilities) + " in col " + str(x) \
+                              + "which were not in block " + str(excluded_block_num)
+                return SudokuStep(None, updated_cells, description)
+        return None
 
-    def all_block_block_interactions(self):
+    def perform_block_block_interaction(self):
         """
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         for block_num in all_locs:
-            updated_cells.update(self.block_block_interaction_horizontal(block_num))
+            ss = self.block_block_interaction_horizontal(block_num)
+            if ss:
+                return ss
         for block_num in all_locs:
-            updated_cells.update(self.block_block_interaction_vertical(block_num))
-        return updated_cells
+            ss = self.block_block_interaction_vertical(block_num)
+            if ss:
+                return ss
+        return None
     # endregion
 
     @staticmethod
@@ -717,54 +738,71 @@ class SudokuPuzzle:
         """
         :param y: The row number. Precondition: 0 <= y < 9
         Finds naked pairs in the row and eliminates possibilities accordingly
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         row_possibilities = self.enumerate_row_possibilities(y)
         row_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(row_possibilities, lambda l: l == 2)
         naked_offset_pairs = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(row_dict)
         for (offset_pair, vals) in naked_offset_pairs:
-            updated_cells.update(self.eliminate_possibilities_from_row(y, vals, offset_pair))
-        return updated_cells
+            updated_cells = self.eliminate_possibilities_from_row(y, vals, offset_pair)
+            if updated_cells:
+                description = "Naked Pair Row: Eliminated " + str(vals) + " from row " + str(y) + " which were not " \
+                              "in cells with x-offsets of " + str(offset_pair)
+                return SudokuStep(None, updated_cells, description)
+        return None
 
     def naked_pair_x(self, x):
         """
         :param x: The col number. Precondition: 0 <= x < 9
         Finds naked pairs in the col and eliminates possibilities accordingly
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         col_possibilities = self.enumerate_col_possibilities(x)
         col_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(col_possibilities, lambda l: l == 2)
         naked_offset_pairs = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(col_dict)
         for (offset_pair, vals) in naked_offset_pairs:
-            updated_cells.update(self.eliminate_possibilities_from_col(x, vals, offset_pair))
-        return updated_cells
+            updated_cells = self.eliminate_possibilities_from_col(x, vals, offset_pair)
+            if updated_cells:
+                description = "Naked Pair Col: Eliminated " + str(vals) + " from col " + str(x) + " which were not " \
+                              "in cells with y-offsets of " + str(offset_pair)
+                return SudokuStep(None, updated_cells, description)
+        return None
 
     def naked_pair_block(self, block_num):
         """
         :param block_num: The block number. Precondition: 0 <= block_num < 9
         Finds naked pairs in the block and eliminates possibilities accordingly
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         block_possibilities = self.enumerate_block_possibilities(block_num)
         block_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(block_possibilities, lambda l: l == 2)
         naked_offset_pairs = SudokuPuzzle.get_naked_pair_vals_in_possibilities_dict(block_dict)
         for (offset_pair, vals) in naked_offset_pairs:
-            updated_cells.update(self.eliminate_other_possibilities_from_other_cells_in_block(
-                block_num, vals, offset_pair))
-        return updated_cells
+            updated_cells = self.eliminate_other_possibilities_from_other_cells_in_block(
+                block_num, vals, offset_pair)
+            if updated_cells:
+                description = "Naked Pair Block: Eliminated " + str(vals) + " from block " + str(block_num) \
+                              + " which were not in cells with block-cell-offsets of " + str(offset_pair)
+                return SudokuStep(None, updated_cells, description)
+        return None
 
-    def all_naked_pairs(self):
-        updated_cells = set()
+    def perform_naked_pairs(self):
         for y in all_locs:
-            updated_cells.update(self.naked_pair_y(y))
+            ss = self.naked_pair_y(y)
+            if ss:
+                return ss
         for x in all_locs:
-            updated_cells.update(self.naked_pair_x(x))
+            ss = self.naked_pair_x(x)
+            if ss:
+                return ss
         for block_num in all_locs:
-            updated_cells.update(self.naked_pair_block(block_num))
-        return updated_cells
+            ss = self.naked_pair_block(block_num)
+            if ss:
+                return ss
+        return None
 
     # NOTE: naked_tuple_[...] with n = 2 should behave pretty much exactly like naked_pair_[...]
 

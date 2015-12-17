@@ -624,7 +624,7 @@ class TestSudokuPuzzle(unittest.TestCase):
         sp = SudokuPuzzle(self.get_board_copy(self.block_rc_board))
         y = 4
         val = 7
-        sp.all_block_rc_interactions()
+        sp.perform_block_rc_interaction()
         should_contain = [False, False, False, True, False, True, False, False, False]
         row_possibilities = sp.enumerate_row_possibilities(y)
         self.assert_should_contain(should_contain, row_possibilities, {val})
