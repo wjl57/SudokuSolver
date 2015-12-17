@@ -12,8 +12,8 @@ class SudokuSolver(Machine):
         self.sudoku_puzzle = sp
         self.sudoku_logger = SudokuLogger()
 
-        states = ['Ready', 'Sole_Candidate', 'Unique_Candidate', 'Block_RC_Interactions', 'Block_Block_Interactions',
-                  'Naked_Pairs', 'Make_Guess', 'Done']
+        states = ['Ready', 'Sole_Candidate', 'Unique_Candidate', 'Naked_Pair', 'Block_RC_Interaction',
+                  'Block_Block_Interaction', 'Make_Guess']
 
         Machine.__init__(self, states=states, initial='Ready')
 
@@ -23,20 +23,20 @@ class SudokuSolver(Machine):
         self.add_transition(trigger='perform_step', source='Sole_Candidate', dest='Unique_Candidate',
                             conditions='fill_sole_candidate')
 
-        self.add_transition(trigger='perform_step', source='Unique_Candidate', dest='Make_Guess',
+        # self.add_transition(trigger='perform_step', source='Unique_Candidate', dest='Make_Guess',
+        #                     conditions='fill_unique_candidate')
+
+        self.add_transition(trigger='perform_step', source='Unique_Candidate', dest='Naked_Pair',
                             conditions='fill_unique_candidate')
 
-        # self.add_transition(trigger='perform_step', source='Unique_Candidates', dest='Naked_Pairs',
-        #                     conditions='fill_unique_candidates')
+        self.add_transition(trigger='perform_step', source='Naked_Pair', dest='Block_RC_Interaction',
+                            conditions='naked_pair')
 
-        # self.add_transition(trigger='perform_step', source='Naked_Pairs', dest='Block_RC_Interactions',
-        #                     conditions='naked_pairs')
-        #
-        # self.add_transition(trigger='perform_step', source='Block_RC_Interactions', dest='Block_Block_Interactions',
-        #                     conditions='block_rc_interactions')
-        #
-        # self.add_transition(trigger='perform_step', source='Block_Block_Interactions', dest='Done',
-        #                     conditions='block_block_interactions')
+        self.add_transition(trigger='perform_step', source='Block_RC_Interaction', dest='Block_Block_Interaction',
+                            conditions='block_rc_interaction')
+
+        self.add_transition(trigger='perform_step', source='Block_Block_Interaction', dest='Make_Guess',
+                            conditions='block_block_interaction')
 
         self.add_transition(trigger='perform_step', source='Make_Guess', dest='Sole_Candidate',
                             before='make_guess')
@@ -70,37 +70,23 @@ class SudokuSolver(Machine):
 
     def fill_sole_candidate(self):
         ss = self.sudoku_puzzle.fill_sole_candidate()
-        if not ss:
-            return True
-        self.sudoku_logger.log_step(ss.reason, ss.filled_cell, ss.updated_cells,
-                                    self.sudoku_puzzle.get_board(), self.sudoku_puzzle.get_possibilities())
-        return self.validate_filled_cell(ss.filled_cell, ss.updated_cells)
+        return self.validate_and_log_filled_cells_step(ss)
 
     def fill_unique_candidate(self):
         ss = self.sudoku_puzzle.fill_unique_candidate()
-        if not ss:
-            return True
-        self.sudoku_logger.log_step(ss.reason, ss.filled_cell, ss.updated_cells,
-                                        self.sudoku_puzzle.get_board(), self.sudoku_puzzle.get_possibilities())
-        return self.validate_filled_cell(ss.filled_cell, ss.updated_cells)
+        return self.validate_and_log_filled_cells_step(ss)
 
-    def naked_pairs(self):
-        ss = self.sudoku_puzzle.perform_naked_pairs()
-        if not ss:
-            return True
-        return self.validate_updated_cells(ss.updated_cells)
+    def naked_pair(self):
+        ss = self.sudoku_puzzle.perform_naked_pair()
+        return self.validate_and_log_updated_cells_step(ss)
 
-    def block_rc_interactions(self):
+    def block_rc_interaction(self):
         ss = self.sudoku_puzzle.perform_block_rc_interaction()
-        if not ss:
-            return True
-        return self.validate_updated_cells(ss.updated_cells)
+        return self.validate_and_log_updated_cells_step(ss)
 
-    def block_block_interactions(self):
+    def block_block_interaction(self):
         ss = self.sudoku_puzzle.perform_block_block_interaction()
-        if not ss:
-            return True
-        return self.validate_updated_cells(ss.updated_cells)
+        return self.validate_and_log_updated_cells_step(ss)
 
     def make_guess(self):
         (cell_name, candidate) = self.sudoku_puzzle.determine_next_guess()
@@ -119,12 +105,27 @@ class SudokuSolver(Machine):
         self.sudoku_logger.log_step(ss.reason, ss.filled_cell, ss.updated_cells, self.sudoku_puzzle.get_board(),
                                     self.sudoku_puzzle.get_possibilities(), additional)
 
+    def validate_and_log_updated_cells_step(self, ss):
+        if not ss:
+            return True
+        self.sudoku_logger.log_step(ss.reason, ss.filled_cell, ss.updated_cells,
+                                    self.sudoku_puzzle.get_board(), self.sudoku_puzzle.get_possibilities())
+        return self.validate_updated_cells(ss.updated_cells)
+
+    def validate_and_log_filled_cells_step(self, ss):
+        if not ss:
+            return True
+        self.sudoku_logger.log_step(ss.reason, ss.filled_cell, ss.updated_cells,
+                                        self.sudoku_puzzle.get_board(), self.sudoku_puzzle.get_possibilities())
+        return self.validate_filled_cell(ss.filled_cell, ss.updated_cells)
+
     def log_initial_puzzle(self):
         self.sudoku_logger.log_step("Starting Sudoku Solver", None, None, self.sudoku_puzzle.get_board(),
                                     self.sudoku_puzzle.get_possibilities(), "New puzzle...")
 
     def do_work(self):
         while not self.sudoku_puzzle.num_filled == 81:
+            # print(self.current_state.name)
             self.perform_step()
             self.assert_possibilities_are_non_empty()
         print('#########################################################################################')

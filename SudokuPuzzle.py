@@ -747,8 +747,8 @@ class SudokuPuzzle:
         for (offset_pair, vals) in naked_offset_pairs:
             updated_cells = self.eliminate_possibilities_from_row(y, vals, offset_pair)
             if updated_cells:
-                description = "Naked Pair Row: Eliminated " + str(vals) + " from row " + str(y) + " which were not " \
-                              "in cells with x-offsets of " + str(offset_pair)
+                description = "Naked Pair Row: Eliminated " + str(vals) + " from cells in row " + str(y) \
+                              + " which did not have x-offsets of " + str(offset_pair)
                 return SudokuStep(None, updated_cells, description)
         return None
 
@@ -765,8 +765,8 @@ class SudokuPuzzle:
         for (offset_pair, vals) in naked_offset_pairs:
             updated_cells = self.eliminate_possibilities_from_col(x, vals, offset_pair)
             if updated_cells:
-                description = "Naked Pair Col: Eliminated " + str(vals) + " from col " + str(x) + " which were not " \
-                              "in cells with y-offsets of " + str(offset_pair)
+                description = "Naked Pair Col: Eliminated " + str(vals) + " from cells in col " + str(x) \
+                              + " which did not have y-offsets of " + str(offset_pair)
                 return SudokuStep(None, updated_cells, description)
         return None
 
@@ -784,12 +784,12 @@ class SudokuPuzzle:
             updated_cells = self.eliminate_other_possibilities_from_other_cells_in_block(
                 block_num, vals, offset_pair)
             if updated_cells:
-                description = "Naked Pair Block: Eliminated " + str(vals) + " from block " + str(block_num) \
-                              + " which were not in cells with block-cell-offsets of " + str(offset_pair)
+                description = "Naked Pair Block: Eliminated " + str(vals) + " from cells in block " + str(block_num) \
+                              + " which did not have block-cell-offsets of " + str(offset_pair)
                 return SudokuStep(None, updated_cells, description)
         return None
 
-    def perform_naked_pairs(self):
+    def perform_naked_pair(self):
         for y in all_locs:
             ss = self.naked_pair_y(y)
             if ss:

@@ -14,8 +14,10 @@ class SudokuLogger:
                                                  board, possibilities, additional))
 
     def print_log(self):
+        count = 1
         for step in self.sudoku_log:
-            print(step)
+            print("Step " + str(count) + ":\n" + str(step))
+            count += 1
 
 
 class SudokuStepLog:
@@ -38,4 +40,6 @@ class SudokuStepLog:
             s += "\n" + str(self.additional)
         if self.board:
             s += "\n" + SudokuPuzzle.get_pretty_matrix_string(self.board)
+        if not self.filled_cell and self.updated_cells:
+            s += "\n" + SudokuPuzzle.get_pretty_matrix_string(self.possibilities)
         return s
