@@ -747,8 +747,9 @@ class SudokuPuzzle:
         for (offset_pair, vals) in naked_offset_pairs:
             updated_cells = self.eliminate_possibilities_from_row(y, vals, offset_pair)
             if updated_cells:
-                description = "Naked Pair Row: Eliminated " + str(vals) + " from cells in row " + str(y) \
-                              + " which did not have x-offsets of " + str(offset_pair)
+                description = "Naked Pair Row : In row " + str(y) + ", " + str(vals) \
+                              + " are the only candidates for cells with x-offsets of " + str(offset_pair) \
+                              + ".\nEliminating those candidates from all other cells in the row."
                 return SudokuStep(None, updated_cells, description)
         return None
 
@@ -765,8 +766,9 @@ class SudokuPuzzle:
         for (offset_pair, vals) in naked_offset_pairs:
             updated_cells = self.eliminate_possibilities_from_col(x, vals, offset_pair)
             if updated_cells:
-                description = "Naked Pair Col: Eliminated " + str(vals) + " from cells in col " + str(x) \
-                              + " which did not have y-offsets of " + str(offset_pair)
+                description = "Naked Pair Col : In col " + str(x) + ", " + str(vals) \
+                              + " are the only candidates for cells with y-offsets of " + str(offset_pair) \
+                              + ".\nEliminating those candidates from all other cells in the col."
                 return SudokuStep(None, updated_cells, description)
         return None
 
@@ -784,12 +786,18 @@ class SudokuPuzzle:
             updated_cells = self.eliminate_other_possibilities_from_other_cells_in_block(
                 block_num, vals, offset_pair)
             if updated_cells:
-                description = "Naked Pair Block: Eliminated " + str(vals) + " from cells in block " + str(block_num) \
-                              + " which did not have block-cell-offsets of " + str(offset_pair)
+                description = "Naked Pair Block : In block " + str(block_num) + ", " + str(vals) \
+                              + " are the only candidates for cells with block-cell-offsets of " + str(offset_pair) \
+                              + ".\nEliminating those candidates from all other cells in the block."
                 return SudokuStep(None, updated_cells, description)
         return None
 
     def perform_naked_pair(self):
+        """
+        Finds naked tuples and eliminates possibilities accordingly
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
+        """
         for y in all_locs:
             ss = self.naked_pair_y(y)
             if ss:
@@ -811,47 +819,83 @@ class SudokuPuzzle:
         :param y: The row number. Precondition: 0 <= y < 9
         :param n: The tuple size. Usually n <= 4
         Finds naked tuples in the row and eliminates possibilities accordingly
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         row_possibilities = self.enumerate_row_possibilities(y)
         row_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(row_possibilities, lambda l: 0 < l <= n)
         naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(row_dict, n)
         for (offset_tuple, vals) in naked_offset_tuples:
-            updated_cells.update(self.eliminate_possibilities_from_row(y, vals, offset_tuple))
-        return updated_cells
+            updated_cells = self.eliminate_possibilities_from_row(y, vals, offset_tuple)
+            if updated_cells:
+                description = "Naked Tuple Row " + str(n) + ": In row " + str(y) + ", " + str(vals) \
+                              + " are the only candidates for cells with x-offsets of " + str(offset_tuple) \
+                              + ".\nEliminating those candidates from all other cells in the row."
+                return SudokuStep(None, updated_cells, description)
+        return None
 
     def naked_tuple_x(self, x, n):
         """
         :param x: The col number. Precondition: 0 <= x < 9
         :param n: The tuple size. Usually n <= 4
-        Finds naked pairs in the col and eliminates possibilities accordingly
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        Finds naked tuples in the col and eliminates possibilities accordingly
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         col_possibilities = self.enumerate_col_possibilities(x)
         col_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(col_possibilities, lambda l: 0 < l <= n)
         naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(col_dict, n)
         for (offset_tuple, vals) in naked_offset_tuples:
-            updated_cells.update(self.eliminate_possibilities_from_col(x, vals, offset_tuple))
-        return updated_cells
+            updated_cells = self.eliminate_possibilities_from_col(x, vals, offset_tuple)
+            if updated_cells:
+                description = "Naked Tuple Col " + str(n) + ": In col " + str(x) + ", " + str(vals) \
+                              + " are the only candidates for cells with y-offsets of " + str(offset_tuple) \
+                              + ".\nEliminating those candidates from all other cells in the col."
+                return SudokuStep(None, updated_cells, description)
+        return None
 
     def naked_tuple_block(self, block_num, n):
         """
         :param block_num: The block number. Precondition: 0 <= block_num < 9
         :param n: The tuple size. Usually n <= 4
-        Finds naked pairs in the block and eliminates possibilities accordingly
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        Finds naked tuples in the block and eliminates possibilities accordingly
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         block_possibilities = self.enumerate_block_possibilities(block_num)
         block_dict = SudokuPuzzle.possibilities_to_dict_with_len_constraint(block_possibilities, lambda l: 0 < l <= n)
         naked_offset_tuples = SudokuPuzzle.get_naked_tuple_vals_in_possibilities_dict(block_dict, n)
         for (offset_tuple, vals) in naked_offset_tuples:
-            updated_cells.update(self.eliminate_other_possibilities_from_other_cells_in_block(
-                block_num, vals, offset_tuple))
-        return updated_cells
+            updated_cells = self.eliminate_other_possibilities_from_other_cells_in_block(
+                block_num, vals, offset_tuple)
+            if updated_cells:
+                description = "Naked Tuple Block " + str(n) + ": In block " + str(block_num) + ", " + str(vals) \
+                              + " are the only candidates for cells with block-cell-offsets of " + str(offset_tuple) \
+                              + ".\nEliminating those candidates from all other cells in the block."
+                return SudokuStep(None, updated_cells, description)
+        return None
     # endregion
+
+    def perform_naked_tuple(self, n):
+        """
+        :param n: The tuple size. Usually n <= 4
+        Finds naked tuples and eliminates possibilities accordingly
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
+        """
+        for y in all_locs:
+            ss = self.naked_tuple_y(y, n)
+            if ss:
+                return ss
+        for x in all_locs:
+            ss = self.naked_tuple_x(x, n)
+            if ss:
+                return ss
+        for block_num in all_locs:
+            ss = self.naked_tuple_block(block_num, n)
+            if ss:
+                return ss
+        return None
 
     @staticmethod
     def possibilities_to_dict_with_len_constraint(possibilities, len_lambda):
@@ -871,9 +915,9 @@ class SudokuPuzzle:
         :param: y: The row number. Precondition: 0 <= y < 9
         :param n: The number of candidates to find within the row
         Finds hidden subsets in the row and eliminates possibilities accordingly
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         possibilities = self.remaining_in_y[y]
         locs_left = self.locs_left_by_y[y]
         for possibilities_tuple in itertools.combinations(possibilities, n):
@@ -885,18 +929,24 @@ class SudokuPuzzle:
                     hidden_subset_found = False
                     break
             if hidden_subset_found:
-                updated_cells.update(self.eliminate_other_possibilities_from_cells_in_row(
-                    y, set(possibilities_tuple), locations))
-        return updated_cells
+                excluded_vals = set(possibilities_tuple)
+                updated_cells = self.eliminate_other_possibilities_from_cells_in_row(
+                    y, excluded_vals, locations)
+                if updated_cells:
+                    description = "Hidden Subset Row " + str(n) + ": In row " + str(y) + ", " + str(excluded_vals) \
+                              + " can only be placed in cells with x-offsets of " + str(locations) \
+                              + ".\nEliminating all other candidates for those cells."
+                    return SudokuStep(None, updated_cells, description)
+        return None
 
     def hidden_subset_col(self, x, n):
         """
         :param x: The col number. Precondition: 0 <= y < 9
         :param n: The number of candidates to find within the col
         Finds hidden subsets in the row and eliminates possibilities accordingly
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         possibilities = self.remaining_in_x[x]
         locs_left = self.locs_left_by_x[x]
         for possibilities_tuple in itertools.combinations(possibilities, n):
@@ -908,18 +958,24 @@ class SudokuPuzzle:
                     hidden_subset_found = False
                     break
             if hidden_subset_found:
-                updated_cells.update(self.eliminate_other_possibilities_from_cells_in_col(
-                    x, set(possibilities_tuple), locations))
-        return updated_cells
+                excluded_vals = set(possibilities_tuple)
+                updated_cells = self.eliminate_other_possibilities_from_cells_in_col(
+                    x, excluded_vals, locations)
+                if updated_cells:
+                    description = "Hidden Subset Col " + str(n) + ": In col " + str(x) + ", " + str(excluded_vals) \
+                              + " can only be placed in cells with y-offsets of " + str(locations) \
+                              + ".\nEliminating all other candidates for those cells."
+                    return SudokuStep(None, updated_cells, description)
+        return None
 
     def hidden_subset_block(self, block_num, n):
         """
         :param block_num: The block number. Precondition: 0 <= block_num < 9
         :param n: The number of candidates to find within the block
         Finds hidden subsets in the block and eliminates possibilities accordingly
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
-        updated_cells = set()
         possibilities = self.remaining_in_blocks[block_num]
         locs_left = self.locs_left_by_block[block_num]
         for possibilities_tuple in itertools.combinations(possibilities, n):
@@ -931,9 +987,37 @@ class SudokuPuzzle:
                     hidden_subset_found = False
                     break
             if hidden_subset_found:
-                updated_cells.update(self.eliminate_other_possibilities_from_cells_in_block(
-                        block_num, set(possibilities_tuple), locations))
-        return updated_cells
+                excluded_vals = set(possibilities_tuple)
+                updated_cells = self.eliminate_other_possibilities_from_cells_in_block(
+                        block_num, set(possibilities_tuple), locations)
+                if updated_cells:
+                    description = "Hidden Subset Block " + str(n) + ": In block " + str(block_num) + ", " \
+                                  + str(excluded_vals) + " can only be placed in cells with block-cell-offsets of " \
+                                  + str(locations) + ".\nEliminating all other candidates for those cells."
+                    return SudokuStep(None, updated_cells, description)
+        return None
+
+    def perform_hidden_subset(self, n):
+        """
+        :param n: The number of candidates to find
+        Finds hidden subsets and eliminates possibilities accordingly
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
+        """
+        for y in all_locs:
+            ss = self.hidden_subset_row(y, n)
+            if ss:
+                return ss
+        for x in all_locs:
+            ss = self.hidden_subset_row(x, n)
+            if ss:
+                return ss
+        for block_num in all_locs:
+            ss = self.hidden_subset_block(block_num, n)
+            if ss:
+                return ss
+        return None
+
     # endregion
 
     # region Fish

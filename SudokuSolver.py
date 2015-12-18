@@ -13,7 +13,8 @@ class SudokuSolver(Machine):
         self.sudoku_logger = SudokuLogger()
 
         states = ['Ready', 'Sole_Candidate', 'Unique_Candidate', 'Naked_Pair', 'Block_RC_Interaction',
-                  'Block_Block_Interaction', 'Make_Guess']
+                  'Block_Block_Interaction', 'Naked_Tuple_3', 'Hidden_Subset_3', 'Naked_Tuple_4', 'Hidden_Subset_4',
+                  'Make_Guess']
 
         Machine.__init__(self, states=states, initial='Ready')
 
@@ -22,9 +23,6 @@ class SudokuSolver(Machine):
 
         self.add_transition(trigger='perform_step', source='Sole_Candidate', dest='Unique_Candidate',
                             conditions='fill_sole_candidate')
-
-        # self.add_transition(trigger='perform_step', source='Unique_Candidate', dest='Make_Guess',
-        #                     conditions='fill_unique_candidate')
 
         self.add_transition(trigger='perform_step', source='Unique_Candidate', dest='Naked_Pair',
                             conditions='fill_unique_candidate')
@@ -35,8 +33,20 @@ class SudokuSolver(Machine):
         self.add_transition(trigger='perform_step', source='Block_RC_Interaction', dest='Block_Block_Interaction',
                             conditions='block_rc_interaction')
 
-        self.add_transition(trigger='perform_step', source='Block_Block_Interaction', dest='Make_Guess',
+        self.add_transition(trigger='perform_step', source='Block_Block_Interaction', dest='Naked_Tuple_3',
                             conditions='block_block_interaction')
+
+        self.add_transition(trigger='perform_step', source='Naked_Tuple_3', dest='Hidden_Subset_3',
+                            conditions='naked_tuple_3')
+
+        self.add_transition(trigger='perform_step', source='Hidden_Subset_3', dest='Naked_Tuple_4',
+                            conditions='hidden_subset_3')
+
+        self.add_transition(trigger='perform_step', source='Naked_Tuple_4', dest='Hidden_Subset_4',
+                            conditions='naked_tuple_4')
+
+        self.add_transition(trigger='perform_step', source='Hidden_Subset_4', dest='Make_Guess',
+                            conditions='hidden_subset_4')
 
         self.add_transition(trigger='perform_step', source='Make_Guess', dest='Sole_Candidate',
                             before='make_guess')
@@ -86,6 +96,22 @@ class SudokuSolver(Machine):
 
     def block_block_interaction(self):
         ss = self.sudoku_puzzle.perform_block_block_interaction()
+        return self.validate_and_log_updated_cells_step(ss)
+
+    def naked_tuple_3(self):
+        ss = self.sudoku_puzzle.perform_naked_tuple(3)
+        return self.validate_and_log_updated_cells_step(ss)
+
+    def naked_tuple_4(self):
+        ss = self.sudoku_puzzle.perform_naked_tuple(4)
+        return self.validate_and_log_updated_cells_step(ss)
+
+    def hidden_subset_3(self):
+        ss = self.sudoku_puzzle.perform_hidden_subset(3)
+        return self.validate_and_log_updated_cells_step(ss)
+
+    def hidden_subset_4(self):
+        ss = self.sudoku_puzzle.perform_hidden_subset(4)
         return self.validate_and_log_updated_cells_step(ss)
 
     def make_guess(self):

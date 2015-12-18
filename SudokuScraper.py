@@ -12,15 +12,15 @@ def main():
     # print(board)
     board = read_saved_board(11)
     # board = [
-    #     [None, 2, None, 1, None, None, None, None, None],
-    #     [None, None, 6, None, None, None, None, None, None],
-    #     [5, None, 3, None, None, None, None, None, None],
-    #     [None, 3, None, None, None, None, None, None, None],
-    #     [None, 1, None, None, 2, None, 6, None, None],
-    #     [None, None, None, 6, None, None, None, None, None],
-    #     [8, None, None, None, None, None, None, None, None],
-    #     [None, None, None, None, None, None, None, None, None],
-    #     [9, None, None, None, None, None, None, None, None]
+    #     [2, 8, None, None, None, None, 4, 7, 3],
+    #     [5, 3, 4, 8, 2, 7, 1, 9, 6],
+    #     [None, 7, 1, None, 3, 4, None, 8, None],
+    #     [3, None, None, 5, None, None, None, 4, None],
+    #     [None, None, None, 3, 4, None, None, 6, None],
+    #     [4, 6, None, 7, 9, None, 3, 1, None],
+    #     [None, 9, None, 2, None, 3, 6, 5, 4],
+    #     [None, None, 3, None, None, 9, 8, 2, 1],
+    #     [None, None, None, None, 8, None, 9, 3, 7]
     # ]
     sp = SudokuPuzzle(board)
     # sp.print_board()

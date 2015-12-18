@@ -223,7 +223,7 @@ class TestSudokuPuzzle(unittest.TestCase):
     ]
     # endregion
 
-    # region Hidden tuple boards
+    # region Hidden subset boards
     hidden_pair_board = [
         [None, 4, 9, 1, 3, 2, None, None, None],
         [None, 8, 1, 4, 7, 9, None, None, None],
