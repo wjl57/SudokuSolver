@@ -637,8 +637,8 @@ class SudokuPuzzle:
             if possibilities:
                 # Remove the possibilities from the cells in the block which are not in the row
                 updated_cells = self.remove_possibilities_in_block_not_in_row(excluded_block_num, y, possibilities)
-                description = "Block-Block Interaction Horizontal: Removed" + str(possibilities) + " in row " + str(y) \
-                              + "which were not in block " + str(excluded_block_num)
+                description = "Block-Block Interaction Horizontal: Removed " + str(possibilities) + " in row " \
+                              + str(y) + " which were not in block " + str(excluded_block_num)
                 return SudokuStep(None, updated_cells, description)
         return None
 
@@ -664,8 +664,8 @@ class SudokuPuzzle:
             if possibilities:
                 # Remove the possibilities from the cells in the block which are not in the row
                 updated_cells = self.remove_possibilities_in_block_not_in_col(excluded_block_num, x, possibilities)
-                description = "Block-Block Interaction Vertical: Removed" + str(possibilities) + " in col " + str(x) \
-                              + "which were not in block " + str(excluded_block_num)
+                description = "Block-Block Interaction Vertical: Removed " + str(possibilities) + " in col " \
+                              + str(x) + " which were not in block " + str(excluded_block_num)
                 return SudokuStep(None, updated_cells, description)
         return None
 

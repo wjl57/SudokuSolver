@@ -1,7 +1,6 @@
 from transitions import Machine
 from BadGuessError import BadGuessError
-from SudokuLogger import SudokuLogger, SudokuStepLog
-from SudokuPuzzle import SudokuPuzzle
+from SudokuLogger import SudokuLogger
 
 __author__ = 'william'
 
@@ -12,9 +11,24 @@ class SudokuSolver(Machine):
         self.sudoku_puzzle = sp
         self.sudoku_logger = SudokuLogger()
 
-        states = ['Ready', 'Sole_Candidate', 'Unique_Candidate', 'Naked_Pair', 'Block_RC_Interaction',
-                  'Block_Block_Interaction', 'Naked_Tuple_3', 'Hidden_Subset_3', 'Naked_Tuple_4', 'Hidden_Subset_4',
-                  'Make_Guess']
+        states = ['Ready', 'Sole_Candidate', 'Unique_Candidate', 'Make_Guess']
+
+        # ordered_optional_states = []
+
+        ordered_optional_states = ['Naked_Pair', 'Block_RC_Interaction', 'Block_Block_Interaction', 'Naked_Tuple_3',
+                                   'Hidden_Subset_3', 'Naked_Tuple_4', 'Hidden_Subset_4']
+
+        optional_state_map = {
+            'Naked_Pair': 'naked_pair',
+            'Block_RC_Interaction': 'block_rc_interaction',
+            'Block_Block_Interaction': 'block_block_interaction',
+            'Naked_Tuple_3': 'naked_tuple_3',
+            'Hidden_Subset_3': 'hidden_subset_3',
+            'Naked_Tuple_4': 'naked_tuple_4',
+            'Hidden_Subset_4': 'hidden_subset_4'
+        }
+
+        states += ordered_optional_states
 
         Machine.__init__(self, states=states, initial='Ready')
 
@@ -24,30 +38,29 @@ class SudokuSolver(Machine):
         self.add_transition(trigger='perform_step', source='Sole_Candidate', dest='Unique_Candidate',
                             conditions='fill_sole_candidate')
 
-        self.add_transition(trigger='perform_step', source='Unique_Candidate', dest='Naked_Pair',
-                            conditions='fill_unique_candidate')
+        if not ordered_optional_states:
+            self.add_transition(trigger='perform_step', source='Unique_Candidate', dest='Make_Guess',
+                                before='fill_unique_candidate')
+        else:
+            # Add the transitions from super basic technique to first optional
+            num_optional_states = len(ordered_optional_states)
+            self.add_transition(trigger='perform_step', source='Unique_Candidate', dest=ordered_optional_states[0],
+                                conditions='fill_unique_candidate')
 
-        self.add_transition(trigger='perform_step', source='Naked_Pair', dest='Block_RC_Interaction',
-                            conditions='naked_pair')
+            # Add transitions from one optional technique to another
+            for n in range(0, num_optional_states - 2):
+                self.add_transition(trigger='perform_step',
+                                    source=ordered_optional_states[n],
+                                    dest=ordered_optional_states[n+1],
+                                    conditions=optional_state_map[ordered_optional_states[n]])
 
-        self.add_transition(trigger='perform_step', source='Block_RC_Interaction', dest='Block_Block_Interaction',
-                            conditions='block_rc_interaction')
+            # Add mandatory transition from optional to guessing
+            self.add_transition(trigger='perform_step',
+                                source=ordered_optional_states[num_optional_states-1],
+                                dest='Make_Guess',
+                                conditions=optional_state_map[ordered_optional_states[num_optional_states-1]])
 
-        self.add_transition(trigger='perform_step', source='Block_Block_Interaction', dest='Naked_Tuple_3',
-                            conditions='block_block_interaction')
-
-        self.add_transition(trigger='perform_step', source='Naked_Tuple_3', dest='Hidden_Subset_3',
-                            conditions='naked_tuple_3')
-
-        self.add_transition(trigger='perform_step', source='Hidden_Subset_3', dest='Naked_Tuple_4',
-                            conditions='hidden_subset_3')
-
-        self.add_transition(trigger='perform_step', source='Naked_Tuple_4', dest='Hidden_Subset_4',
-                            conditions='naked_tuple_4')
-
-        self.add_transition(trigger='perform_step', source='Hidden_Subset_4', dest='Make_Guess',
-                            conditions='hidden_subset_4')
-
+        # Add the mandatory transitions
         self.add_transition(trigger='perform_step', source='Make_Guess', dest='Sole_Candidate',
                             before='make_guess')
 
