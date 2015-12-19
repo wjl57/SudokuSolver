@@ -590,15 +590,17 @@ class SudokuPuzzle:
             if len(y_offsets) == 1:
                 y_offset = next(iter(y_offsets))
                 updated_cells = self.remove_possibility_not_in_block_with_y_offset(block_num, y_offset, val)
-                description = "Block-Row Interaction: Eliminated " + str(val) + " in row " + str((y_block + y_offset))\
-                              + " not in block " + str(block_num)
-                return SudokuStep(None, updated_cells, description)
+                if updated_cells:
+                    description = "Block-Row Interaction: Eliminated " + str(val) + " in row " + \
+                                  str((y_block + y_offset)) + " not in block " + str(block_num)
+                    return SudokuStep(None, updated_cells, description)
             if len(x_offsets) == 1:
                 x_offset = next(iter(x_offsets))
                 updated_cells = self.remove_possibility_not_in_block_with_x_offset(block_num, x_offset, val)
-                description = "Block-Col Interaction: Eliminated " + str(val) + " in col " + str((x_block + x_offset))\
-                              + " not in block " + str(block_num)
-                return SudokuStep(None, updated_cells, description)
+                if updated_cells:
+                    description = "Block-Col Interaction: Eliminated " + str(val) + " in col " \
+                                  + str((x_block + x_offset)) + " not in block " + str(block_num)
+                    return SudokuStep(None, updated_cells, description)
         return None
 
     def perform_block_rc_interaction(self):
@@ -637,9 +639,10 @@ class SudokuPuzzle:
             if possibilities:
                 # Remove the possibilities from the cells in the block which are not in the row
                 updated_cells = self.remove_possibilities_in_block_not_in_row(excluded_block_num, y, possibilities)
-                description = "Block-Block Interaction Horizontal: Removed " + str(possibilities) + " in row " \
-                              + str(y) + " which were not in block " + str(excluded_block_num)
-                return SudokuStep(None, updated_cells, description)
+                if updated_cells:
+                    description = "Block-Block Interaction Horizontal: Removed " + str(possibilities) + " in row " \
+                                  + str(y) + " which were not in block " + str(excluded_block_num)
+                    return SudokuStep(None, updated_cells, description)
         return None
 
     def block_block_interaction_vertical(self, excluded_block_num):
@@ -664,9 +667,10 @@ class SudokuPuzzle:
             if possibilities:
                 # Remove the possibilities from the cells in the block which are not in the row
                 updated_cells = self.remove_possibilities_in_block_not_in_col(excluded_block_num, x, possibilities)
-                description = "Block-Block Interaction Vertical: Removed " + str(possibilities) + " in col " \
-                              + str(x) + " which were not in block " + str(excluded_block_num)
-                return SudokuStep(None, updated_cells, description)
+                if updated_cells:
+                    description = "Block-Block Interaction Vertical: Removed " + str(possibilities) + " in col " \
+                                  + str(x) + " which were not in block " + str(excluded_block_num)
+                    return SudokuStep(None, updated_cells, description)
         return None
 
     def perform_block_block_interaction(self):
@@ -1026,7 +1030,8 @@ class SudokuPuzzle:
         :param y1: The 1st row number. Precondition: 0 <= y1 < 9
         :param y2: The 2nd row number. Precondition: 0 <= y2 < 9
         Finds a basic fish in rows and eliminates possibilities accordingly
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
         updated_cells = set()
         candidates = self.remaining_in_y[y1].intersection(self.remaining_in_y[y2])
@@ -1038,15 +1043,21 @@ class SudokuPuzzle:
                 for x in possible_locs:
                     # Make sure there is a candidate worth eliminating
                     if len(self.locs_left_by_x[x][candidate]) > 2:
-                        updated_cells.update(self.eliminate_possibilities_from_col(x, {candidate}, {y1, y2}))
-        return updated_cells
+                        updated_cells = self.eliminate_possibilities_from_col(x, {candidate}, {y1, y2})
+                if updated_cells:
+                    description = "Basic Fish in Rows: In rows " + str({y1, y2}) + ", candidate " \
+                                  + str(candidate) + " can only be placed in cols " + str(possible_locs) \
+                                  + ".\nEliminating the candidate from other cells in those cols."
+                    return SudokuStep(None, updated_cells, description)
+        return None
 
     def basic_fish_in_cols(self, x1, x2):
         """
         :param x1: The 1st col number. Precondition: 0 <= x1 < 9
         :param x2: The 2nd col number. Precondition: 0 <= x2 < 9
         Finds a basic fish in cols and eliminates possibilities accordingly
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
         updated_cells = set()
         candidates = self.remaining_in_x[x1].intersection(self.remaining_in_x[x2])
@@ -1059,7 +1070,28 @@ class SudokuPuzzle:
                     # Make sure there is a candidate worth eliminating
                     if len(self.locs_left_by_y[y][candidate]) > 2:
                         updated_cells.update(self.eliminate_possibilities_from_row(y, {candidate}, {x1, x2}))
-        return updated_cells
+                if updated_cells:
+                    description = "Basic Fish in Cols: In cols " + str({x1, x2}) + ", candidate " \
+                                  + str(candidate) + " can only be placed in rows " + str(possible_locs) \
+                                  + ".\nEliminating the candidates from other cells in those rows."
+                    return SudokuStep(None, updated_cells, description)
+        return None
+
+    def perform_basic_fish(self):
+        """
+        Finds basic fish (size 2) which are also called X-Wings and eliminates possibilities accordingly
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
+        """
+        for (y1, y2) in itertools.combinations(all_locs, 2):
+            ss = self.basic_fish_in_rows(y1, y2)
+            if ss:
+                return ss
+        for (x1, x2) in itertools.combinations(all_locs, 2):
+            ss = self.basic_fish_in_cols(x1, x2)
+            if ss:
+                return ss
+        return None
 
     def fish_in_rows(self, ys):
         """

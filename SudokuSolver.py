@@ -11,21 +11,24 @@ class SudokuSolver(Machine):
         self.sudoku_puzzle = sp
         self.sudoku_logger = SudokuLogger()
 
-        states = ['Ready', 'Sole_Candidate', 'Unique_Candidate', 'Make_Guess']
+        states = ['Ready', 'Sole_Candidate', 'Unique_Candidate', 'Make_Guess', 'Done', 'Not_Complete']
 
         # ordered_optional_states = []
 
-        ordered_optional_states = ['Naked_Pair', 'Block_RC_Interaction', 'Block_Block_Interaction', 'Naked_Tuple_3',
-                                   'Hidden_Subset_3', 'Naked_Tuple_4', 'Hidden_Subset_4']
+        ordered_optional_states = ['Naked_Pair', 'Hidden_Pair', 'Naked_Tuple_3', 'Naked_Tuple_4',
+                                   'Block_RC_Interaction', 'Block_Block_Interaction',
+                                   'Hidden_Subset_3', 'Hidden_Subset_4', 'Basic_Fish']
 
         optional_state_map = {
             'Naked_Pair': 'naked_pair',
+            'Naked_Tuple_3': 'naked_tuple_3',
+            'Naked_Tuple_4': 'naked_tuple_4',
             'Block_RC_Interaction': 'block_rc_interaction',
             'Block_Block_Interaction': 'block_block_interaction',
-            'Naked_Tuple_3': 'naked_tuple_3',
+            'Hidden_Pair': 'hidden_subset_2',
             'Hidden_Subset_3': 'hidden_subset_3',
-            'Naked_Tuple_4': 'naked_tuple_4',
-            'Hidden_Subset_4': 'hidden_subset_4'
+            'Hidden_Subset_4': 'hidden_subset_4',
+            'Basic_Fish': 'basic_fish'
         }
 
         states += ordered_optional_states
@@ -48,23 +51,26 @@ class SudokuSolver(Machine):
                                 conditions='fill_unique_candidate')
 
             # Add transitions from one optional technique to another
-            for n in range(0, num_optional_states - 2):
+            for n in range(0, num_optional_states - 1):
                 self.add_transition(trigger='perform_step',
                                     source=ordered_optional_states[n],
                                     dest=ordered_optional_states[n+1],
                                     conditions=optional_state_map[ordered_optional_states[n]])
 
-            # Add mandatory transition from optional to guessing
+            # Add mandatory transition from optional to guessing for the last optional state
             self.add_transition(trigger='perform_step',
-                                source=ordered_optional_states[num_optional_states-1],
+                                source=ordered_optional_states[-1],
                                 dest='Make_Guess',
-                                conditions=optional_state_map[ordered_optional_states[num_optional_states-1]])
+                                conditions=optional_state_map[ordered_optional_states[-1]])
 
         # Add the mandatory transitions
         self.add_transition(trigger='perform_step', source='Make_Guess', dest='Sole_Candidate',
                             before='make_guess')
 
         self.add_transition(trigger='perform_step', source='*', dest='Sole_Candidate')
+
+        self.add_transition(trigger='done', source='*', dest='Done')
+        self.add_transition(trigger='not_complete', source='*', dest='Not_Complete')
 
     def validate_filled_cell(self, filled_cell, updated_cells):
         if filled_cell:
@@ -119,12 +125,20 @@ class SudokuSolver(Machine):
         ss = self.sudoku_puzzle.perform_naked_tuple(4)
         return self.validate_and_log_updated_cells_step(ss)
 
+    def hidden_subset_2(self):
+        ss = self.sudoku_puzzle.perform_hidden_subset(2)
+        return self.validate_and_log_updated_cells_step(ss)
+
     def hidden_subset_3(self):
         ss = self.sudoku_puzzle.perform_hidden_subset(3)
         return self.validate_and_log_updated_cells_step(ss)
 
     def hidden_subset_4(self):
         ss = self.sudoku_puzzle.perform_hidden_subset(4)
+        return self.validate_and_log_updated_cells_step(ss)
+
+    def basic_fish(self):
+        ss = self.sudoku_puzzle.perform_basic_fish()
         return self.validate_and_log_updated_cells_step(ss)
 
     def make_guess(self):
