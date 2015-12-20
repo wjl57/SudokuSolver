@@ -3,6 +3,7 @@ import pickle
 from bs4 import BeautifulSoup
 from SudokuPuzzle import SudokuPuzzle
 from SudokuSolver import SudokuSolver
+from TestSudokuPuzzle import TestSudokuPuzzle
 
 __author__ = 'william'
 
@@ -11,17 +12,7 @@ def main():
     # board = save_and_get_new_board(4)
     # print(board)
     # board = read_saved_board(11)
-    board = [
-        [6, 9, 7, None, None, None, None, None, 2],
-        [None, None, 1, 9, 7, 2, None, 6, 3],
-        [None, None, 3, None, None, 6, 7, 9, None],
-        [9, 1, 2, None, None, None, 6, None, 7],
-        [3, 7, 4, 2, 6, None, 9, 5, None],
-        [8, 6, 5, 7, None, 9, None, 2, 4],
-        [1, 4, 8, 6, 9, 3, 2, 7, 5],
-        [7, None, 9, None, 2, 4, None, None, 6],
-        [None, None, 6, 8, None, 7, None, None, 9]
-    ]
+    board = TestSudokuPuzzle.basic_fish_col_board
     sp = SudokuPuzzle(board)
     # sp.print_board()
 

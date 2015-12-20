@@ -1207,13 +1207,13 @@ class SudokuPuzzle:
                 if updated_cells:
                     base_cell_name_1 = self.board[loc_in_both][x1]
                     base_cell_name_2 = self.board[loc_in_both][x2]
-                    description = "Skyscraper in Rows: Candidate " + str(val) + " is one of two " \
-                                  "possibilities for:\nThe 'Base' cells in Row " + str(loc_in_both) + ": "\
-                                  + str(base_cell_name_1) + ", " + str(base_cell_name_2) \
-                                  + "\nThe corresponding 'Tower' cells: " \
-                                  + str(cell_name_1) + ", " + str(cell_name_2) + "." \
-                                  + "\nTherefore, we can eliminate the candidate from all cells seen by both tower " \
-                                    "cells. "
+                    description = "Skyscraper in Rows: Candidate " + str(val) + " only has two remaining cells " \
+                                  "for cols " + str({x1, x2}) + \
+                                  "\nFurthermore, the two 'Base' cells: "\
+                                  + str({base_cell_name_1, base_cell_name_2}) \
+                                  + " are both in row " + str(loc_in_both) + "."\
+                                  + "\nThus, we can eliminate the candidate from all cells seen by both 'Tower' " \
+                                    "cells: " + str({cell_name_1, cell_name_2}) + "."
                     return SudokuStep(None, updated_cells, description)
         return None
 
@@ -1243,13 +1243,13 @@ class SudokuPuzzle:
                 if updated_cells:
                     base_cell_name_1 = self.board[y1][loc_in_both]
                     base_cell_name_2 = self.board[y2][loc_in_both]
-                    description = "Skyscraper in Cols: Candidate " + str(val) + " is one of two " \
-                                  "possibilities for:\nThe 'Base' cells in Col " + str(loc_in_both) + ": "\
-                                  + str(base_cell_name_1) + ", " + str(base_cell_name_2) \
-                                  + "\nThe corresponding 'Tower' cells: " \
-                                  + str(cell_name_1) + ", " + str(cell_name_2) + "." \
-                                  + "\nTherefore, we can eliminate the candidate from all cells seen by both tower " \
-                                    "cells. "
+                    description = "Skyscraper in Cols: Candidate " + str(val) + " only has two remaining cells " \
+                                  "for rows " + str({y1, y2}) + \
+                                  "\nFurthermore, the two 'Base' cells: "\
+                                  + str({base_cell_name_1, base_cell_name_2}) \
+                                  + " are both in col " + str(loc_in_both) + "."\
+                                  + "\nThus, we can eliminate the candidate from all cells seen by both 'Tower' " \
+                                    "cells: " + str({cell_name_1, cell_name_2}) + "."
                     return SudokuStep(None, updated_cells, description)
         return None
 

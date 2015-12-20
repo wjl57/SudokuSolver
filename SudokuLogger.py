@@ -14,7 +14,7 @@ class SudokuLogger:
                                                  board, possibilities, additional))
 
     def print_log(self):
-        count = 1
+        count = 0
         for step in self.sudoku_log:
             print("Step " + str(count) + ":\n" + str(step))
             count += 1
