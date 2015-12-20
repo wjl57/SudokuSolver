@@ -1100,7 +1100,8 @@ class SudokuPuzzle:
         A fish of size n (n=len(ys)) in rows is when all potential cells for that candidate in the rows ys
         are contained in n cols total.
         All other occurrences of the candidate in those n cols can be eliminated as a result.
-        :return A list of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
         updated_cells = set()
         n = len(ys)
@@ -1119,7 +1120,12 @@ class SudokuPuzzle:
                         cell_name = self.board[y_to_remove][x]
                         if self.remove_possibility_from_puzzle_by_cell_name(cell_name, candidate):
                             updated_cells.add((cell_name, candidate))
-        return updated_cells
+                if updated_cells:
+                    description = "Fish " + str(n) + " in Rows: In rows " + str(ys) + ", candidate " \
+                                  + str(candidate) + " can only be placed in cols " + str(possible_locs) \
+                                  + ".\nEliminating the candidates from other cells in those cols."
+                    return SudokuStep(None, updated_cells, description)
+        return None
 
     def fish_in_cols(self, xs):
         """
@@ -1128,7 +1134,8 @@ class SudokuPuzzle:
         A fish of size n (n=len(ys)) in cols is when all potential cells for that candidate in the cols xs
         are contained in n rows total.
         All other occurrences of the candidate in those n rows can be eliminated as a result.
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
         updated_cells = set()
         n = len(xs)
@@ -1147,7 +1154,30 @@ class SudokuPuzzle:
                         cell_name = self.board[y][x_to_remove]
                         if self.remove_possibility_from_puzzle_by_cell_name(cell_name, candidate):
                             updated_cells.add((cell_name, candidate))
+                if updated_cells:
+                    description = "Fish " + str(n) + " in Cols: In cols " + str(xs) + ", candidate " \
+                                  + str(candidate) + " can only be placed in rows " + str(possible_locs) \
+                                  + ".\nEliminating the candidates from other cells in those rows."
+                    return SudokuStep(None, updated_cells, description)
         return updated_cells
+
+    def perform_fish(self, n):
+        """
+        :param n: The number of rows/cols to search for fish in
+        Finds fish (size n) and eliminates possibilities accordingly
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
+        """
+        for ys in itertools.combinations(all_locs, n):
+            ss = self.fish_in_rows(set(ys))
+            if ss:
+                return ss
+        for xs in itertools.combinations(all_locs, n):
+            ss = self.fish_in_cols(xs)
+            if ss:
+                return ss
+        return None
+
     # endregion
 
     # region Skyscraper

@@ -17,7 +17,7 @@ class SudokuSolver(Machine):
 
         ordered_optional_states = ['Naked_Pair', 'Hidden_Pair', 'Naked_Tuple_3', 'Naked_Tuple_4',
                                    'Block_RC_Interaction', 'Block_Block_Interaction',
-                                   'Hidden_Subset_3', 'Hidden_Subset_4', 'Basic_Fish']
+                                   'Hidden_Subset_3', 'Hidden_Subset_4', 'Basic_Fish', 'Fish_3', 'Fish_4']
 
         optional_state_map = {
             'Naked_Pair': 'naked_pair',
@@ -28,7 +28,9 @@ class SudokuSolver(Machine):
             'Hidden_Pair': 'hidden_subset_2',
             'Hidden_Subset_3': 'hidden_subset_3',
             'Hidden_Subset_4': 'hidden_subset_4',
-            'Basic_Fish': 'basic_fish'
+            'Basic_Fish': 'basic_fish',
+            'Fish_3': 'fish_3',
+            'Fish_4': 'fish_4'
         }
 
         states += ordered_optional_states
@@ -139,6 +141,14 @@ class SudokuSolver(Machine):
 
     def basic_fish(self):
         ss = self.sudoku_puzzle.perform_basic_fish()
+        return self.validate_and_log_updated_cells_step(ss)
+
+    def fish_3(self):
+        ss = self.sudoku_puzzle.perform_fish(3)
+        return self.validate_and_log_updated_cells_step(ss)
+
+    def fish_4(self):
+        ss = self.sudoku_puzzle.perform_fish(4)
         return self.validate_and_log_updated_cells_step(ss)
 
     def make_guess(self):
