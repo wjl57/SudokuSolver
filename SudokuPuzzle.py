@@ -1193,17 +1193,29 @@ class SudokuPuzzle:
         for (x1, x2) in itertools.combinations(candidate_loc_dict.keys(), 2):
             locs_1 = candidate_loc_dict[x1]
             locs_2 = candidate_loc_dict[x2]
-            loc_in_both = locs_1.intersection(locs_2)
-            if loc_in_both:
-                y1 = next(iter(locs_1.difference(loc_in_both)))
-                y2 = next(iter(locs_2.difference(loc_in_both)))
+            locs_in_both = locs_1.intersection(locs_2)
+            if len(locs_in_both) == 1:
+                loc_in_both = next(iter(locs_in_both))
+                y1 = next(iter(locs_1.difference(locs_in_both)))
+                y2 = next(iter(locs_2.difference(locs_in_both)))
                 cell_name_1 = self.board[y1][x1]
                 cell_name_2 = self.board[y2][x2]
                 cells_seen_by_both = self.get_cell_names_seen_by_both_cells(cell_name_1, cell_name_2)
                 for cell_name in cells_seen_by_both:
                     if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
                         updated_cells.add((cell_name, val))
-        return updated_cells
+                if updated_cells:
+                    base_cell_name_1 = self.board[loc_in_both][x1]
+                    base_cell_name_2 = self.board[loc_in_both][x2]
+                    description = "Skyscraper in Rows: Candidate " + str(val) + " is one of two " \
+                                  "possibilities for:\nThe 'Base' cells in Row " + str(loc_in_both) + ": "\
+                                  + str(base_cell_name_1) + ", " + str(base_cell_name_2) \
+                                  + "\nThe corresponding 'Tower' cells: " \
+                                  + str(cell_name_1) + ", " + str(cell_name_2) + "." \
+                                  + "\nTherefore, we can eliminate the candidate from all cells seen by both tower " \
+                                    "cells. "
+                    return SudokuStep(None, updated_cells, description)
+        return None
 
     def skyscraper_in_cols(self, val):
         """
@@ -1217,17 +1229,39 @@ class SudokuPuzzle:
         for (y1, y2) in itertools.combinations(candidate_loc_dict.keys(), 2):
             locs_1 = candidate_loc_dict[y1]
             locs_2 = candidate_loc_dict[y2]
-            loc_in_both = locs_1.intersection(locs_2)
-            if loc_in_both:
-                x1 = next(iter(locs_1.difference(loc_in_both)))
-                x2 = next(iter(locs_2.difference(loc_in_both)))
+            locs_in_both = locs_1.intersection(locs_2)
+            if len(locs_in_both) == 1:
+                loc_in_both = next(iter(locs_in_both))
+                x1 = next(iter(locs_1.difference(locs_in_both)))
+                x2 = next(iter(locs_2.difference(locs_in_both)))
                 cell_name_1 = self.board[y1][x1]
                 cell_name_2 = self.board[y2][x2]
                 cells_seen_by_both = self.get_cell_names_seen_by_both_cells(cell_name_1, cell_name_2)
                 for cell_name in cells_seen_by_both:
                     if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
                         updated_cells.add((cell_name, val))
-        return updated_cells
+                if updated_cells:
+                    base_cell_name_1 = self.board[y1][loc_in_both]
+                    base_cell_name_2 = self.board[y2][loc_in_both]
+                    description = "Skyscraper in Cols: Candidate " + str(val) + " is one of two " \
+                                  "possibilities for:\nThe 'Base' cells in Col " + str(loc_in_both) + ": "\
+                                  + str(base_cell_name_1) + ", " + str(base_cell_name_2) \
+                                  + "\nThe corresponding 'Tower' cells: " \
+                                  + str(cell_name_1) + ", " + str(cell_name_2) + "." \
+                                  + "\nTherefore, we can eliminate the candidate from all cells seen by both tower " \
+                                    "cells. "
+                    return SudokuStep(None, updated_cells, description)
+        return None
+
+    def perform_skyscraper(self):
+        for candidate in all_possibilities:
+            ss = self.skyscraper_in_rows(candidate)
+            if ss:
+                return ss
+        for candidate in all_possibilities:
+            ss = self.skyscraper_in_cols(candidate)
+            if ss:
+                return ss
 
     # endregion
 
