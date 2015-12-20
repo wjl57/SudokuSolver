@@ -336,7 +336,7 @@ class TestSudokuPuzzle(unittest.TestCase):
     # endregion
 
     # region Single digit pattern boards
-    skyscraper_col_board = [
+    skyscraper_row_board = [
         [6, 9, 7, None, None, None, None, None, 2],
         [None, None, 1, 9, 7, 2, None, 6, 3],
         [None, None, 3, None, None, 6, 7, 9, None],
@@ -348,7 +348,7 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, 6, 8, None, 7, None, None, 9]
     ]
 
-    skyscraper_row_board = [
+    skyscraper_col_board = [
         [None, None, 1, None, 2, 8, 7, 5, 9],
         [None, 8, 7, 9, None, 5, 1, 3, 2],
         [9, 5, 2, 1, 7, 3, 4, 8, 6],
@@ -1146,25 +1146,6 @@ class TestSudokuPuzzle(unittest.TestCase):
 
     def test_skyscraper_rows(self):
         sp = SudokuPuzzle(self.get_board_copy(self.skyscraper_row_board))
-        candidate = 4
-        x1 = 3
-        x2 = 4
-        should_contain_before_x1 = [True, False, False, False, False, False, True, True, False]
-        should_contain_before_x2 = [False, True, False, False, True, False, False, False, False]
-        x1_possibilities = sp.enumerate_col_possibilities(x1)
-        x2_possibilities = sp.enumerate_col_possibilities(x2)
-        self.assert_should_contain(should_contain_before_x1, x1_possibilities, {candidate})
-        self.assert_should_contain(should_contain_before_x2, x2_possibilities, {candidate})
-        sp.skyscraper_in_rows(candidate)
-        should_contain_after_x1 = [False, False, False, False, False, False, True, True, False]
-        should_contain_after_x2 = [False, True, False, False, True, False, False, False, False]
-        x1_possibilities = sp.enumerate_col_possibilities(x1)
-        x2_possibilities = sp.enumerate_col_possibilities(x2)
-        self.assert_should_contain(should_contain_after_x1, x1_possibilities, {candidate})
-        self.assert_should_contain(should_contain_after_x2, x2_possibilities, {candidate})
-
-    def test_skyscraper_cols(self):
-        sp = SudokuPuzzle(self.get_board_copy(self.skyscraper_col_board))
         candidate = 1
         y1 = 0
         y2 = 2
@@ -1174,13 +1155,32 @@ class TestSudokuPuzzle(unittest.TestCase):
         y2_possibilities = sp.enumerate_row_possibilities(y2)
         self.assert_should_contain(should_contain_before_y1, y1_possibilities, {candidate})
         self.assert_should_contain(should_contain_before_y2, y2_possibilities, {candidate})
-        sp.skyscraper_in_cols(candidate)
+        sp.skyscraper_in_rows(candidate)
         should_contain_after_y1 = [False, False, False, True, True, True, False, False, False]
         should_contain_after_y2 = [False, False, False, False, False, False, False, False, True]
         y1_possibilities = sp.enumerate_row_possibilities(y1)
         y2_possibilities = sp.enumerate_row_possibilities(y2)
         self.assert_should_contain(should_contain_after_y1, y1_possibilities, {candidate})
         self.assert_should_contain(should_contain_after_y2, y2_possibilities, {candidate})
+
+    def test_skyscraper_cols(self):
+        sp = SudokuPuzzle(self.get_board_copy(self.skyscraper_col_board))
+        candidate = 4
+        x1 = 3
+        x2 = 4
+        should_contain_before_x1 = [True, False, False, False, False, False, True, True, False]
+        should_contain_before_x2 = [False, True, False, False, True, False, False, False, False]
+        x1_possibilities = sp.enumerate_col_possibilities(x1)
+        x2_possibilities = sp.enumerate_col_possibilities(x2)
+        self.assert_should_contain(should_contain_before_x1, x1_possibilities, {candidate})
+        self.assert_should_contain(should_contain_before_x2, x2_possibilities, {candidate})
+        sp.skyscraper_in_cols(candidate)
+        should_contain_after_x1 = [False, False, False, False, False, False, True, True, False]
+        should_contain_after_x2 = [False, True, False, False, True, False, False, False, False]
+        x1_possibilities = sp.enumerate_col_possibilities(x1)
+        x2_possibilities = sp.enumerate_col_possibilities(x2)
+        self.assert_should_contain(should_contain_after_x1, x1_possibilities, {candidate})
+        self.assert_should_contain(should_contain_after_x2, x2_possibilities, {candidate})
 
     def test_kite(self):
         sp = SudokuPuzzle(self.get_board_copy(self.kite_board))

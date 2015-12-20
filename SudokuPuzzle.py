@@ -1185,7 +1185,32 @@ class SudokuPuzzle:
         """
         :param val: The candidate to find. Precondition: 1 <= val <= 9
         Finds skyscrapers with the 'base' in a row and eliminates possibilities accordingly.
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
+        """
+        updated_cells = set()
+        candidate_loc_dict = self.loc_dict_with_len_constraint_for_val(self.locs_left_by_x, val, lambda l: l == 2)
+        for (x1, x2) in itertools.combinations(candidate_loc_dict.keys(), 2):
+            locs_1 = candidate_loc_dict[x1]
+            locs_2 = candidate_loc_dict[x2]
+            loc_in_both = locs_1.intersection(locs_2)
+            if loc_in_both:
+                y1 = next(iter(locs_1.difference(loc_in_both)))
+                y2 = next(iter(locs_2.difference(loc_in_both)))
+                cell_name_1 = self.board[y1][x1]
+                cell_name_2 = self.board[y2][x2]
+                cells_seen_by_both = self.get_cell_names_seen_by_both_cells(cell_name_1, cell_name_2)
+                for cell_name in cells_seen_by_both:
+                    if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
+                        updated_cells.add((cell_name, val))
+        return updated_cells
+
+    def skyscraper_in_cols(self, val):
+        """
+        :param val: The candidate to find. Precondition: 1 <= val <= 9
+        Finds skyscrapers with the 'base' in a col and eliminates possibilities accordingly.
+        :return A SudokuStep corresponding to the guess where:
+                * updated_cells = A set of (cell name, candidate) tuples for the cells with possibilities removed
         """
         updated_cells = set()
         candidate_loc_dict = self.loc_dict_with_len_constraint_for_val(self.locs_left_by_y, val, lambda l: l == 2)
@@ -1204,28 +1229,6 @@ class SudokuPuzzle:
                         updated_cells.add((cell_name, val))
         return updated_cells
 
-    def skyscraper_in_cols(self, val):
-        """
-        :param val: The candidate to find. Precondition: 1 <= val <= 9
-        Finds skyscrapers with the 'base' in a col and eliminates possibilities accordingly.
-        :return A set of (cell name, removed possibility) tuples for the cells with possibilities removed
-        """
-        updated_cells = set()
-        candidate_loc_dict = self.loc_dict_with_len_constraint_for_val(self.locs_left_by_x, val, lambda l: l == 2)
-        for (x1, x2) in itertools.combinations(candidate_loc_dict.keys(), 2):
-            locs_1 = candidate_loc_dict[x1]
-            locs_2 = candidate_loc_dict[x2]
-            loc_in_both = locs_1.intersection(locs_2)
-            if loc_in_both:
-                y1 = next(iter(locs_1.difference(loc_in_both)))
-                y2 = next(iter(locs_2.difference(loc_in_both)))
-                cell_name_1 = self.board[y1][x1]
-                cell_name_2 = self.board[y2][x2]
-                cells_seen_by_both = self.get_cell_names_seen_by_both_cells(cell_name_1, cell_name_2)
-                for cell_name in cells_seen_by_both:
-                    if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
-                        updated_cells.add((cell_name, val))
-        return updated_cells
     # endregion
 
     @staticmethod
