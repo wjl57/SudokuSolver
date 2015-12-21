@@ -1,6 +1,7 @@
 import copy
 import unittest
-from BadGuessError import BadGuessError
+from SudokuError import BadGuessError
+from SudokuError import BadPuzzleError
 from SudokuPuzzle import SudokuPuzzle
 from SudokuHelper import all_locs
 from SudokuHelper import all_possibilities
@@ -330,7 +331,7 @@ class TestSudokuPuzzle(unittest.TestCase):
         [None, None, None, None, 9, None, None, None, None],
         [None, None, 9, 3, None, 8, 6, None, None],
         [None, None, 2, 5, None, 6, 9, None, None],
-        [None, 9, None, 2, None, None, None, 7, None],
+        [None, 9, None, None, 2, None, None, 7, None],
         [4, None, None, None, None, None, None, None, 1]
     ]
     # endregion
@@ -382,6 +383,20 @@ class TestSudokuPuzzle(unittest.TestCase):
         [2, 1, 4, 3, 5, 9, 6, 7, 8],
         [6, 7, 3, 1, 8, 4, 5, 9, 2],
         [None, 5, None, 7, 2, 6, 1, 4, 3]
+    ]
+    # endregion
+
+    # region Validation boards
+    illegal_puzzle_board = [
+        [2, 1, None, None, None, None, None, None, 2],
+        [None, None, 2, None, None, None, None, None, None],
+        [4, None, None, None, None, None, None, None, None],
+        [1, None, None, None, 4, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, 2, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None],
+        [None, None, None, None, None, None, None, None, None]
     ]
     # endregion
 
@@ -1338,6 +1353,18 @@ class TestSudokuPuzzle(unittest.TestCase):
 
     # endregion
 
+    ###############################################################################################################
+    # Board Validation
+    ###############################################################################################################
+    # region Board Validation
+
+    def test_validate_board(self):
+        try:
+            sp = SudokuPuzzle(self.get_board_copy(self.illegal_puzzle_board))
+        except BadPuzzleError as bpe:
+            self.assertSetEqual(bpe.illegal_cells, {'c000', 'c082', 'c120', 'c523'})
+
+    # endregion
     ###############################################################################################################
     # Helper methods
     ###############################################################################################################

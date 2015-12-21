@@ -1,7 +1,8 @@
 from collections import defaultdict
 import copy
 import itertools
-from BadGuessError import BadGuessError
+from SudokuError import BadGuessError
+from SudokuError import BadPuzzleError
 from SudokuCell import SudokuCell
 from SudokuGuess import SudokuGuess
 from SudokuHelper import all_locs
@@ -16,8 +17,7 @@ __author__ = 'william'
 class SudokuPuzzle:
 
     def __init__(self, board=None):
-        # A dictionary from cell name to the SudokuCell object
-        self.cells_dict = {}
+        # Static variables
         # A 2D-matrix containing cell names
         self.board = [[None for x in all_locs] for y in all_locs]
         # y_cell_list[n] contains a set with the names for each cell in row n
@@ -26,6 +26,10 @@ class SudokuPuzzle:
         self.x_cell_list = [set() for _ in all_locs]
         # block_cell_list[n] contains a set with the names for each cell in block n
         self.block_cell_list = [set() for _ in all_locs]
+
+        # Instance variables
+        # A dictionary from cell name to the SudokuCell object
+        self.cells_dict = {}
         # remaining_in_y[n] contains the remaining values in row n
         self.remaining_in_y = [copy.deepcopy(all_possibilities) for _ in all_locs]
         # remaining_in_x[n] contains the remaining values in col n
@@ -148,6 +152,10 @@ class SudokuPuzzle:
                 val = board[y][x]
                 if val is not None:
                     self.set_val_in_puzzle(y, x, val)
+
+        illegal_cells = self.validate_board()
+        if illegal_cells:
+            raise BadPuzzleError(illegal_cells)
 
         # Calculate remaining_in and locs_left_by fields
         self.recalculate_fields()
@@ -1438,6 +1446,29 @@ class SudokuPuzzle:
 
     def get_pretty_board_string(self):
         SudokuPuzzle.get_pretty_matrix_string(self.get_board())
+
+    # region Validation
+    def validate_board(self):
+        """
+        :return: A list of cells which break at least one sudoku rule
+        """
+        illegal_cells = set()
+        # Check row condition
+        cell_names_by_candidate = {candidate: set() for candidate in all_possibilities}
+        for cell_name, cell in self.cells_dict.items():
+            if cell.val is not None:
+                cell_names_by_candidate[cell.val].add(cell_name)
+
+        for candidate in all_possibilities:
+            for (c1, c2) in itertools.combinations(cell_names_by_candidate[candidate], 2):
+                cell_1 = self.cells_dict[c1]
+                cell_2 = self.cells_dict[c2]
+                if cell_1.y == cell_2.y or cell_1.x == cell_2.x or cell_1.block == cell_2.block:
+                    illegal_cells.add(c1)
+                    illegal_cells.add(c2)
+        return illegal_cells
+
+    # endregion
 
     # region Rotate/Reflect Board
     @staticmethod
