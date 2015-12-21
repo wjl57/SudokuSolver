@@ -1198,9 +1198,18 @@ class TestSudokuPuzzle(unittest.TestCase):
         self.assertSetEqual(p[3][8], {1, 9})
         self.assertSetEqual(p[5][7], {1, 6})
         sp.kite(candidate)
+        sp.kite(candidate)
         p = sp.get_possibilities()
+        # Assert the candidiates were removed from both ends of the string
         self.assertSetEqual(p[3][8], {9})
         self.assertSetEqual(p[5][7], {6})
+        # Assert the kite strings stayed the same
+        self.assertSetEqual(p[0][2], {1, 8})
+        self.assertSetEqual(p[0][7], {1, 8})
+        self.assertSetEqual(p[2][0], {1, 7})
+        self.assertSetEqual(p[2][8], {1, 7})
+        self.assertSetEqual(p[3][2], {1, 8, 9})
+        self.assertSetEqual(p[5][0], {1, 4, 9})
     # endregion
     ###############################################################################################################
     # Guessing

@@ -12,7 +12,7 @@ def main():
     # board = save_and_get_new_board(4)
     # print(board)
     # board = read_saved_board(11)
-    board = TestSudokuPuzzle.basic_fish_col_board
+    board = TestSudokuPuzzle.block_block_board
     sp = SudokuPuzzle(board)
     # sp.print_board()
 

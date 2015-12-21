@@ -18,7 +18,7 @@ class SudokuSolver(Machine):
         ordered_optional_states = ['Naked_Pair', 'Hidden_Pair', 'Naked_Tuple_3', 'Naked_Tuple_4',
                                    'Block_RC_Interaction', 'Block_Block_Interaction',
                                    'Hidden_Subset_3', 'Hidden_Subset_4', 'Basic_Fish', 'Fish_3', 'Fish_4',
-                                   'Skyscraper']
+                                   'Skyscraper', 'Kite']
 
         optional_state_map = {
             'Naked_Pair': 'naked_pair',
@@ -32,7 +32,8 @@ class SudokuSolver(Machine):
             'Basic_Fish': 'basic_fish',
             'Fish_3': 'fish_3',
             'Fish_4': 'fish_4',
-            'Skyscraper': 'skyscraper'
+            'Skyscraper': 'skyscraper',
+            'Kite': 'kite'
         }
 
         states += ordered_optional_states
@@ -157,6 +158,11 @@ class SudokuSolver(Machine):
         ss = self.sudoku_puzzle.perform_skyscraper()
         return self.validate_and_log_updated_cells_step(ss)
 
+    def kite(self):
+        ss = self.sudoku_puzzle.perform_kite()
+        self.assert_possibilities_are_non_empty()
+        return self.validate_and_log_updated_cells_step(ss)
+
     def make_guess(self):
         (cell_name, candidate) = self.sudoku_puzzle.determine_next_guess()
         if cell_name is None or candidate is None:
@@ -203,5 +209,5 @@ class SudokuSolver(Machine):
     def assert_possibilities_are_non_empty(self):
         for (cell_name, cell) in self.sudoku_puzzle.cells_dict.items():
             if len(cell.possibilities) < 1:
-                print(cell_name, cell.possibilities)
+                print(cell_name, str(self.current_state.name))
                 break

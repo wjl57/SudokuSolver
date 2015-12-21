@@ -1331,11 +1331,28 @@ class SudokuPuzzle:
             for y_cell in y_cells:
                 x = next(iter(candidate_loc_dict_y[y_cell.y].difference({y_cell.x})))
                 for x_cell in x_cells:
-                    y = next(iter(candidate_loc_dict_x[x_cell.x].difference({x_cell.y})))
-                    cell_name = self.board[y][x]
-                    if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
-                        updated_cells.update((cell_name, val))
-        return updated_cells
+                    if y_cell.y != x_cell.y and y_cell.x != x_cell.x:
+                        y = next(iter(candidate_loc_dict_x[x_cell.x].difference({x_cell.y})))
+                        cell_name = self.board[y][x]
+                        if self.remove_possibility_from_puzzle_by_cell_name(cell_name, val):
+                            updated_cells.add((cell_name, val))
+                            horizontal_kite = {self.board[y_cell.y][x], y_cell.name}
+                            vertical_kite = {self.board[y][x_cell.x], x_cell.name}
+                            description = "Kite: Candidate " + str(val) + " has two strings: " \
+                                          + "\nRow " + str(y_cell.y) + ": " + str(horizontal_kite) \
+                                          + "\nCol " + str(x_cell.x) + ": " + str(vertical_kite) \
+                                          + "\nThe bases of these strings share block " + str(block_num) \
+                                          + ". Thus, we can eliminate the candidate from cells that see the other " \
+                                            "two ends of the string."
+                            return SudokuStep(None, updated_cells, description)
+        return None
+
+    def perform_kite(self):
+        for candidate in all_possibilities:
+            ss = self.kite(candidate)
+            if ss:
+                return ss
+
     # endregion
 
     # region Enumerate Possibilities
