@@ -1,5 +1,5 @@
 from transitions import Machine
-from BadGuessError import BadGuessError
+from SudokuError import BadGuessError
 from SudokuLogger import SudokuLogger
 
 __author__ = 'william'
