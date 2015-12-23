@@ -1,3 +1,4 @@
+import json
 import os
 from flask_restful import abort, Api
 # from SudokuPuzzle import SudokuPuzzle
@@ -19,10 +20,12 @@ def index():
 
 @app.route('/api/sudoku/solvepuzzle', methods=['POST'])
 def solve_puzzle():
-    # if not request.json or not 'board' in request.json:
-    #     abort(400)
-    board = [[1,2,3],[4,5,6]]
-    # board = request.json['board']
+    print(request.json)
+    print(request.json['board'])
+    # params = request.json.to_dict()
+    # print(params)
+    board = request.json['board']#[[3,4,5],[7,8,9]]
+    board.append(4)
     return jsonify(board=board)
 
 #     if not request.json or not 'board' in request.json:
