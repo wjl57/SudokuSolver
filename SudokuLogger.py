@@ -1,3 +1,4 @@
+from flask import jsonify
 from SudokuPuzzle import SudokuPuzzle
 
 __author__ = 'william'
@@ -43,3 +44,14 @@ class SudokuStepLog:
         if not self.filled_cell and self.updated_cells:
             s += "\n" + SudokuPuzzle.get_pretty_matrix_string(self.possibilities)
         return s
+
+    def to_json(self):
+        return {
+            'description': self.description,
+            # 'filled_cell': self.filled_cell.serialize(),
+            'updated_cells': [{'cell_name': cn, 'candidate': c} for cn, c in self.updated_cells]
+            if self.updated_cells else [],
+            'board': self.board,
+            'possibilities': self.possibilities,
+            'additional': self.additional
+        }

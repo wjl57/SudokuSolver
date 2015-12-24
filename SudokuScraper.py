@@ -63,5 +63,4 @@ def read_saved_board(num):
     return pickle.load(file)
 
 
-
 if __name__ == "__main__": main()

@@ -25,3 +25,15 @@ class SudokuCell:
             self.possibilities.discard(possibility)
             return True
         return False
+
+    def to_json(self):
+        return {
+            'y': self.y,
+            'x': self.x,
+            'block': self.block,
+            'possibilities': self.possibilities,
+            'candidate': self.val,
+            'name': self.name
+        }
+
+

@@ -24,3 +24,11 @@ class SudokuGuess:
         if self.previous_guess is None:
             return "(" + self.guess_cell_name + ": " + str(self.guess_candidate) + ")"
         return "(" + self.guess_cell_name + ": " + str(self.guess_candidate) + ")" + ", " + str(self.previous_guess)
+
+    def to_json(self):
+        return {
+            'guess_cell_name': self.guess_cell_name,
+            'guess_candidate': self.guess_candidate,
+            'previous_guess': self.previous_guess.to_json(),
+            'num_filled': self.num_filled
+        }

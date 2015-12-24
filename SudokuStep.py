@@ -10,3 +10,10 @@ class SudokuStep:
         self.updated_cells = updated_cells
         # The reason the cell was filled/possibilities could be eliminated
         self.reason = reason
+
+    def to_json(self):
+        return {
+            'filled_cell': self.filled_cell,
+            'updated_cells': self.updated_cells,
+            'reason': self.reason
+        }

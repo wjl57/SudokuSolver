@@ -1,14 +1,24 @@
-import json
 import os
+from flask import Flask, jsonify, request
+from flask.json import JSONEncoder
 from flask_restful import abort, Api
-# from SudokuPuzzle import SudokuPuzzle
-# from SudokuSolver import SudokuSolver
+from SudokuLogger import SudokuStepLog
+from SudokuPuzzle import SudokuPuzzle
+from SudokuSolver import SudokuSolver
 
 __author__ = 'william'
 
-from flask import Flask, jsonify, request
+
+class MyJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return [o for o in obj]
+        if isinstance(obj, SudokuStepLog):
+            return obj.to_json()
+        return super(MyJSONEncoder, self).default(obj)
 
 app = Flask(__name__)
+app.json_encoder = MyJSONEncoder
 api = Api(app)
 
 
@@ -18,15 +28,29 @@ def index():
     return "Hello, World!"
 
 
-@app.route('/api/sudoku/solvepuzzle', methods=['POST'])
+@app.route('/api/sudoku/calc_possibilities', methods=['POST'])
+def calculate_possibilities():
+    board = request.json['board']
+    sp = SudokuPuzzle(board)
+    return jsonify({'possibilities': sp.get_possibilities()})
+
+
+@app.route('/api/sudoku/solve_puzzle', methods=['POST'])
 def solve_puzzle():
     print(request.json)
     print(request.json['board'])
     # params = request.json.to_dict()
     # print(params)
-    board = request.json['board']#[[3,4,5],[7,8,9]]
-    board.append(4)
-    return jsonify(board=board)
+    board = request.json['board']
+    sp = SudokuPuzzle(board)
+    ss = SudokuSolver(sp)
+    ss.do_work()
+    log = ss.sudoku_logger.sudoku_log
+    try:
+        return jsonify({'board': ss.sudoku_puzzle.get_board(), 'steps_log': log})
+    except Exception as e:
+        print(e)
+    # return jsonify({'board': ss.sudoku_puzzle.get_board()})
 
 #     if not request.json or not 'board' in request.json:
 #         abort(400)
