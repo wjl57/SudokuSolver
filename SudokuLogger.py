@@ -1,4 +1,4 @@
-from flask import jsonify
+import json
 from SudokuPuzzle import SudokuPuzzle
 
 __author__ = 'william'
@@ -8,11 +8,13 @@ class SudokuLogger:
 
     def __init__(self):
         self.sudoku_log = []
+        self.step_num = 0
 
     def log_step(self, description, filled_cell, updated_cells, board, possibilities, additional=None):
         if filled_cell or updated_cells or additional:
-            self.sudoku_log.append(SudokuStepLog(description, filled_cell, updated_cells,
+            self.sudoku_log.append(SudokuStepLog(self.step_num, description, filled_cell, updated_cells,
                                                  board, possibilities, additional))
+            self.step_num += 1
 
     def print_log(self):
         count = 0
@@ -23,7 +25,8 @@ class SudokuLogger:
 
 class SudokuStepLog:
 
-    def __init__(self, description, filled_cell, updated_cells, board, possibilities, additional):
+    def __init__(self, step_num, description, filled_cell, updated_cells, board, possibilities, additional):
+        self.step_num = step_num
         self.description = description
         self.filled_cell = filled_cell
         self.updated_cells = updated_cells
@@ -47,11 +50,12 @@ class SudokuStepLog:
 
     def to_json(self):
         return {
+            'step_num': self.step_num,
             'description': self.description,
             # 'filled_cell': self.filled_cell.serialize(),
             'updated_cells': [{'cell_name': cn, 'candidate': c} for cn, c in self.updated_cells]
             if self.updated_cells else [],
-            'board': self.board,
-            'possibilities': self.possibilities,
+            'board': json.dumps(self.board),
+            'possibilities': json.dumps([[list(ps) for ps in row] for row in self.possibilities]),
             'additional': self.additional
         }
