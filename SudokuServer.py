@@ -39,6 +39,19 @@ def calculate_possibilities():
     return jsonify({'possibilities': sp.get_possibilities()})
 
 
+@app.route('/api/sudoku/solve_step', methods=['POST'])
+def solve_step():
+    board = request.json['board']
+    sp = SudokuPuzzle(board)
+    ss = SudokuSolver(sp)
+    ss.solve_next_step()
+    log = ss.sudoku_logger.sudoku_log
+    try:
+        return jsonify({'board': ss.sudoku_puzzle.get_board(), 'steps_log': log})
+    except Exception as e:
+        print(e)
+
+
 @app.route('/api/sudoku/solve_puzzle', methods=['POST'])
 def solve_puzzle():
     print(request.json)

@@ -10,6 +10,7 @@ class SudokuSolver(Machine):
     def __init__(self, sp):
         self.sudoku_puzzle = sp
         self.sudoku_logger = SudokuLogger()
+        self.just_solved_step = False
 
         states = ['Ready', 'Sole_Candidate', 'Unique_Candidate', 'Make_Guess', 'Done', 'Not_Complete']
 
@@ -85,6 +86,7 @@ class SudokuSolver(Machine):
                     self.sudoku_puzzle.validate_updated_cells_ignoring_newly_set_val(updated_cells, cell_name)
                 except BadGuessError as bge:
                     self.revert_guess()
+            self.just_solved_step = True
             return False
         else:
             return True
@@ -98,6 +100,7 @@ class SudokuSolver(Machine):
                     self.revert_guess()
                     # TODO: Check probably isn't needed
                     self.assert_possibilities_are_non_empty()
+            self.just_solved_step = True
             return False
         else:
             return True
@@ -200,11 +203,15 @@ class SudokuSolver(Machine):
 
     def do_work(self):
         while not self.sudoku_puzzle.num_filled == 81:
-            # print(self.current_state.name)
-            self.perform_step()
+            self.solve_next_step()
             self.assert_possibilities_are_non_empty()
         print('#########################################################################################')
         self.sudoku_logger.print_log()
+
+    def solve_next_step(self):
+        self.just_solved_step = False
+        while not self.just_solved_step:
+            self.perform_step()
 
     def assert_possibilities_are_non_empty(self):
         for (cell_name, cell) in self.sudoku_puzzle.cells_dict.items():
