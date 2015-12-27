@@ -12,7 +12,17 @@ def main():
     # board = save_and_get_new_board(4)
     # print(board)
     # board = read_saved_board(11)
-    board = TestSudokuPuzzle.dual_kite_board
+    board = [
+        [None, None, 7, 4, None, None, 3, None, None],
+        [None, None, None, None, 7, None, None, None, 8],
+        [9, 2, None, None, None, None, None, None, None],
+        [6, None, None, 9, 1, 3, 8, None, 2],
+        [None, 8, 3, None, None, 4, 6, None, None],
+        [2, None, None, 8, None, None, None, None, None],
+        [3, None, 8, 1, None, None, None, None, None],
+        [None, 9, None, 3, None, None, None, None, 4],
+        [1, None, None, None, None, 6, None, None, None]
+    ]
     sp = SudokuPuzzle(board)
     # sp.print_board()
 

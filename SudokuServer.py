@@ -20,7 +20,7 @@ class MyJSONEncoder(JSONEncoder):
             return obj.to_json()
         return super(MyJSONEncoder, self).default(obj)
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="public")
 app.json_encoder = MyJSONEncoder
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 api = Api(app)
@@ -29,7 +29,11 @@ api = Api(app)
 @app.route('/')
 @app.route('/index')
 def index():
-    return "Hello, World!"
+    # return "Hello, World!"
+    try:
+        return app.send_static_file('index.html')
+    except Exception as e:
+        print(e)
 
 
 @app.route('/api/sudoku/calc_possibilities', methods=['POST'])
