@@ -20,7 +20,8 @@ class MyJSONEncoder(JSONEncoder):
             return obj.to_json()
         return super(MyJSONEncoder, self).default(obj)
 
-app = Flask(__name__, static_folder="public")
+app = Flask(__name__, static_url_path='', static_folder='public')
+app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
 app.json_encoder = MyJSONEncoder
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 api = Api(app)
